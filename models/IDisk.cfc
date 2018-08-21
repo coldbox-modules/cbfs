@@ -139,9 +139,9 @@ interface{
 	any function getAsBinary( required path );
 
 	/**
-	 * Validate if a file exists
+	 * Validate if a file/directory exists
 	 *
-	 * @path The file path to verify
+	 * @path The file/directory path to verify
 	 */
 	boolean function exists( required path );
 
