@@ -275,9 +275,9 @@ interface{
 	boolean function isReadable( required path );
 
 	/**
-	 * Find path names matching a given pattern
+	 * Find path names matching a given globbing pattern
 	 *
-	 * @pattern
+	 * @pattern The globbing pattern to match
 	 */
 	array function glob( required pattern );
 
