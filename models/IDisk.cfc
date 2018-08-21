@@ -29,6 +29,7 @@ interface{
 	 * @contents The contents of the file to store
 	 * @visibility The storage visibility of the file, available options are `public, private, readonly` or a custom data type the implemented driver can interpret
 	 * @metadata Struct of metadata to store with the file
+	 * @overwrite If we should overwrite the files or not at the destination if they exist, defaults to true
 	 *
 	 * @return IDisk
 	 */
@@ -36,7 +37,8 @@ interface{
 		required path,
 		required contents,
 		visibility,
-		struct metadata
+		struct metadata,
+		boolean overwrite
 	);
 
 	/**
@@ -46,15 +48,16 @@ interface{
 	 * @path The destination to store the file to
 	 * @visibility The storage visibility of the file, available options are `public, private, readonly` or a custom data type the implemented driver can interpret
 	 * @metadata Struct of metadata to store with the file
-	 * @overwrite If we should overwrite the files or not at the destination if they exist
-	 * @accept Limits the MIME types to accept. Comma-delimited list.
+	 * @overwrite If we should overwrite the files or not at the destination if they exist, defaults to true
+	 * @accept Limits the MIME types to accept. Comma-delimited list or array
 	 */
 	function upload(
 		required fileField,
 		required path,
-		required contents,
 		visibility,
-		struct metadata
+		struct metadata,
+		boolean overwrite,
+		accept
 	);
 
 	/**
@@ -107,7 +110,7 @@ interface{
 	function copy( required source, required destination );
 
 	/**
-	 * Move/rename a file from one destination to another
+	 * Move a file from one destination to another
 	 *
 	 * @source The source file path
 	 * @destination The end destination path
@@ -115,6 +118,16 @@ interface{
 	 * @return IDisk
 	 */
 	function move( required source, required destination );
+
+	/**
+	 * Rename a file from one destination to another. Shortcut to the `move()` command
+	 *
+	 * @source The source file path
+	 * @destination The end destination path
+	 *
+	 * @return IDisk
+	 */
+	function rename( required source, required destination );
 
 	/**
 	 * Get the contents of a file
