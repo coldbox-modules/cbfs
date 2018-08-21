@@ -7,7 +7,7 @@ notifications:
 env:
   # Fill out these global variables for build process
   global:
-    - MODULE_ID=cbfiles
+    - MODULE_ID=cbfs
     - TARGET_VERSION=1.0.0
   matrix:
     - ENGINE=lucee@45
@@ -33,7 +33,7 @@ before_install:
 
 install:
   # Install Commandbox
-  - sudo apt-get update && sudo apt-get --assume-yes install jq commandbox
+  - sudo apt-get update && sudo apt-get --assume-yes install rsync jq commandbox
   # Install CommandBox Supporting Librarires
   - box install commandbox-cfconfig,commandbox-dotenv,commandbox-docbox
   # If using auto-publish, you will need to provide your API token with this line:
@@ -53,13 +53,7 @@ script:
   # move back to build dir to build it
   - cd $TRAVIS_BUILD_DIR
   # Build out the project if tests pass
-  - box task run \
-      taskfile=build/Build \
-      target=run \
-      :version=${TARGET_VERSION} \
-      :projectName=${MODULE_ID} \
-      :buildID=${TRAVIS_BUILD_NUMBER} \
-      :branch=${TRAVIS_BRANCH}
+  - box task run taskfile=build/Build target=run :version=${TARGET_VERSION} :projectName=${MODULE_ID} :buildID=${TRAVIS_BUILD_NUMBER} :branch=${TRAVIS_BRANCH}
 
 after_failure:
   - cd $TRAVIS_BUILD_DIR/test-harness

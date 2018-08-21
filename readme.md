@@ -1,6 +1,37 @@
-# CB Files
+# CB FS (File Storage :disk:)
 
+The `cbfs` module will enable you to abstract ANY filesystem within your ColdBox applications.  You can configure as many disks which represent file systems in your application.  Each disk is backed by a storage provider and configure within your ColdBox application.
 
+## Storage Providers
+
+The available storage providers are:
+
+* `FileProvider` - A local file system storage provider
+* `MockProvider` - A mock storage provider that just logs operations to a LogBox logger object
+* `S3Provider` - An Amazon S3, Rackspace, Digital Ocean or Google Cloud Storage provider.
+
+## Configuration
+
+In your `config/ColdBox.cfc` create a `cbfs` structure within the `moduleSettings` key.  Here you will define your storage disks and global settings for the `cbfs` storage services.
+
+> **Note**: Please note that each provider has its own configuration properties. So please check out the docs for each provider.
+
+```js
+moduleSettings = {
+	cbfs = {
+		disks = {
+			"public" = {
+				provider = "FileProvider",
+				properties = {
+					root = "File root",
+					baseUrl = "The base Url for the storage",
+					visibility = "public or private"
+				}
+			}
+
+		}
+	}
+}
 ```
 
 ********************************************************************************
