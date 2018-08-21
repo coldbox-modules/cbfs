@@ -7,15 +7,15 @@
 component {
 
 	// Module Properties
-	this.title 				= "CB Files";
+	this.title 				= "CB FileSystem";
 	this.author 			= "Ortus Solutions, Corp";
-	this.webURL 			= "https://github.com/ortus-solutions/cbfiles";
-	this.description 		= "A powerfule file abstraction module for ColdBox applications";
+	this.webURL 			= "https://github.com/ortus-solutions/cbfs";
+	this.description 		= "A powerfule filesystem abstraction module for ColdBox applications";
 	// CF Mapping
-	this.cfmapping			= "cbfiles";
-	this.modelNamespace 	= "cbfiles";
+	this.cfmapping			= "cbfs";
+	this.modelNamespace 	= "cbfs";
 	// Module Dependencies That Must Be Loaded First, use internal names or aliases
-	this.dependencies		= [];
+	this.dependencies		= [ "cbstreams" ];
 
 	/**
 	* Configure this module

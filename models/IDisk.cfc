@@ -23,7 +23,7 @@ interface{
 	function shutdown();
 
 	/**
-	 * Store a file
+	 * Create a file in the disk
 	 *
 	 * @path The file path to use for storage
 	 * @contents The contents of the file to store
@@ -33,31 +33,12 @@ interface{
 	 *
 	 * @return IDisk
 	 */
-	function put(
+	function createFile(
 		required path,
 		required contents,
 		visibility,
 		struct metadata,
 		boolean overwrite
-	);
-
-	/**
-	 * A nice way to put a file directly from an upload
-	 *
-	 * @fileField The file field used in the upload
-	 * @path The destination to store the file to
-	 * @visibility The storage visibility of the file, available options are `public, private, readonly` or a custom data type the implemented driver can interpret
-	 * @metadata Struct of metadata to store with the file
-	 * @overwrite If we should overwrite the files or not at the destination if they exist, defaults to true
-	 * @accept Limits the MIME types to accept. Comma-delimited list or array
-	 */
-	function upload(
-		required fileField,
-		required path,
-		visibility,
-		struct metadata,
-		boolean overwrite,
-		accept
 	);
 
 	/**
@@ -75,7 +56,7 @@ interface{
 	 *
 	 * @path The target file
 	 */
-	any function getVisibility( required path );
+	any function visibility( required path );
 
 	/**
 	 * Prepend contents to the beginning of a file
@@ -159,29 +140,6 @@ interface{
 	boolean function exists( required path );
 
 	/**
-	 * Generates a response that forces the user's browser to download the file at the given path
-	 *
-	 * @path The file path to download
-	 * @name The name of the file the user will see when downloading, usually by setting the content header.  If not passed, it should use the filename in the path
-	 * @headers Any additional headers to send with the download request
-	 * @mimeType Force the mimetype of the download else we deduct it from the file
-	 * @disposition The browser content disposition, `attachment` or `inline`
-	 * @abortAtEnd Do an abort after content is sent, this should default to false
-	 * @deleteFile Remove the file once it has been delivered, this defaults to false
-	 *
-	 * @return IDisk
-	 */
-	boolean function download(
-		required path,
-		name,
-		struct headers,
-		mimeType,
-		disposition,
-		boolean abortAtEnd,
-		boolean deleteFile
-	);
-
-	/**
 	 * Get the URL for the given file
 	 *
 	 * @path The file path to build the URL for
@@ -218,7 +176,7 @@ interface{
 	function mimeType( required path );
 
 	/**
-	 * Delete a file or an array of file pths. If a file does not exist a `false` will be
+	 * Delete a file or an array of file paths. If a file does not exist a `false` will be
 	 * shown for it's return.
 	 *
 	 * @path A single file path or an array of file paths
@@ -350,7 +308,7 @@ interface{
 	 *
 	 * @return IDisk
 	 */
-	function newDirectory( required directory, boolean createPath, boolean ignoreExists );
+	function createDirectory( required directory, boolean createPath, boolean ignoreExists );
 
 	/**
 	 * Copies a directory to a destination
@@ -377,7 +335,7 @@ interface{
 	);
 
 	/**
-	 * Move or Rename a directory
+	 * Move a directory
 	 *
 	 * @oldPath The source directory
 	 * @newPath The destination directory
@@ -386,6 +344,21 @@ interface{
 	 * @return IDisk
 	 */
 	function moveDirectory(
+		required oldPath,
+		required newPath,
+		boolean createPath
+	);
+
+	/**
+	 * Rename a directory, facade to `moveDirectory()`
+	 *
+	 * @oldPath The source directory
+	 * @newPath The destination directory
+	 * @createPath If false, expects all parent directories to exist, true will generate all necessary directories. Default is true.
+	 *
+	 * @return IDisk
+	 */
+	function renameDirectory(
 		required oldPath,
 		required newPath,
 		boolean createPath
@@ -411,24 +384,44 @@ interface{
 	function cleanDirectory( required directory );
 
 	/**
+	 * Get an array listing of all files and directories in a directory.
+	 *
+	 * @directory The directory
+	 * @filter A string wildcard or a lambda/closure that receives the file path and should return true to include it in the returned array or not.
+	 * @sort Columns by which to sort. e.g. Directory, Size DESC, DateLastModified.
+	 * @recurse Recurse into subdirectories, default is false
+	 */
+	array function contents( required directory, any filter, sort, boolean recurse );
+
+	/**
+	 * Get an array listing of all files and directories in a directory using recursion
+	 *
+	 * @directory The directory
+	 * @filter A string wildcard or a lambda/closure that receives the file path and should return true to include it in the returned array or not.
+	 * @sort Columns by which to sort. e.g. Directory, Size DESC, DateLastModified.
+	 * @recurse Recurse into subdirectories, default is false
+	 */
+	array function allContents( required directory, any filter, sort );
+
+	/**
 	 * Get an array of all files in a directory.
 	 *
 	 * @directory The directory
-	 * @recurse Recurse into subdirectories, default is false
 	 * @filter A string wildcard or a lambda/closure that receives the file path and should return true to include it in the returned array or not.
 	 * @sort Columns by which to sort. e.g. Directory, Size DESC, DateLastModified.
+	 * @recurse Recurse into subdirectories, default is false
 	 */
-	array function files( required directory, boolean recurse, any filter, sort );
+	array function files( required directory, any filter, sort, boolean recurse );
 
 	/**
 	 * Get an array of all directories in a directory.
 	 *
 	 * @directory The directory
-	 * @recurse Recurse into subdirectories, default is false
 	 * @filter A string wildcard or a lambda/closure that receives the file path and should return true to include it in the returned array or not.
 	 * @sort Columns by which to sort. e.g. Directory, Size DESC, DateLastModified.
+	 * @recurse Recurse into subdirectories, default is false
 	 */
-	array function directories( required directory, boolean recurse, any filter, sort );
+	array function directories( required directory, any filter, sort, boolean recurse );
 
 	/**
 	 * Get an array of all files in a directory using recursion, this is a shortcut to the `files()` with recursion
@@ -449,7 +442,7 @@ interface{
 	array function allDirectories( required directory, any filter, sort );
 
 	/**
-	 * Get a structure of all files in a directory and their appropriate information map including:
+	 * Get an array of structs of all files in a directory and their appropriate information map:
 	 * - Attributes
 	 * - DateLastModified
 	 * - Directory
@@ -459,14 +452,14 @@ interface{
 	 * - Size
 	 *
 	 * @directory The directory
-	 * @recurse Recurse into subdirectories, default is false
 	 * @filter A string wildcard or a lambda/closure that receives the file path and should return true to include it in the returned array or not.
 	 * @sort Columns by which to sort. e.g. Directory, Size DESC, DateLastModified.
+	 * @recurse Recurse into subdirectories, default is false
 	 */
-	struct function filesMap( required directory, boolean recurse, any filter, sort );
+	array function filesMap( required directory, any filter, sort, boolean recurse );
 
 	/**
-	 * Get a structure of all files in a directory with recursion and their appropriate information map including:
+	 * Get an array of structs of all files in a directory with recursion and their appropriate information map:
 	 * - Attributes
 	 * - DateLastModified
 	 * - Directory
@@ -481,5 +474,70 @@ interface{
 	 */
 	array function allFilesMap( required directory, any filter, sort );
 
+	/**
+	 * Get an array of structs of all directories in a directory and their appropriate information map:
+	 * - Attributes
+	 * - DateLastModified
+	 * - Directory
+	 * - Link
+	 * - Mode
+	 * - Name
+	 * - Size
+	 *
+	 * @directory The directory
+	 * @filter A string wildcard or a lambda/closure that receives the file path and should return true to include it in the returned array or not.
+	 * @sort Columns by which to sort. e.g. Directory, Size DESC, DateLastModified.
+	 * @recurse Recurse into subdirectories, default is false
+	 */
+	array function directoriesMap( required directory, any filter, sort, boolean recurse );
+
+	/**
+	 * Get an array of structs of all directories in a directory with recursion and their appropriate information map:
+	 * - Attributes
+	 * - DateLastModified
+	 * - Directory
+	 * - Link
+	 * - Mode
+	 * - Name
+	 * - Size
+	 *
+	 * @directory The directory
+	 * @filter A string wildcard or a lambda/closure that receives the file path and should return true to include it in the returned array or not.
+	 * @sort Columns by which to sort. e.g. Directory, Size DESC, DateLastModified.
+	 */
+	array function allDirectoriesMap( required directory, any filter, sort );
+
+	/**
+	 * Get an array of structs of all files and directories in a directory and their appropriate information map:
+	 * - Attributes
+	 * - DateLastModified
+	 * - Directory
+	 * - Link
+	 * - Mode
+	 * - Name
+	 * - Size
+	 *
+	 * @directory The directory
+	 * @filter A string wildcard or a lambda/closure that receives the file path and should return true to include it in the returned array or not.
+	 * @sort Columns by which to sort. e.g. Directory, Size DESC, DateLastModified.
+	 * @recurse Recurse into subdirectories, default is false
+	 */
+	array function contentsMap( required directory, any filter, sort, boolean recurse );
+
+	/**
+	 * Get an array of structs of all files in a directory with recursion and their appropriate information map:
+	 * - Attributes
+	 * - DateLastModified
+	 * - Directory
+	 * - Link
+	 * - Mode
+	 * - Name
+	 * - Size
+	 *
+	 * @directory The directory
+	 * @filter A string wildcard or a lambda/closure that receives the file path and should return true to include it in the returned array or not.
+	 * @sort Columns by which to sort. e.g. Directory, Size DESC, DateLastModified.
+	 */
+	array function allContentsMap( required directory, any filter, sort );
 
 }

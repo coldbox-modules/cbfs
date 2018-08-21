@@ -3,6 +3,10 @@
 .artifacts/**
 .tmp/**
 
+# Dependencies
+modules/**
+
+# Testing
 test-harness/.engine/**
 test-harness/coldbox/**
 test-harness/docbox/**
