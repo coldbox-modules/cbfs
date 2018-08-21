@@ -232,11 +232,12 @@ interface{
 	struct function info( required path );
 
 	/**
-	 * Get the md5 hash checksum of the file
+	 * Generate checksum for a file in different hashing algorithms
 	 *
-	 * @path the file path
+	 * @path The file path
+	 * @algorithm Default is MD5, but SHA-1, SHA-256, and SHA-512 can also be used.
 	 */
-	string function md5( required path );
+	string function checksum( required path, algorithm );
 
 	/**
 	 * Extract the file name from a file path
