@@ -154,7 +154,7 @@ interface{
 	 * @mimeType Force the mimetype of the download else we deduct it from the file
 	 * @disposition The browser content disposition, `attachment` or `inline`
 	 * @abortAtEnd Do an abort after content is sent, this should default to false
-	 * @deleteFile Remove the file once it has been delivered
+	 * @deleteFile Remove the file once it has been delivered, this defaults to false
 	 *
 	 * @return IDisk
 	 */
@@ -164,8 +164,8 @@ interface{
 		struct headers,
 		mimeType,
 		disposition,
-		abortAtEnd,
-		deleteFile
+		boolean abortAtEnd,
+		boolean deleteFile
 	);
 
 	/**
