@@ -33,7 +33,7 @@ interface{
 	 *
 	 * @return IDisk
 	 */
-	function createFile(
+	function create(
 		required path,
 		required contents,
 		visibility,
