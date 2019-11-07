@@ -5,16 +5,26 @@
  *
  * @author Luis Majano
  */
-interface{
+interface {
+
+    /**
+     * Returns the name of the disk.
+     */
+    string function getName();
+
+    /**
+     * Retrieves the settings for the disk.
+     */
+    struct function getProperties();
 
 	/**
 	 * Configure the provider. Usually called at startup.
 	 *
 	 * @properties A struct of configuration data for this provider, usually coming from the configuration file
 	 *
-	 * @return IDisk
+	 * @return IDiskProvider
 	 */
-	function configure( required struct properties );
+	function configure( required string name, struct properties );
 
 	/**
 	 * Called before the cbfs module is unloaded, or via reinits. This can be implemented
@@ -29,9 +39,11 @@ interface{
 	 * @contents The contents of the file to store
 	 * @visibility The storage visibility of the file, available options are `public, private, readonly` or a custom data type the implemented driver can interpret
 	 * @metadata Struct of metadata to store with the file
-	 * @overwrite If we should overwrite the files or not at the destination if they exist, defaults to true
+     * @override Flag to overwrite the file at the destination, if it exists. Defaults to true.
 	 *
-	 * @return IDisk
+	 * @throws cbfs.FileOverrideException
+     *
+	 * @return IDiskProvider
 	 */
 	function create(
 		required path,
@@ -47,7 +59,7 @@ interface{
 	 * @path The target file
 	 * @visibility The storage visibility of the file, available options are `public, private, readonly` or a custom data type the implemented driver can interpret
 	 *
-	 * @return IDisk
+	 * @return IDiskProvider
 	 */
 	function setVisibility( required path, required visibility );
 
@@ -64,10 +76,18 @@ interface{
 	 * @path The file path to use for storage
 	 * @contents The contents of the file to prepend
 	 * @metadata Struct of metadata to store with the file
+     * @throwOnMissing Boolean flag to throw if the file is missing. Otherwise it will be created if missing.
+     *
+     * @throws cbfs.FileNotFoundException
 	 *
-	 * @return IDisk
+	 * @return IDiskProvider
 	 */
-	function prepend( required path, required contents, struct metadata );
+	function prepend(
+        required string path,
+        required contents,
+        struct metadata,
+        boolean throwOnMissing
+    );
 
 	/**
 	 * Append contents to the end of a file
@@ -75,47 +95,64 @@ interface{
 	 * @path The file path to use for storage
 	 * @contents The contents of the file to append
 	 * @metadata Struct of metadata to store with the file
+     * @throwOnMissing Boolean flag to throw if the file is missing. Otherwise it will be created if missing.
+     *
+     * @throws cbfs.FileNotFoundException
 	 *
-	 * @return IDisk
+	 * @return IDiskProvider
 	 */
-	function append( required path, required contents, struct metadata );
+	function append(
+        required string path,
+        required contents,
+        struct metadata,
+        boolean throwOnMissing
+    );
 
 	/**
 	 * Copy a file from one destination to another
 	 *
 	 * @source The source file path
 	 * @destination The end destination path
+     * @override Flag to overwrite the file at the destination, if it exists. Defaults to true.
+     *
+     * @throws cbfs.FileNotFoundException
 	 *
-	 * @return IDisk
+	 * @return IDiskProvider
 	 */
-	function copy( required source, required destination );
+	function copy( required source, required destination, boolean overwrite );
 
 	/**
 	 * Move a file from one destination to another
 	 *
 	 * @source The source file path
 	 * @destination The end destination path
+     * @override Flag to overwrite the file at the destination, if it exists. Defaults to true.
+     *
+     * @throws cbfs.FileNotFoundException
 	 *
-	 * @return IDisk
+	 * @return IDiskProvider
 	 */
-	function move( required source, required destination );
+	function move( required source, required destination, boolean overwrite );
 
 	/**
 	 * Rename a file from one destination to another. Shortcut to the `move()` command
 	 *
 	 * @source The source file path
 	 * @destination The end destination path
+     * @override Flag to overwrite the file at the destination, if it exists. Defaults to true.
+     *
+     * @throws cbfs.FileNotFoundException
 	 *
-	 * @return IDisk
+	 * @return IDiskProvider
 	 */
-	function rename( required source, required destination );
+	function rename( required source, required destination, boolean overwrite );
 
 	/**
 	 * Get the contents of a file
 	 *
 	 * @path The file path to retrieve
 	 *
-	 * @throws FileNotFoundException
+	 * @throws cbfs.FileNotFoundException
 	 *
 	 * @return The contents of the file
 	 */
@@ -126,7 +163,7 @@ interface{
 	 *
 	 * @path The file path to retrieve
 	 *
-	 * @throws FileNotFoundException
+	 * @throws cbfs.FileNotFoundException
 	 *
 	 * @return A binary representation of the file
 	 */
@@ -137,12 +174,14 @@ interface{
 	 *
 	 * @path The file/directory path to verify
 	 */
-	boolean function exists( required path );
+	boolean function exists( required string path );
 
 	/**
 	 * Get the URL for the given file
 	 *
-	 * @path The file path to build the URL for
+     * @path The file path to build the URL for
+     *
+	 * @throws cbfs.FileNotFoundException
 	 */
 	string function url( required path );
 
@@ -151,6 +190,8 @@ interface{
 	 *
 	 * @path The file path to build the URL for
 	 * @expiration The number of minutes this URL should be valid for.
+     *
+	 * @throws cbfs.FileNotFoundException
 	 */
 	string function temporaryURL( required path, numeric expiration );
 
@@ -158,6 +199,8 @@ interface{
 	 * Retrieve the size of the file in bytes
 	 *
 	 * @path The file path location
+	 *
+     * @throws cbfs.FileNotFoundException
 	 */
 	numeric function size( required path );
 
@@ -165,6 +208,8 @@ interface{
 	 * Retrieve the file's last modified timestamp
 	 *
 	 * @path The file path location
+     *
+     * @throws cbfs.FileNotFoundException
 	 */
 	function lastModified( required path );
 
@@ -172,6 +217,8 @@ interface{
 	 * Retrieve the file's mimetype
 	 *
 	 * @path The file path location
+     *
+     * @throws cbfs.FileNotFoundException
 	 */
 	function mimeType( required path );
 
@@ -180,10 +227,13 @@ interface{
 	 * shown for it's return.
 	 *
 	 * @path A single file path or an array of file paths
+     * @throwOnMissing Boolean to throw an exception if the file is missing.
 	 *
+	 * @throws cbfs.FileNotFoundException
+     *
 	 * @return boolean or struct report of deletion
 	 */
-	function delete( required path );
+	function delete( required string path, boolean throwOnMissing );
 
 	/**
 	 * Create a new empty file if it does not exist
@@ -191,13 +241,17 @@ interface{
 	 * @path The file path
 	 * @createPath if set to false, expects all parent directories to exist, true will generate necessary directories. Defaults to true.
 	 *
-	 * @return IDisk
+	 * @throws cbfs.PathNotFoundException
+     *
+	 * @return IDiskProvider
 	 */
 	function touch( required path, boolean createpath );
 
 	/**
 	 * Return information about the file.  Will contain keys such as lastModified, size, path, name, type, canWrite, canRead, isHidden and more
 	 *
+	 * @throws cbfs.FileNotFoundException
+     *
 	 * @path The file path
 	 */
 	struct function info( required path );
@@ -207,6 +261,8 @@ interface{
 	 *
 	 * @path The file path
 	 * @algorithm Default is MD5, but SHA-1, SHA-256, and SHA-512 can also be used.
+     *
+	 * @throws cbfs.FileNotFoundException
 	 */
 	string function checksum( required path, algorithm );
 
@@ -228,6 +284,8 @@ interface{
 	 * Is the path a file or not
 	 *
 	 * @path The file path
+     *
+	 * @throws cbfs.FileNotFoundException
 	 */
 	boolean function isFile( required path );
 
@@ -306,7 +364,7 @@ interface{
 	 * @createPath Create parent directory paths when they do not exist
 	 * @ignoreExists If false, it will throw an error if the directory already exists, else it ignores it if it exists. This should default to true.
 	 *
-	 * @return IDisk
+	 * @return IDiskProvider
 	 */
 	function createDirectory( required directory, boolean createPath, boolean ignoreExists );
 
@@ -324,7 +382,7 @@ interface{
 	 * @filter A string wildcard or a lambda/closure that receives the file path and should return true to copy it.
 	 * @createPath If false, expects all parent directories to exist, true will generate all necessary directories. Default is true.
 	 *
-	 * @return IDisk
+	 * @return IDiskProvider
 	 */
 	function copyDirectory(
 		required source,
@@ -341,7 +399,7 @@ interface{
 	 * @newPath The destination directory
 	 * @createPath If false, expects all parent directories to exist, true will generate all necessary directories. Default is true.
 	 *
-	 * @return IDisk
+	 * @return IDiskProvider
 	 */
 	function moveDirectory(
 		required oldPath,
@@ -356,7 +414,7 @@ interface{
 	 * @newPath The destination directory
 	 * @createPath If false, expects all parent directories to exist, true will generate all necessary directories. Default is true.
 	 *
-	 * @return IDisk
+	 * @return IDiskProvider
 	 */
 	function renameDirectory(
 		required oldPath,
@@ -379,7 +437,7 @@ interface{
 	 *
 	 * @directory The directory
 	 *
-	 * @return IDisk
+	 * @return IDiskProvider
 	 */
 	function cleanDirectory( required directory );
 

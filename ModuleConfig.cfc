@@ -20,7 +20,11 @@ component {
 	/**
 	* Configure this module
 	*/
-	function configure(){
+	function configure() {
+        settings = {
+            "disks": {}
+        };
+        binder.getInjector().registerDSL( "cbfs", "#moduleMapping#.models.dsl.cbfsDSL" );
 	}
 
 	/**

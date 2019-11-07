@@ -31,7 +31,20 @@
 			//Application Aspects
 			handlerCaching 			= false,
 			eventCaching			= false
-		};
+        };
+
+        moduleSettings = {
+            "cbfs": {
+                "disks": {
+                    "local": {
+                        "provider": "LocalProvider@cbfs",
+                        "properties": {
+                            "path": expandPath( "/root/tests/storage" )
+                        }
+                    }
+                }
+            }
+        };
 
 		// environment settings, create a detectEnvironment() method to detect it yourself.
 		// create a function with the name of the environment so it can be executed if that environment is detected
@@ -76,10 +89,10 @@
 	 * Load the Module you are testing
 	 */
 	function afterAspectsLoad( event, interceptData, rc, prc ){
-		controller.getModuleService()
-			.registerAndActivateModule(
-				moduleName 		= request.MODULE_NAME,
-				invocationPath 	= "moduleroot"
+        controller.getModuleService()
+            .registerAndActivateModule(
+                moduleName 		= request.MODULE_NAME,
+                invocationPath 	= "moduleroot"
 			);
 	}
 

@@ -10,9 +10,7 @@ env:
     - MODULE_ID=cbfs
     - TARGET_VERSION=1.0.0
   matrix:
-    - ENGINE=lucee@45
     - ENGINE=lucee@5
-    - ENGINE=adobe@11
     - ENGINE=adobe@2016
     - ENGINE=adobe@2018
 
