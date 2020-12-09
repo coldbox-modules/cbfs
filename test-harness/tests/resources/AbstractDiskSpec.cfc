@@ -1,8 +1,8 @@
 component extends="coldbox.system.testing.BaseTestCase" {
 
-	function run() {
-		describe( "abstract disk spec", function() {
-			it( "can be created", function() {
+    function run() {
+        describe( "abstract disk spec", function() {
+            it( "can be created", function() {
                 expect( getDisk() ).toBeComponent();
             } );
 
@@ -10,11 +10,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
                 it( "can get the contents of a file", function() {
                     var disk = getDisk();
                     var path = "test_file.txt";
-                    disk.create(
-                        path = path,
-                        contents = "my contents",
-                        overwrite = true
-                    );
+                    disk.create( path = path, contents = "my contents", overwrite = true );
                     expect( disk.get( path ) ).toBe( "my contents" );
                 } );
             } );
@@ -23,27 +19,21 @@ component extends="coldbox.system.testing.BaseTestCase" {
                 var disk = getDisk();
                 var path = "test_file.txt";
                 disk.delete( path );
-                expect( disk.exists( path ) )
-                    .toBeFalse( "#path# should not exist" );
+                expect( disk.exists( path ) ).toBeFalse( "#path# should not exist" );
                 disk.create( path, "my contents" );
                 expect( function() {
                     disk.create( path, "does not matter" );
                 } ).toThrow( "cbfs.FileOverrideException" );
             } );
 
-            it( "throws an exception when trying to create a file that already exists without the overwrite flag", function() {
+            it( "does not throw an exception when trying to create a file that already exists with the overwrite flag", function() {
                 var disk = getDisk();
                 var path = "test_file.txt";
                 disk.delete( path );
-                expect( disk.exists( path ) )
-                    .toBeFalse( "#path# should not exist" );
+                expect( disk.exists( path ) ).toBeFalse( "#path# should not exist" );
                 disk.create( path, "my contents" );
                 expect( function() {
-                    disk.create(
-                        path = path,
-                        contents = "new content",
-                        overwrite = true
-                    );
+                    disk.create( path = path, contents = "new content", overwrite = true );
                 } ).notToThrow( "cbfs.FileOverrideException" );
                 expect( disk.get( path ) ).toBe( "new content" );
             } );
@@ -53,11 +43,9 @@ component extends="coldbox.system.testing.BaseTestCase" {
                     var disk = getDisk();
                     var path = "test_file.txt";
                     disk.delete( path );
-                    expect( disk.exists( path ) )
-                        .toBeFalse( "#path# should not exist" );
+                    expect( disk.exists( path ) ).toBeFalse( "#path# should not exist" );
                     disk.create( path, "my contents" );
-                    expect( disk.exists( path ) )
-                        .toBeTrue( "#path# should exist" );
+                    expect( disk.exists( path ) ).toBeTrue( "#path# should exist" );
                 } );
 
                 it( "can verify a directory exists", function() {
@@ -65,11 +53,9 @@ component extends="coldbox.system.testing.BaseTestCase" {
                     var filePath = "/one/two/test_file.txt";
                     var directoryPath = "/one/two/";
                     disk.deleteDirectory( "/one/" );
-                    expect( disk.exists( directoryPath ) )
-                        .toBeFalse( "#directoryPath# should not exist" );
+                    expect( disk.exists( directoryPath ) ).toBeFalse( "#directoryPath# should not exist" );
                     disk.create( filePath, "my contents" );
-                    expect( disk.exists( directoryPath ) )
-                        .toBeTrue( "#directoryPath# should exist" );
+                    expect( disk.exists( directoryPath ) ).toBeTrue( "#directoryPath# should exist" );
                 } );
             } );
 
@@ -77,23 +63,17 @@ component extends="coldbox.system.testing.BaseTestCase" {
                 var disk = getDisk();
                 var path = "test_file.txt";
                 disk.delete( path );
-                expect( disk.exists( path ) )
-                    .toBeFalse( "#path# should not exist" );
+                expect( disk.exists( path ) ).toBeFalse( "#path# should not exist" );
                 disk.create( path, "my contents" );
                 disk.delete( path );
-                expect( disk.exists( path ) )
-                    .toBeFalse( "#path# should not exist" );
+                expect( disk.exists( path ) ).toBeFalse( "#path# should not exist" );
             } );
 
             describe( "prepend", function() {
                 it( "can prepend contents to the beginning of a file", function() {
                     var disk = getDisk();
                     var path = "test_file.txt";
-                    disk.create(
-                        path = path,
-                        contents = "my contents",
-                        overwrite = true
-                    );
+                    disk.create( path = path, contents = "my contents", overwrite = true );
                     disk.prepend( path, "these are " );
                     expect( disk.get( path ) ).toBe( "these are my contents" );
                 } );
@@ -111,11 +91,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
                     var path = "test_file.txt";
                     disk.delete( path );
                     expect( function() {
-                        disk.prepend(
-                            path = path,
-                            contents = "does not matter",
-                            throwOnMissing = true
-                        );
+                        disk.prepend( path = path, contents = "does not matter", throwOnMissing = true );
                     } ).toThrow( "cbfs.FileNotFoundException" );
                 } );
             } );
@@ -124,11 +100,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
                 it( "can append contents to the beginning of a file", function() {
                     var disk = getDisk();
                     var path = "test_file.txt";
-                    disk.create(
-                        path = path,
-                        contents = "my contents",
-                        overwrite = true
-                    );
+                    disk.create( path = path, contents = "my contents", overwrite = true );
                     disk.append( path, " are awesome" );
                     expect( disk.get( path ) ).toBe( "my contents are awesome" );
                 } );
@@ -146,11 +118,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
                     var path = "test_file.txt";
                     disk.delete( path );
                     expect( function() {
-                        disk.append(
-                            path = path,
-                            contents = "does not matter",
-                            throwOnMissing = true
-                        );
+                        disk.append( path = path, contents = "does not matter", throwOnMissing = true );
                     } ).toThrow( "cbfs.FileNotFoundException" );
                 } );
             } );
@@ -159,12 +127,10 @@ component extends="coldbox.system.testing.BaseTestCase" {
                 it( "can copy a file from one location to another", function() {
                     var disk = getDisk();
                     var oldPath = "test_file.txt";
-                    disk.create(
-                        path = oldPath,
-                        contents = "my contents",
-                        overwrite = true
-                    );
                     var newPath = "test_file_two.txt";
+                    disk.delete( oldPath );
+                    disk.delete( newPath );
+                    disk.create( path = oldPath, contents = "my contents", overwrite = true );
                     disk.copy( oldPath, newPath );
                     expect( disk.get( newPath ) ).toBe( disk.get( oldPath ) );
                 } );
@@ -185,11 +151,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
                 it( "can move a file from one location to another", function() {
                     var disk = getDisk();
                     var oldPath = "test_file.txt";
-                    disk.create(
-                        path = oldPath,
-                        contents = "my contents",
-                        overwrite = true
-                    );
+                    disk.create( path = oldPath, contents = "my contents", overwrite = true );
                     var newPath = "test_file_two.txt";
                     disk.move( oldPath, newPath );
                     expect( disk.get( newPath ) ).toBe( "my contents" );
@@ -210,12 +172,10 @@ component extends="coldbox.system.testing.BaseTestCase" {
                 it( "can rename a file", function() {
                     var disk = getDisk();
                     var oldPath = "test_file.txt";
-                    disk.create(
-                        path = oldPath,
-                        contents = "my contents",
-                        overwrite = true
-                    );
                     var newPath = "test_file_two.txt";
+                    disk.delete( oldPath );
+                    disk.delete( newPath );
+                    disk.create( path = oldPath, contents = "my contents", overwrite = true );
                     disk.rename( oldPath, newPath );
                     expect( disk.get( newPath ) ).toBe( "my contents" );
                     expect( disk.exists( oldPath ) ).toBeFalse( "Source path [#oldPath#] should no longer exist." );
@@ -235,11 +195,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
                 it( "can retrieve the url for a file", function() {
                     var disk = getDisk();
                     var path = "test_file.txt";
-                    disk.create(
-                        path = path,
-                        contents = "my contents",
-                        overwrite = true
-                    );
+                    disk.create( path = path, contents = "my contents", overwrite = true );
                     expect( disk.url( path ) ).toBe( retrieveUrlForTest( path ) );
                 } );
 
@@ -258,11 +214,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
                 it( "can retrieve the temporary url for a file", function() {
                     var disk = getDisk();
                     var path = "test_file.txt";
-                    disk.create(
-                        path = path,
-                        contents = "my contents",
-                        overwrite = true
-                    );
+                    disk.create( path = path, contents = "my contents", overwrite = true );
                     expect( disk.temporaryURL( path ) ).toBe( retrieveTemporaryUrlForTest( path ) );
                 } );
 
@@ -282,11 +234,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
                     var disk = getDisk();
                     var path = "test_file.txt";
                     var contents = "my contents";
-                    disk.create(
-                        path = path,
-                        contents = contents,
-                        overwrite = true
-                    );
+                    disk.create( path = path, contents = contents, overwrite = true );
                     expect( disk.exists( path ) ).toBeTrue( "[#path#] should exist." );
                     expect( disk.size( path ) ).toBe( retireveSizeForTest( path, contents ) );
                 } );
@@ -306,11 +254,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
                     var path = "test_file.txt";
                     var contents = "my contents";
                     var before = getEpochTimeFromLocal();
-                    disk.create(
-                        path = path,
-                        contents = contents,
-                        overwrite = true
-                    );
+                    disk.create( path = path, contents = contents, overwrite = true );
                     var after = getEpochTimeFromLocal();
                     expect( getEpochTimeFromLocal( disk.lastModified( path ) ) ).toBeGTE( before );
                     expect( getEpochTimeFromLocal( disk.lastModified( path ) ) ).toBeLTE( after );
@@ -329,11 +273,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
                 it( "can retrieve the mime type of a file", function() {
                     var disk = getDisk();
                     var path = "test_file.txt";
-                    disk.create(
-                        path = path,
-                        contents = "my contents",
-                        overwrite = true
-                    );
+                    disk.create( path = path, contents = "my contents", overwrite = true );
                     expect( disk.mimeType( path ) ).toBe( "text/plain" );
                 } );
 
@@ -362,11 +302,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
                     var disk = getDisk();
                     var path = "test_file.txt";
                     disk.delete( path );
-                    disk.create(
-                        path = path,
-                        contents = "my contents",
-                        overwrite = true
-                    );
+                    disk.create( path = path, contents = "my contents", overwrite = true );
                     var originalLastModified = disk.lastModified( path );
                     sleep( 1010 );
                     disk.touch( path );
@@ -402,11 +338,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
                 it( "can retrieve the info about a file", function() {
                     var disk = getDisk();
                     var path = "test_file.txt";
-                    disk.create(
-                        path = path,
-                        contents = "my contents",
-                        overwrite = true
-                    );
+                    disk.create( path = path, contents = "my contents", overwrite = true );
                     var info = disk.info( path );
                     expect( info ).toHaveKey( "lastModified" );
                     expect( info ).toHaveKey( "size" );
@@ -432,11 +364,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
                     var disk = getDisk();
                     var path = "test_file.txt";
                     var contents = "my contents";
-                    disk.create(
-                        path = path,
-                        contents = contents,
-                        overwrite = true
-                    );
+                    disk.create( path = path, contents = contents, overwrite = true );
                     expect( disk.checksum( path ) ).toBe( hash( contents, "MD5" ) );
                     expect( disk.checksum( path, "SHA-256" ) ).toBe( hash( contents, "SHA-256" ) );
                 } );
@@ -490,11 +418,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
                     var disk = getDisk();
                     var path = "/one/two/writeable.txt";
                     disk.delete( path );
-                    disk.create(
-                        path = path,
-                        contents = "my contents",
-                        overwrite = true
-                    );
+                    disk.create( path = path, contents = "my contents", overwrite = true );
                     var writablePath = getWritablePathForTest( disk, path );
                     expect( disk.isWritable( writablePath ) ).toBeTrue( "Path should be writable." );
                 } );
@@ -503,11 +427,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
                     var disk = getDisk();
                     var path = "/one/two/non-writeable.txt";
                     disk.delete( path );
-                    disk.create(
-                        path = path,
-                        contents = "my contents",
-                        overwrite = true
-                    );
+                    disk.create( path = path, contents = "my contents", overwrite = true );
                     var nonWritablePath = getNonWritablePathForTest( disk, path );
                     expect( disk.isWritable( nonWritablePath ) ).toBeFalse( "Path should not be writable." );
                 } );
@@ -518,11 +438,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
                     var disk = getDisk();
                     var path = "/one/two/readable.txt";
                     disk.delete( path );
-                    disk.create(
-                        path = path,
-                        contents = "my contents",
-                        overwrite = true
-                    );
+                    disk.create( path = path, contents = "my contents", overwrite = true );
                     var readablePath = getReadablePathForTest( disk, path );
                     expect( disk.isReadable( readablePath ) ).toBeTrue( "Path should be readable." );
                 } );
@@ -531,16 +447,12 @@ component extends="coldbox.system.testing.BaseTestCase" {
                     var disk = getDisk();
                     var path = "/one/two/non-readble.txt";
                     disk.delete( path );
-                    disk.create(
-                        path = path,
-                        contents = "my contents",
-                        overwrite = true
-                    );
+                    disk.create( path = path, contents = "my contents", overwrite = true );
                     var nonReadablePath = getNonReadablePathForTest( disk, path );
                     expect( disk.isReadable( nonReadablePath ) ).toBeFalse( "Path should not be readable." );
                 } );
             } );
-		} );
+        } );
     }
 
     function getDisk() {
@@ -577,16 +489,14 @@ component extends="coldbox.system.testing.BaseTestCase" {
 
     /**
      * Returns the number of seconds since January 1, 1970, 00:00:00 (Epoch time).
-     * 
+     *
      * @param DateTime      Date/time object you want converted to Epoch time. (Required)
-     * @return Returns a numeric value. 
-     * @author Rob Brooks-Bilson (rbils@amkor.com) 
-     * @version 1, June 21, 2002 
+     * @return Returns a numeric value.
+     * @author Rob Brooks-Bilson (rbils@amkor.com)
+     * @version 1, June 21, 2002
      */
     function getEpochTimeFromLocal( datetime = now() ) {
-        return dateDiff( "s", DateConvert( "utc2Local", "January 1 1970 00:00" ), datetime );
+        return dateDiff( "s", dateConvert( "utc2Local", "January 1 1970 00:00" ), datetime );
     }
-  
-
 
 }

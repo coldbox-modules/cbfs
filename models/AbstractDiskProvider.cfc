@@ -6,12 +6,12 @@ component accessors="true" {
     property name="streamBuilder" inject="StreamBuilder@cbstreams";
 
     /**
-	 * Configure the provider. Usually called at startup.
-	 *
-	 * @properties A struct of configuration data for this provider, usually coming from the configuration file
-	 *
-	 * @return IDiskProvider
-	 */
+     * Configure the provider. Usually called at startup.
+     *
+     * @properties A struct of configuration data for this provider, usually coming from the configuration file
+     *
+     * @return IDiskProvider
+     */
     public IDisk function configure( required string name, struct properties = {} ) {
         setName( arguments.name );
         setProperties( arguments.properties );
@@ -27,31 +27,31 @@ component accessors="true" {
     }
 
     /**
-	 * Create a file in the disk
-	 *
-	 * @path The file path to use for storage
-	 * @contents The contents of the file to store
-	 * @visibility The storage visibility of the file, available options are `public, private, readonly` or a custom data type the implemented driver can interpret
-	 * @metadata Struct of metadata to store with the file
-	 * @overwrite If we should overwrite the files or not at the destination if they exist, defaults to true
-	 *
-	 * @return IDiskProvider
-	 */
-	function create(
-		required path,
-		required contents,
-		visibility,
-		struct metadata,
-		boolean overwrite
-	) {
-        if ( ! len(arguments.overwrite) && this.exists( arguments.path ) ) {
+     * Create a file in the disk
+     *
+     * @path The file path to use for storage
+     * @contents The contents of the file to store
+     * @visibility The storage visibility of the file, available options are `public, private, readonly` or a custom data type the implemented driver can interpret
+     * @metadata Struct of metadata to store with the file
+     * @overwrite If we should overwrite the files or not at the destination if they exist, defaults to true
+     *
+     * @return IDiskProvider
+     */
+    function create(
+        required path,
+        required contents,
+        visibility,
+        struct metadata,
+        boolean overwrite
+    ) {
+        if ( !len( arguments.overwrite ) && this.exists( arguments.path ) ) {
             throw(
                 type = "cbfs.FileOverrideException",
                 message = "Cannot create file. File already exists [#arguments.path#]"
             );
         }
         ensureDirectoryExists( arguments.path );
-	    fileWrite( buildPath( arguments.path ), arguments.contents );
+        fileWrite( buildPath( arguments.path ), arguments.contents );
 
         return this;
     }
@@ -78,35 +78,28 @@ component accessors="true" {
     }
 
     /**
-	 * Prepend contents to the beginning of a file
-	 *
-	 * @path The file path to use for storage
-	 * @contents The contents of the file to prepend
-	 * @metadata Struct of metadata to store with the file
+     * Prepend contents to the beginning of a file
+     *
+     * @path The file path to use for storage
+     * @contents The contents of the file to prepend
+     * @metadata Struct of metadata to store with the file
      * @throwOnMissing Boolean flag to throw if the file is missing. Otherwise it will be created if missing.
      *
      * @throws cbfs.FileNotFoundException
-	 *
-	 * @return IDiskProvider
-	 */
-	function prepend(
+     *
+     * @return IDiskProvider
+     */
+    function prepend(
         required string path,
         required contents,
         struct metadata = {},
         boolean throwOnMissing = false
     ) {
-        if ( ! this.exists( arguments.path ) ) {
+        if ( !this.exists( arguments.path ) ) {
             if ( arguments.throwOnMissing ) {
-                throw(
-                    type = "cbfs.FileNotFoundException",
-                    message = "File [#arguments.path#] not found."
-                );
+                throw( type = "cbfs.FileNotFoundException", message = "File [#arguments.path#] not found." );
             }
-            return this.create(
-                path = arguments.path,
-                contents = arguments.contents,
-                metadata = arguments.metadata
-            );
+            return this.create( path = arguments.path, contents = arguments.contents, metadata = arguments.metadata );
         }
         return this.create(
             path = arguments.path,
@@ -116,35 +109,28 @@ component accessors="true" {
     }
 
     /**
-	 * Append contents to the end of a file
-	 *
-	 * @path The file path to use for storage
-	 * @contents The contents of the file to append
-	 * @metadata Struct of metadata to store with the file
+     * Append contents to the end of a file
+     *
+     * @path The file path to use for storage
+     * @contents The contents of the file to append
+     * @metadata Struct of metadata to store with the file
      * @throwOnMissing Boolean flag to throw if the file is missing. Otherwise it will be created if missing.
      *
      * @throws cbfs.FileNotFoundException
-	 *
-	 * @return IDiskProvider
-	 */
-	function append(
+     *
+     * @return IDiskProvider
+     */
+    function append(
         required string path,
         required contents,
         struct metadata = {},
         boolean throwOnMissing = false
     ) {
-        if ( ! this.exists( arguments.path ) ) {
+        if ( !this.exists( arguments.path ) ) {
             if ( arguments.throwOnMissing ) {
-                throw(
-                    type = "cbfs.FileNotFoundException",
-                    message = "File [#arguments.path#] not found."
-                );
+                throw( type = "cbfs.FileNotFoundException", message = "File [#arguments.path#] not found." );
             }
-            return this.create(
-                path = arguments.path,
-                contents = arguments.contents,
-                metadata = arguments.metadata
-            );
+            return this.create( path = arguments.path, contents = arguments.contents, metadata = arguments.metadata );
         }
         return this.create(
             path = arguments.path,
@@ -154,17 +140,17 @@ component accessors="true" {
     }
 
     /**
-	 * Copy a file from one destination to another
-	 *
-	 * @source The source file path
-	 * @destination The end destination path
+     * Copy a file from one destination to another
+     *
+     * @source The source file path
+     * @destination The end destination path
      * @overwrite Flag to overwrite the file at the destination, if it exists. Defaults to true.
      *
      * @throws cbfs.FileNotFoundException
-	 *
-	 * @return IDiskProvider
-	 */
-	function copy( required source, required destination, boolean overwrite = false ) {
+     *
+     * @return IDiskProvider
+     */
+    function copy( required source, required destination, boolean overwrite = false ) {
         return this.create(
             path = arguments.destination,
             contents = this.get( arguments.source ),
@@ -172,17 +158,17 @@ component accessors="true" {
         );
     }
 
-	/**
-	 * Move a file from one destination to another
-	 *
-	 * @source The source file path
-	 * @destination The end destination path
+    /**
+     * Move a file from one destination to another
+     *
+     * @source The source file path
+     * @destination The end destination path
      *
      * @throws cbfs.FileNotFoundException
-	 *
-	 * @return IDiskProvider
-	 */
-	function move( required source, required destination, boolean overwrite = false ) {
+     *
+     * @return IDiskProvider
+     */
+    function move( required source, required destination, boolean overwrite = false ) {
         this.create(
             path = arguments.destination,
             contents = this.get( arguments.source ),
@@ -191,30 +177,30 @@ component accessors="true" {
         return this.delete( arguments.source );
     }
 
-	/**
-	 * Rename a file from one destination to another. Shortcut to the `move()` command
-	 *
-	 * @source The source file path
-	 * @destination The end destination path
+    /**
+     * Rename a file from one destination to another. Shortcut to the `move()` command
+     *
+     * @source The source file path
+     * @destination The end destination path
      *
      * @throws cbfs.FileNotFoundException
-	 *
-	 * @return IDiskProvider
-	 */
-	function rename( required source, required destination, boolean overwrite = false ) {
+     *
+     * @return IDiskProvider
+     */
+    function rename( required source, required destination, boolean overwrite = false ) {
         return this.move( argumentCollection = arguments );
     }
 
     /**
-	 * Get the contents of a file
-	 *
-	 * @path The file path to retrieve
-	 *
-	 * @throws cbfs.FileNotFoundException
-	 *
-	 * @return The contents of the file
-	 */
-	any function get( required path ) {
+     * Get the contents of a file
+     *
+     * @path The file path to retrieve
+     *
+     * @throws cbfs.FileNotFoundException
+     *
+     * @return The contents of the file
+     */
+    any function get( required path ) {
         ensureFileExists( arguments.path );
         return fileRead( buildPath( arguments.path ) );
     }
@@ -233,56 +219,53 @@ component accessors="true" {
     }
 
     /**
-	 * Validate if a file/directory exists
-	 *
-	 * @path The file/directory path to verify
-	 */
+     * Validate if a file/directory exists
+     *
+     * @path The file/directory path to verify
+     */
     boolean function exists( required string path ) {
-    	if( isDirectory( arguments.path ) ){
-        	return directoryExists( buildPath( arguments.path ) );
-    	}
-    	try{
-        	return fileExists( buildPath( arguments.path ) );
-    	}catch( any e ){
-            throw(
-                type = "cbfs.FileNotFoundException",
-                message = "File [#arguments.path#] not found."
-            );
-    	}
+        if ( isDirectory( arguments.path ) ) {
+            return directoryExists( buildPath( arguments.path ) );
+        }
+        try {
+            return fileExists( buildPath( arguments.path ) );
+        } catch ( any e ) {
+            throw( type = "cbfs.FileNotFoundException", message = "File [#arguments.path#] not found." );
+        }
     }
 
     /**
-	 * Get the URL for the given file
-	 *
-	 * @throws cbfs.FileNotFoundException
+     * Get the URL for the given file
      *
-	 * @path The file path to build the URL for
-	 */
-	public string function url( required string path ) {
+     * @throws cbfs.FileNotFoundException
+     *
+     * @path The file path to build the URL for
+     */
+    public string function url( required string path ) {
         ensureFileExists( arguments.path );
         return arguments.path;
     }
 
     /**
-	 * Get a temporary URL for the given file
-	 *
-	 * @path The file path to build the URL for
-	 * @expiration The number of minutes this URL should be valid for.
+     * Get a temporary URL for the given file
      *
-	 * @throws cbfs.FileNotFoundException
-	 */
-	string function temporaryURL( required path, numeric expiration ) {
+     * @path The file path to build the URL for
+     * @expiration The number of minutes this URL should be valid for.
+     *
+     * @throws cbfs.FileNotFoundException
+     */
+    string function temporaryURL( required path, numeric expiration ) {
         return this.url( arguments.path );
     }
 
     /**
-	 * Retrieve the size of the file in bytes
-	 *
-	 * @path The file path location
-	 *
+     * Retrieve the size of the file in bytes
+     *
+     * @path The file path location
+     *
      * @throws cbfs.FileNotFoundException
-	 */
-	numeric function size( required path ) {
+     */
+    numeric function size( required path ) {
         return this.info( arguments.path ).size;
     }
 
@@ -299,38 +282,33 @@ component accessors="true" {
 
     function mimeType( required path ) {
         ensureFileExists( arguments.path );
-        return createObject( "java", "java.net.URLConnection" )
-            .guessContentTypeFromName( arguments.path );
+        return createObject( "java", "java.net.URLConnection" ).guessContentTypeFromName( arguments.path );
     }
-    
+
     public boolean function delete( required string path, boolean throwOnMissing = false ) {
         throw( "Implement in a subclass" );
     }
 
     /**
-	 * Create a new empty file if it does not exist
-	 *
-	 * @path The file path
-	 * @createPath if set to false, expects all parent directories to exist, true will generate necessary directories. Defaults to true.
-	 *
-	 * @throws cbfs.PathNotFoundException
+     * Create a new empty file if it does not exist
      *
-	 * @return IDiskProvider
-	 */
-	function touch( required path, boolean createPath = true ) {
+     * @path The file path
+     * @createPath if set to false, expects all parent directories to exist, true will generate necessary directories. Defaults to true.
+     *
+     * @throws cbfs.PathNotFoundException
+     *
+     * @return IDiskProvider
+     */
+    function touch( required path, boolean createPath = true ) {
         if ( this.exists( arguments.path ) ) {
             var fileContent = this.get( arguments.path );
-            this.create( 
-                path=arguments.path, 
-                contents=fileContent,
-                overwrite=true 
-            );
+            this.create( path = arguments.path, contents = fileContent, overwrite = true );
             return this;
         }
-        if ( ! createPath ) {
+        if ( !createPath ) {
             var pathParts = path.listToArray( "/" );
             var directoryPath = "/" & pathParts.slice( 1, pathParts.len() - 1 ).toList( "/" );
-            if ( ! this.exists( directoryPath ) ) {
+            if ( !this.exists( directoryPath ) ) {
                 throw(
                     type = "cbfs.PathNotFoundException",
                     message = "Directory does not already exist and the `createPath` flag is set to false"
@@ -434,8 +412,8 @@ component accessors="true" {
      *
      * @return Stream object: See https://apidocs.ortussolutions.com/coldbox-modules/cbstreams/1.1.0/index.html
      */
-    function stream( required path ){
-        return streamBuilder.new().ofFile( buildPath( arguments.path ) );   
+    function stream( required path ) {
+        return streamBuilder.new().ofFile( buildPath( arguments.path ) );
     };
 
     /**
@@ -463,11 +441,11 @@ component accessors="true" {
      *
      * @path The directory path
      */
-    boolean function isDirectory( required path ){
+    boolean function isDirectory( required path ) {
         try {
             return getFileInfo( buildPath( arguments.path ) ).type == "directory";
-        } catch( any e ) {
-            return false
+        } catch ( any e ) {
+            return false;
         }
     };
 
@@ -507,7 +485,7 @@ component accessors="true" {
         any filter,
         boolean createPath
     ) {
-        throw( "Implement in a subclass" );  
+        throw( "Implement in a subclass" );
     };
 
     /**
@@ -519,11 +497,7 @@ component accessors="true" {
      *
      * @return IDiskProvider
      */
-    function moveDirectory(
-        required oldPath,
-        required newPath,
-        boolean createPath
-    ) {
+    function moveDirectory( required oldPath, required newPath, boolean createPath ) {
         throw( "Implement in a subclass" );
     }
 
@@ -536,11 +510,7 @@ component accessors="true" {
      *
      * @return IDiskProvider
      */
-    function renameDirectory(
-        required oldPath,
-        required newPath,
-        boolean createPath
-    ) {
+    function renameDirectory( required oldPath, required newPath, boolean createPath ) {
         throw( "Implement in a subclass" );
     }
 
@@ -580,7 +550,12 @@ component accessors="true" {
      * @sort Columns by which to sort. e.g. Directory, Size DESC, DateLastModified.
      * @recurse Recurse into subdirectories, default is false
      */
-    array function contents( required directory, any filter, sort, boolean recurse ) {
+    array function contents(
+        required directory,
+        any filter,
+        sort,
+        boolean recurse
+    ) {
         throw( "Implement in a subclass" );
     }
 
@@ -595,7 +570,7 @@ component accessors="true" {
     array function allContents( required directory, any filter, sort ) {
         arguments.recurse = true;
         arguments.map = false;
-        return this.contents( argumentCollection = arguments )
+        return this.contents( argumentCollection = arguments );
     }
 
     /**
@@ -606,10 +581,15 @@ component accessors="true" {
      * @sort Columns by which to sort. e.g. Directory, Size DESC, DateLastModified.
      * @recurse Recurse into subdirectories, default is false
      */
-    array function files( required directory, any filter, sort, boolean recurse ) {
+    array function files(
+        required directory,
+        any filter,
+        sort,
+        boolean recurse
+    ) {
         arguments.type = "file";
         arguments.map = false;
-        return this.contents( argumentCollection = arguments )
+        return this.contents( argumentCollection = arguments );
     };
 
     /**
@@ -620,10 +600,15 @@ component accessors="true" {
      * @sort Columns by which to sort. e.g. Directory, Size DESC, DateLastModified.
      * @recurse Recurse into subdirectories, default is false
      */
-    array function directories( required directory, any filter, sort, boolean recurse ) {
+    array function directories(
+        required directory,
+        any filter,
+        sort,
+        boolean recurse
+    ) {
         arguments.type = "directory";
         arguments.map = false;
-        return this.contents( argumentCollection = arguments )
+        return this.contents( argumentCollection = arguments );
     };
 
     /**
@@ -636,7 +621,7 @@ component accessors="true" {
     array function allFiles( required directory, any filter, sort ) {
         arguments.recurse = true;
         arguments.map = false;
-        this.files( argumentCollection = arguments )
+        this.files( argumentCollection = arguments );
     };
 
     /**
@@ -649,7 +634,7 @@ component accessors="true" {
     array function allDirectories( required directory, any filter, sort ) {
         arguments.recurse = true;
         arguments.map = false;
-        this.directories( argumentCollection = arguments )
+        this.directories( argumentCollection = arguments );
     };
 
     /**
@@ -667,9 +652,14 @@ component accessors="true" {
      * @sort Columns by which to sort. e.g. Directory, Size DESC, DateLastModified.
      * @recurse Recurse into subdirectories, default is false
      */
-    array function filesMap( required directory, any filter, sort, boolean recurse ) {
+    array function filesMap(
+        required directory,
+        any filter,
+        sort,
+        boolean recurse
+    ) {
         arguments.map = true;
-        this.files( argumentCollection = arguments )
+        this.files( argumentCollection = arguments );
     };
 
     /**
@@ -689,7 +679,7 @@ component accessors="true" {
     array function allFilesMap( required directory, any filter, sort ) {
         arguments.map = true;
         arguments.recurse = true;
-        this.filesMap( argumentCollection = arguments )
+        this.filesMap( argumentCollection = arguments );
     };
 
     /**
@@ -707,9 +697,14 @@ component accessors="true" {
      * @sort Columns by which to sort. e.g. Directory, Size DESC, DateLastModified.
      * @recurse Recurse into subdirectories, default is false
      */
-    array function directoriesMap( required directory, any filter, sort, boolean recurse ) {
+    array function directoriesMap(
+        required directory,
+        any filter,
+        sort,
+        boolean recurse
+    ) {
         arguments.map = true;
-        this.directories( argumentCollection = arguments )
+        this.directories( argumentCollection = arguments );
     };
 
     /**
@@ -728,7 +723,7 @@ component accessors="true" {
      */
     array function allDirectoriesMap( required directory, any filter, sort ) {
         arguments.recurse = false;
-        this.directoriesMap( argumentCollection = arguments )
+        this.directoriesMap( argumentCollection = arguments );
     };
 
     /**
@@ -746,9 +741,14 @@ component accessors="true" {
      * @sort Columns by which to sort. e.g. Directory, Size DESC, DateLastModified.
      * @recurse Recurse into subdirectories, default is false
      */
-    array function contentsMap( required directory, any filter, sort, boolean recurse ) {
+    array function contentsMap(
+        required directory,
+        any filter,
+        sort,
+        boolean recurse
+    ) {
         arguments.map = true;
-        this.contents( argumentCollection = arguments )
+        this.contents( argumentCollection = arguments );
     };
 
     /**
@@ -767,7 +767,7 @@ component accessors="true" {
      */
     array function allContentsMap( required directory, any filter, sort ) {
         arguments.recurse = true;
-        this.contentsMap( argumentCollection = arguments )
+        this.contentsMap( argumentCollection = arguments );
     };
 
     /************************* PRIVATE METHODS *******************************/
@@ -778,29 +778,26 @@ component accessors="true" {
     }
 
     private function ensureFileExists( required path ) {
-        if ( ! this.exists( arguments.path ) ) {
-            throw(
-                type = "cbfs.FileNotFoundException",
-                message = "File [#arguments.path#] not found."
-            );
+        if ( !this.exists( arguments.path ) ) {
+            throw( type = "cbfs.FileNotFoundException", message = "File [#arguments.path#] not found." );
         }
     }
 
     private function ensureDirectoryExists( required path ) {
-    	var p = buildPath( arguments.path );
-		var directoryPath = replaceNoCase( p, GetFileFromPath( p ), "" );
+        var p = buildPath( arguments.path );
+        var directoryPath = replaceNoCase( p, getFileFromPath( p ), "" );
 
-        if ( ! directoryExists( directoryPath ) ) {
-        	directoryCreate( directoryPath );
+        if ( !directoryExists( directoryPath ) ) {
+            directoryCreate( directoryPath );
         }
     }
 
     /**
      * Check if is Windows
      */
-    private function isWindows(){
-        var system = createObject("java", "java.lang.System");
-        return reFindNoCase( "Windows", system.getProperties()["os.name"] );
+    private function isWindows() {
+        var system = createObject( "java", "java.lang.System" );
+        return reFindNoCase( "Windows", system.getProperties()[ "os.name" ] );
     }
 
 }
