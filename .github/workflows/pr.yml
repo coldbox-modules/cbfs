@@ -45,14 +45,14 @@ jobs:
         run: |
           cd test-harness
           pwd
-          box server start cfengine=${{ matrix.cfengine }} --noSaveSettings
+          box server start cfengine=${{ matrix.cfengine }} port=8500 --noSaveSettings
 
       - name: Run TestBox Tests
         run: |
           cd test-harness
           pwd
           box server status
-          box testbox run
+          box testbox run runner="http://localhost:8500/tests/runner.cfm"
 
   format:
     runs-on: ubuntu-latest
