@@ -30,13 +30,19 @@ jobs:
       - name: Install dependencies
         run: |
           box install
+          cd test-harness
+          box install
           box install ${{ matrix.coldbox }} --noSave
       
       - name: Start server
-        run: box server start cfengine=${{ matrix.cfengine }} --noSaveSettings
+        run: |
+          cd test-harness
+          box server start cfengine=${{ matrix.cfengine }} port=8500 --noSaveSettings
 
       - name: Run TestBox Tests
-        run: box testbox run
+        run: |
+          cd test-harness
+          box testbox run runner="http://localhost:8500/tests/runner.cfm"
 
   # release:
   #   name: Semantic Release

@@ -6,9 +6,9 @@ The `cbfs` module will enable you to abstract ANY filesystem within your ColdBox
 
 The available storage providers are:
 
-* `FileProvider` - A local file system storage provider
-* `MockProvider` - A mock storage provider that just logs operations to a LogBox logger object
-* `S3Provider` - An Amazon S3, Rackspace, Digital Ocean or Google Cloud Storage provider.
+* `LocalProvider@cbfs` - A local file system storage provider
+* `MockProvider@cbfs` - A mock storage provider that just logs operations to a LogBox logger object
+* COMING SOON: `S3Provider@cbfs` - An Amazon S3, Rackspace, Digital Ocean or Google Cloud Storage provider.
 
 ## Configuration
 
@@ -18,17 +18,11 @@ In your `config/ColdBox.cfc` create a `cbfs` structure within the `moduleSetting
 
 ```js
 moduleSettings = {
-	cbfs = {
-		disks = {
-			"public" = {
-				provider = "FileProvider",
-				properties = {
-					root = "File root",
-					baseUrl = "The base Url for the storage",
-					visibility = "public or private"
-				}
-			}
-
+	"cbfs": {
+		"disks": {
+			"public": {
+				"provider": "LocalProvider@cbfs"
+			},
 		}
 	}
 }

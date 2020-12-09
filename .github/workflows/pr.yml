@@ -37,21 +37,17 @@ jobs:
         run: |
           box install
           cd test-harness
-          pwd
           box install
           box install ${{ matrix.coldbox }} --noSave
       
       - name: Start server
         run: |
           cd test-harness
-          pwd
           box server start cfengine=${{ matrix.cfengine }} port=8500 --noSaveSettings
 
       - name: Run TestBox Tests
         run: |
           cd test-harness
-          pwd
-          box server status
           box testbox run runner="http://localhost:8500/tests/runner.cfm"
 
   format:

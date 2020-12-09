@@ -25,14 +25,20 @@ jobs:
 
       - name: Set Up CommandBox
         uses: elpete/setup-commandbox@v1.0.0
-      
+
       - name: Install dependencies
         run: |
+          box install
+          cd test-harness
           box install
           box install ${{ matrix.coldbox }} --noSave
       
       - name: Start server
-        run: box server start cfengine=${{ matrix.cfengine }} javaVersion=${{ matrix.javaVersion }} --noSaveSettings
+        run: |
+          cd test-harness
+          box server start cfengine=${{ matrix.cfengine }} javaVersion=${{ matrix.javaVersion }} port=8500 --noSaveSettings
 
       - name: Run TestBox Tests
-        run: box testbox run
+        run: |
+          cd test-harness
+          box testbox run runner="http://localhost:8500/tests/runner.cfm"
