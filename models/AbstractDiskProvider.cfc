@@ -549,10 +549,15 @@ component accessors="true" {
      *
      * @directory The directory or an array of directories
      * @recurse Recurse the deletion or not, defaults to true
+     * @throwOnMissing Throws an exception if the directory does not exist
      *
      * @return A boolean value or a struct of booleans determining if the directory paths got deleted or not.
      */
-    any function deleteDirectory( required directory, boolean recurse ) {
+    public boolean function deleteDirectory(
+        required string directory,
+        boolean recurse = true,
+        boolean throwOnMissing = false
+    ) {
         throw( "Implement in a subclass" );
     }
 

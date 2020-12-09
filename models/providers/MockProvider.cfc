@@ -405,13 +405,27 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" implements
         return ! this.nonReadablePaths.keyExists( arguments.path );
     }
 
-    public any function deleteDirectory( required directory, boolean recurse ) {
+    /**
+     * Delete 1 or more directory locations
+     *
+     * @directory The directory or an array of directories
+     * @recurse Recurse the deletion or not, defaults to true
+     * @throwOnMissing Throws an exception if the directory does not exist
+     *
+     * @return A boolean value or a struct of booleans determining if the directory paths got deleted or not.
+     */
+    public boolean function deleteDirectory(
+        required string directory,
+        boolean recurse = true,
+        boolean throwOnMissing = false
+    ) {
         for ( var filePath in variables.files ) {
-            if ( find( arguments.directory, filePath ) > 0 ) {
-                variables.files.delete( filePath );
+            if ( !find( arguments.directory, filePath ) > 0 ) {
+                return false;
             }
+            variables.files.delete( filePath );
         }
-        return this;
+        return true;
     }
 
     private function ensureFileExists( required path ) {

@@ -64,7 +64,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
                     var disk = getDisk();
                     var filePath = "/one/two/test_file.txt";
                     var directoryPath = "/one/two/";
-                    disk.deleteDirectory( "/one" );
+                    disk.deleteDirectory( "/one/" );
                     expect( disk.exists( directoryPath ) )
                         .toBeFalse( "#directoryPath# should not exist" );
                     disk.create( filePath, "my contents" );
@@ -489,6 +489,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
                 it( "it returns true for a writable path", function() {
                     var disk = getDisk();
                     var path = "/one/two/writeable.txt";
+                    disk.delete( path );
                     disk.create(
                         path = path,
                         contents = "my contents",
@@ -501,6 +502,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
                 it( "returns false for a non-writable path", function() {
                     var disk = getDisk();
                     var path = "/one/two/non-writeable.txt";
+                    disk.delete( path );
                     disk.create(
                         path = path,
                         contents = "my contents",
@@ -515,6 +517,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
                 it( "it returns true for a readble path", function() {
                     var disk = getDisk();
                     var path = "/one/two/readable.txt";
+                    disk.delete( path );
                     disk.create(
                         path = path,
                         contents = "my contents",
@@ -527,6 +530,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
                 it( "returns false for a non-readble path", function() {
                     var disk = getDisk();
                     var path = "/one/two/non-readble.txt";
+                    disk.delete( path );
                     disk.create(
                         path = path,
                         contents = "my contents",

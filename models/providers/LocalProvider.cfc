@@ -196,14 +196,31 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" implements
         return this;
     };
 
-    any function deleteDirectory( required directory, boolean recurse = true ){
-        if( isSimpleValue( directory ) ){
+    /**
+     * Delete 1 or more directory locations
+     *
+     * @directory The directory or an array of directories
+     * @recurse Recurse the deletion or not, defaults to true
+     * @throwOnMissing Throws an exception if the directory does not exist
+     *
+     * @return A boolean value or a struct of booleans determining if the directory paths got deleted or not.
+     */
+    public boolean function deleteDirectory(
+        required string directory,
+        boolean recurse = true,
+        boolean throwOnMissing = false
+    ) {
+        if ( isSimpleValue( directory ) ) {
+            if ( !throwOnMissing && !this.exists( arguments.directory ) ) {
+                return false;
+            }
             directoryDelete( buildPath( arguments.directory ), arguments.recurse );
-            return this;
+            return true;
         }
-        for( dir in arguments.directory ){
-            directoryDelete( buildPath( dir ), arguments.recurse );
-        }
+
+        return arguments.directory.every( function( dir ) {
+            return this.deleteDirectory( dir, arguments.recurse, arguments.throwOnMissing );
+        } );
     };
 
     array function contents( required directory, any filter, sort, boolean recurse = false ){
