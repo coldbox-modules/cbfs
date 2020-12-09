@@ -36,13 +36,15 @@ jobs:
       - name: Install dependencies
         run: |
           box install
+          cd test-harness
+          box install
           box install ${{ matrix.coldbox }} --noSave
       
       - name: Start server
-        run: box server start cfengine=${{ matrix.cfengine }} --noSaveSettings
+        run: cd test-harness && box server start cfengine=${{ matrix.cfengine }} --noSaveSettings
 
       - name: Run TestBox Tests
-        run: box testbox run
+        run: cd test-harness && box testbox run
 
   format:
     runs-on: ubuntu-latest
