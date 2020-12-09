@@ -1,4 +1,4 @@
-component accessors="true" implements="" {
+component accessors="true" {
 
     property name="name" type="string";
     property name="properties" type="struct";
@@ -12,7 +12,7 @@ component accessors="true" implements="" {
 	 *
 	 * @return IDiskProvider
 	 */
-    function configure( required string name, struct properties = {} ) {
+    public IDisk function configure( required string name, struct properties = {} ) {
         setName( arguments.name );
         setProperties( arguments.properties );
         return this;
@@ -22,7 +22,9 @@ component accessors="true" implements="" {
      * Called before the cbfs module is unloaded, or via reinits. This can be implemented
      * as you see fit to gracefully shutdown connections, sockets, etc.
      */
-    function shutdown();
+    public IDisk function shutdown() {
+        return this;
+    }
 
     /**
 	 * Create a file in the disk
@@ -62,14 +64,18 @@ component accessors="true" implements="" {
      *
      * @return IDiskProvider
      */
-    function setVisibility( required path, required visibility );
+    public IDisk function setVisibility( required string path, required string visibility ) {
+        return this;
+    }
 
     /**
      * Get the storage visibility of a file, the return format can be a string of `public, private, readonly` or a custom data type the implemented driver can interpret.
      *
      * @path The target file
      */
-    any function visibility( required path );
+    public string function visibility( required string path ) {
+        return "public";
+    }
 
     /**
 	 * Prepend contents to the beginning of a file
@@ -222,7 +228,9 @@ component accessors="true" implements="" {
      *
      * @return A binary representation of the file
      */
-    any function getAsBinary( required path );
+    public any function getAsBinary( required path ) {
+        return toBinary( this.get( arguments.path ) );
+    }
 
     /**
 	 * Validate if a file/directory exists
@@ -250,7 +258,7 @@ component accessors="true" implements="" {
      *
 	 * @path The file path to build the URL for
 	 */
-	string function url( required path ) {
+	public string function url( required string path ) {
         ensureFileExists( arguments.path );
         return arguments.path;
     }
@@ -275,7 +283,7 @@ component accessors="true" implements="" {
      * @throws cbfs.FileNotFoundException
 	 */
 	numeric function size( required path ) {
-        return this.info( buildPath( arguments.path ) ).size;
+        return this.info( arguments.path ).size;
     }
 
     /**
@@ -295,7 +303,9 @@ component accessors="true" implements="" {
             .guessContentTypeFromName( arguments.path );
     }
     
-    function delete( required path, boolean throwOnMissing = false );
+    public boolean function delete( required string path, boolean throwOnMissing = false ) {
+        throw( "Implement in a subclass" );
+    }
 
     /**
 	 * Create a new empty file if it does not exist
@@ -373,28 +383,36 @@ component accessors="true" implements="" {
      *
      * @throws cbfs.FileNotFoundException
      */
-    boolean function isFile( required path );
+    public boolean function isFile( required path ) {
+        throw( "Implement in a subclass" );
+    }
 
     /**
      * Is the path writable or not
      *
      * @path The file path
      */
-    boolean function isWritable( required path );
+    boolean function isWritable( required path ) {
+        throw( "Implement in a subclass" );
+    }
 
     /**
      * Is the path readable or not
      *
      * @path The file path
      */
-    boolean function isReadable( required path );
+    boolean function isReadable( required path ) {
+        throw( "Implement in a subclass" );
+    }
 
     /**
      * Find path names matching a given globbing pattern
      *
      * @pattern The globbing pattern to match
      */
-    array function glob( required pattern );
+    array function glob( required pattern ) {
+        throw( "Implement in a subclass" );
+    }
 
     /**
      * Sets the access attributes of the file on Unix based disks
@@ -402,7 +420,9 @@ component accessors="true" implements="" {
      * @path The file path
      * @mode Access mode, the same attributes you use for the Linux command `chmod`
      */
-    function chmod( required path, required mode );
+    public IDisk function chmod( required string path, required string mode ) {
+        throw( "Implement in a subclass" );
+    }
 
     /**************************************** STREAM METHODS ****************************************/
 
@@ -434,7 +454,9 @@ component accessors="true" implements="" {
      *
      * @return Stream object: See https://apidocs.ortussolutions.com/coldbox-modules/cbstreams/1.1.0/index.html
      */
-    function streamOf( required array target );
+    function streamOf( required array target ) {
+        throw( "Implement in a subclass" );
+    }
 
     /**
      * Is the path a directory or not
@@ -442,12 +464,11 @@ component accessors="true" implements="" {
      * @path The directory path
      */
     boolean function isDirectory( required path ){
-        try{
-            return getFileInfo( buildPath( arguments.path ) ).type EQ "directory";
-        }catch( any e ){
+        try {
+            return getFileInfo( buildPath( arguments.path ) ).type == "directory";
+        } catch( any e ) {
             return false
         }
-        return false;        
     };
 
     /**
@@ -459,7 +480,9 @@ component accessors="true" implements="" {
      *
      * @return IDiskProvider
      */
-    function createDirectory( required directory, boolean createPath, boolean ignoreExists );
+    function createDirectory( required directory, boolean createPath, boolean ignoreExists ) {
+        throw( "Implement in a subclass" );
+    }
 
     /**
      * Copies a directory to a destination
@@ -483,8 +506,8 @@ component accessors="true" implements="" {
         boolean recurse,
         any filter,
         boolean createPath
-    ){
-        
+    ) {
+        throw( "Implement in a subclass" );  
     };
 
     /**
@@ -500,7 +523,9 @@ component accessors="true" implements="" {
         required oldPath,
         required newPath,
         boolean createPath
-    );
+    ) {
+        throw( "Implement in a subclass" );
+    }
 
     /**
      * Rename a directory, facade to `moveDirectory()`
@@ -515,7 +540,9 @@ component accessors="true" implements="" {
         required oldPath,
         required newPath,
         boolean createPath
-    );
+    ) {
+        throw( "Implement in a subclass" );
+    }
 
     /**
      * Delete 1 or more directory locations
@@ -525,7 +552,9 @@ component accessors="true" implements="" {
      *
      * @return A boolean value or a struct of booleans determining if the directory paths got deleted or not.
      */
-    any function deleteDirectory( required directory, boolean recurse );
+    any function deleteDirectory( required directory, boolean recurse ) {
+        throw( "Implement in a subclass" );
+    }
 
     /**
      * Empty the specified directory of all files and folders.
@@ -534,7 +563,9 @@ component accessors="true" implements="" {
      *
      * @return IDiskProvider
      */
-    function cleanDirectory( required directory );
+    function cleanDirectory( required directory ) {
+        throw( "Implement in a subclass" );
+    }
 
     /**
      * Get an array listing of all files and directories in a directory.
@@ -544,7 +575,9 @@ component accessors="true" implements="" {
      * @sort Columns by which to sort. e.g. Directory, Size DESC, DateLastModified.
      * @recurse Recurse into subdirectories, default is false
      */
-    array function contents( required directory, any filter, sort, boolean recurse );
+    array function contents( required directory, any filter, sort, boolean recurse ) {
+        throw( "Implement in a subclass" );
+    }
 
     /**
      * Get an array listing of all files and directories in a directory using recursion
@@ -554,11 +587,11 @@ component accessors="true" implements="" {
      * @sort Columns by which to sort. e.g. Directory, Size DESC, DateLastModified.
      * @recurse Recurse into subdirectories, default is false
      */
-    array function allContents( required directory, any filter, sort ){
+    array function allContents( required directory, any filter, sort ) {
         arguments.recurse = true;
         arguments.map = false;
         return this.contents( argumentCollection = arguments )
-    };
+    }
 
     /**
      * Get an array of all files in a directory.
@@ -568,7 +601,7 @@ component accessors="true" implements="" {
      * @sort Columns by which to sort. e.g. Directory, Size DESC, DateLastModified.
      * @recurse Recurse into subdirectories, default is false
      */
-    array function files( required directory, any filter, sort, boolean recurse ){
+    array function files( required directory, any filter, sort, boolean recurse ) {
         arguments.type = "file";
         arguments.map = false;
         return this.contents( argumentCollection = arguments )
@@ -582,7 +615,7 @@ component accessors="true" implements="" {
      * @sort Columns by which to sort. e.g. Directory, Size DESC, DateLastModified.
      * @recurse Recurse into subdirectories, default is false
      */
-    array function directories( required directory, any filter, sort, boolean recurse ){
+    array function directories( required directory, any filter, sort, boolean recurse ) {
         arguments.type = "directory";
         arguments.map = false;
         return this.contents( argumentCollection = arguments )
@@ -595,7 +628,7 @@ component accessors="true" implements="" {
      * @filter A string wildcard or a lambda/closure that receives the file path and should return true to include it in the returned array or not.
      * @sort Columns by which to sort. e.g. Directory, Size DESC, DateLastModified.
      */
-    array function allFiles( required directory, any filter, sort ){
+    array function allFiles( required directory, any filter, sort ) {
         arguments.recurse = true;
         arguments.map = false;
         this.files( argumentCollection = arguments )
@@ -608,7 +641,7 @@ component accessors="true" implements="" {
      * @filter A string wildcard or a lambda/closure that receives the file path and should return true to include it in the returned array or not.
      * @sort Columns by which to sort. e.g. Directory, Size DESC, DateLastModified.
      */
-    array function allDirectories( required directory, any filter, sort ){
+    array function allDirectories( required directory, any filter, sort ) {
         arguments.recurse = true;
         arguments.map = false;
         this.directories( argumentCollection = arguments )
@@ -629,7 +662,7 @@ component accessors="true" implements="" {
      * @sort Columns by which to sort. e.g. Directory, Size DESC, DateLastModified.
      * @recurse Recurse into subdirectories, default is false
      */
-    array function filesMap( required directory, any filter, sort, boolean recurse ){
+    array function filesMap( required directory, any filter, sort, boolean recurse ) {
         arguments.map = true;
         this.files( argumentCollection = arguments )
     };
@@ -648,7 +681,7 @@ component accessors="true" implements="" {
      * @filter A string wildcard or a lambda/closure that receives the file path and should return true to include it in the returned array or not.
      * @sort Columns by which to sort. e.g. Directory, Size DESC, DateLastModified.
      */
-    array function allFilesMap( required directory, any filter, sort ){
+    array function allFilesMap( required directory, any filter, sort ) {
         arguments.map = true;
         arguments.recurse = true;
         this.filesMap( argumentCollection = arguments )
@@ -669,7 +702,7 @@ component accessors="true" implements="" {
      * @sort Columns by which to sort. e.g. Directory, Size DESC, DateLastModified.
      * @recurse Recurse into subdirectories, default is false
      */
-    array function directoriesMap( required directory, any filter, sort, boolean recurse ){
+    array function directoriesMap( required directory, any filter, sort, boolean recurse ) {
         arguments.map = true;
         this.directories( argumentCollection = arguments )
     };
@@ -688,7 +721,7 @@ component accessors="true" implements="" {
      * @filter A string wildcard or a lambda/closure that receives the file path and should return true to include it in the returned array or not.
      * @sort Columns by which to sort. e.g. Directory, Size DESC, DateLastModified.
      */
-    array function allDirectoriesMap( required directory, any filter, sort ){
+    array function allDirectoriesMap( required directory, any filter, sort ) {
         arguments.recurse = false;
         this.directoriesMap( argumentCollection = arguments )
     };
@@ -708,7 +741,7 @@ component accessors="true" implements="" {
      * @sort Columns by which to sort. e.g. Directory, Size DESC, DateLastModified.
      * @recurse Recurse into subdirectories, default is false
      */
-    array function contentsMap( required directory, any filter, sort, boolean recurse ){
+    array function contentsMap( required directory, any filter, sort, boolean recurse ) {
         arguments.map = true;
         this.contents( argumentCollection = arguments )
     };
@@ -727,7 +760,7 @@ component accessors="true" implements="" {
      * @filter A string wildcard or a lambda/closure that receives the file path and should return true to include it in the returned array or not.
      * @sort Columns by which to sort. e.g. Directory, Size DESC, DateLastModified.
      */
-    array function allContentsMap( required directory, any filter, sort ){
+    array function allContentsMap( required directory, any filter, sort ) {
         arguments.recurse = true;
         this.contentsMap( argumentCollection = arguments )
     };
@@ -735,6 +768,7 @@ component accessors="true" implements="" {
     /************************* PRIVATE METHODS *******************************/
 
     private function buildPath( required string path ) {
+        writeDump( var = getProperties().path );
         return expandPath( getProperties().path & "/" & arguments.path );
     }
 

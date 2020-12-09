@@ -1,7 +1,8 @@
-component accessors="true" {
+component accessors="true" extends="cbfs.models.AbstractDiskProvider" implements="cbfs.models.IDisk" {
 
     property name="name" type="string";
     property name="properties" type="struct";
+    property name="files";
 
     variables.files = {};
     this.nonWritablePaths = {};
@@ -14,7 +15,7 @@ component accessors="true" {
 	 *
 	 * @return IDiskProvider
 	 */
-    function configure( name, properties = {} ) {
+    public IDisk function configure( required string name, struct properties = {} ) {
         setName( arguments.name );
         setProperties( arguments.properties );
         return this;
@@ -289,7 +290,7 @@ component accessors="true" {
 	 *
 	 * @return boolean or struct report of deletion
 	 */
-    function delete( required string path, throwOnMissing = false ) {
+    public boolean function delete( required string path, boolean throwOnMissing = false ) {
         if ( ! this.exists( arguments.path ) ) {
             if ( throwOnMissing ) {
                 throw(
@@ -297,10 +298,10 @@ component accessors="true" {
                     message = "File [#arguments.path#] not found."
                 );
             }
-            return this;
+            return false;
         }
         variables.files.delete( arguments.path );
-        return this;
+        return true;
     }
 
     /**
@@ -392,7 +393,7 @@ component accessors="true" {
 	 * @path The file path
 	 */
 	boolean function isWritable( required path ) {
-        return ! this.nonWritablePaths.keyExists( arguments.path );
+        return !this.nonWritablePaths.keyExists( arguments.path );
     }
 
     /**
@@ -402,6 +403,15 @@ component accessors="true" {
 	 */
 	boolean function isReadable( required path ) {
         return ! this.nonReadablePaths.keyExists( arguments.path );
+    }
+
+    public any function deleteDirectory( required directory, boolean recurse ) {
+        for ( var filePath in variables.files ) {
+            if ( find( arguments.directory, filePath ) > 0 ) {
+                variables.files.delete( filePath );
+            }
+        }
+        return this;
     }
 
     private function ensureFileExists( required path ) {

@@ -64,7 +64,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
                     var disk = getDisk();
                     var filePath = "/one/two/test_file.txt";
                     var directoryPath = "/one/two/";
-                    disk.delete( filePath );
+                    disk.deleteDirectory( "/one" );
                     expect( disk.exists( directoryPath ) )
                         .toBeFalse( "#directoryPath# should not exist" );
                     disk.create( filePath, "my contents" );
@@ -101,6 +101,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
                 it( "creates a new file if the file does not already exist", function() {
                     var disk = getDisk();
                     var path = "test_file.txt";
+                    disk.delete( path );
                     disk.prepend( path, "prepended contents" );
                     expect( disk.get( path ) ).toBe( "prepended contents" );
                 } );
@@ -108,6 +109,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
                 it( "throws an error if the file does not already exist and the throwOnMissing flag is set", function() {
                     var disk = getDisk();
                     var path = "test_file.txt";
+                    disk.delete( path );
                     expect( function() {
                         disk.prepend(
                             path = path,
@@ -134,6 +136,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
                 it( "creates a new file if the file does not already exist", function() {
                     var disk = getDisk();
                     var path = "test_file.txt";
+                    disk.delete( path );
                     disk.append( path, "appended contents" );
                     expect( disk.get( path ) ).toBe( "appended contents" );
                 } );
@@ -141,6 +144,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
                 it( "throws an exception if the file does not already exist and the throwOnMissing flag is set", function() {
                     var disk = getDisk();
                     var path = "test_file.txt";
+                    disk.delete( path );
                     expect( function() {
                         disk.append(
                             path = path,
@@ -169,6 +173,8 @@ component extends="coldbox.system.testing.BaseTestCase" {
                     var disk = getDisk();
                     var nonExistantPath = "test_file.txt";
                     var newPath = "test_file_two.txt";
+                    disk.delete( nonExistantPath );
+                    disk.delete( newPath );
                     expect( function() {
                         disk.copy( nonExistantPath, newPath );
                     } ).toThrow( "cbfs.FileNotFoundException" );
@@ -240,6 +246,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
                 it( "throws and exception if the file does not exist", function() {
                     var disk = getDisk();
                     var path = "test_file.txt";
+                    disk.delete( path );
                     expect( disk.exists( path ) ).toBeFalse( "[#path#] should not exist." );
                     expect( function() {
                         disk.url( path );
@@ -262,6 +269,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
                 it( "throws an exception if the file does not exist", function() {
                     var disk = getDisk();
                     var path = "test_file.txt";
+                    disk.delete( path );
                     expect( disk.exists( path ) ).toBeFalse( "[#path#] should not exist." );
                     expect( function() {
                         disk.temporaryURL( path );
@@ -279,6 +287,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
                         contents = contents,
                         overwrite = true
                     );
+                    expect( disk.exists( path ) ).toBeTrue( "[#path#] should exist." );
                     expect( disk.size( path ) ).toBe( retireveSizeForTest( path, contents ) );
                 } );
 
@@ -296,16 +305,15 @@ component extends="coldbox.system.testing.BaseTestCase" {
                     var disk = getDisk();
                     var path = "test_file.txt";
                     var contents = "my contents";
-                    var before = now();
-                    sleep( 10 );
+                    var before = getEpochTimeFromLocal();
                     disk.create(
                         path = path,
                         contents = contents,
                         overwrite = true
                     );
-                    sleep( 10 );
-                    var after = now();
-                    expect( disk.lastModified( path ) ).toBeBetween( before, after );
+                    var after = getEpochTimeFromLocal();
+                    expect( getEpochTimeFromLocal( disk.lastModified( path ) ) ).toBeGTE( before );
+                    expect( getEpochTimeFromLocal( disk.lastModified( path ) ) ).toBeLTE( after );
                 } );
 
                 it( "throws an exception if the file does not exist", function() {
@@ -342,6 +350,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
                 it( "can create an empty file using touch", function() {
                     var disk = getDisk();
                     var path = "test_file.txt";
+                    disk.delete( path );
                     expect( disk.exists( path ) ).toBeFalse( "[#path#] should not exist" );
                     disk.touch( path );
                     expect( disk.exists( path ) ).toBeTrue( "[#path#] should exist" );
@@ -352,6 +361,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
                 it( "updates the last modified date if the file already exists", function() {
                     var disk = getDisk();
                     var path = "test_file.txt";
+                    disk.delete( path );
                     disk.create(
                         path = path,
                         contents = "my contents",
@@ -369,6 +379,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
                 it( "creates nested directories by default", function() {
                     var disk = getDisk();
                     var path = "/one/two/test_file.txt";
+                    disk.delete( path );
                     expect( disk.exists( path ) ).toBeFalse( "[#path#] should not exist" );
                     disk.touch( path );
                     expect( disk.exists( path ) ).toBeTrue( "[#path#] should exist" );
@@ -379,6 +390,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
                 it( "throws an exception if nested directories do not exist and `createPath` is false", function() {
                     var disk = getDisk();
                     var path = "/one/two/test_file.txt";
+                    disk.delete( path );
                     expect( disk.exists( path ) ).toBeFalse( "[#path#] should not exist" );
                     expect( function() {
                         disk.touch( path = path, createPath = false );
@@ -476,13 +488,25 @@ component extends="coldbox.system.testing.BaseTestCase" {
             describe( "isWritable", function() {
                 it( "it returns true for a writable path", function() {
                     var disk = getDisk();
-                    var writablePath = getWritablePathForTest( disk, "/one/two/writeable.txt" );
+                    var path = "/one/two/writeable.txt";
+                    disk.create(
+                        path = path,
+                        contents = "my contents",
+                        overwrite = true
+                    );
+                    var writablePath = getWritablePathForTest( disk, path );
                     expect( disk.isWritable( writablePath ) ).toBeTrue( "Path should be writable." );
                 } );
 
                 it( "returns false for a non-writable path", function() {
                     var disk = getDisk();
-                    var nonWritablePath = getNonWritablePathForTest( disk, "/one/two/non-writeable.txt" );
+                    var path = "/one/two/non-writeable.txt";
+                    disk.create(
+                        path = path,
+                        contents = "my contents",
+                        overwrite = true
+                    );
+                    var nonWritablePath = getNonWritablePathForTest( disk, path );
                     expect( disk.isWritable( nonWritablePath ) ).toBeFalse( "Path should not be writable." );
                 } );
             } );
@@ -490,13 +514,25 @@ component extends="coldbox.system.testing.BaseTestCase" {
             describe( "isReadable", function() {
                 it( "it returns true for a readble path", function() {
                     var disk = getDisk();
-                    var readablePath = getReadablePathForTest( disk, "/one/two/readable.txt" );
+                    var path = "/one/two/readable.txt";
+                    disk.create(
+                        path = path,
+                        contents = "my contents",
+                        overwrite = true
+                    );
+                    var readablePath = getReadablePathForTest( disk, path );
                     expect( disk.isReadable( readablePath ) ).toBeTrue( "Path should be readable." );
                 } );
 
                 it( "returns false for a non-readble path", function() {
                     var disk = getDisk();
-                    var nonReadablePath = getNonReadablePathForTest( disk, "/one/two/non-readble.txt" );
+                    var path = "/one/two/non-readble.txt";
+                    disk.create(
+                        path = path,
+                        contents = "my contents",
+                        overwrite = true
+                    );
+                    var nonReadablePath = getNonReadablePathForTest( disk, path );
                     expect( disk.isReadable( nonReadablePath ) ).toBeFalse( "Path should not be readable." );
                 } );
             } );
@@ -507,32 +543,46 @@ component extends="coldbox.system.testing.BaseTestCase" {
         throw( "`getDisk` must be implemented in a subclass" );
     }
 
-    function retrieveUrlForTest( path ) {
-        throw( "`retrieveUrlForTest` must be implemented in a subclass" );
+    function retrieveUrlForTest( required string path ) {
+        return arguments.path;
     }
 
-    function retrieveTemporaryUrlForTest( path ) {
-        throw( "`retrieveTemporaryUrlForTest` must be implemented in a subclass" );
+    function retrieveTemporaryUrlForTest( required string path ) {
+        return arguments.path;
     }
 
-    function retireveSizeForTest( path, content ) {
-        throw( "`retireveSizeForTest` must be implemented in a subclass" );
+    function retireveSizeForTest( required string path, required content ) {
+        return len( arguments.content );
     }
 
     function getWritablePathForTest( disk, path ) {
-        throw( "`getWritablePathForTest` must be implemented in a subclass" );
+        return arguments.path;
     }
 
     function getNonWritablePathForTest( disk, path ) {
-        throw( "`getNonWritablePathForTest` must be implemented in a subclass" );
+        return arguments.path;
     }
 
     function getReadablePathForTest( disk, path ) {
-        throw( "`getReadablePathForTest` must be implemented in a subclass" );
+        return arguments.path;
     }
 
     function getNonReadablePathForTest( disk, path ) {
-        throw( "`getNonReadablePathForTest` must be implemented in a subclass" );
+        return arguments.path;
     }
+
+    /**
+     * Returns the number of seconds since January 1, 1970, 00:00:00 (Epoch time).
+     * 
+     * @param DateTime      Date/time object you want converted to Epoch time. (Required)
+     * @return Returns a numeric value. 
+     * @author Rob Brooks-Bilson (rbils@amkor.com) 
+     * @version 1, June 21, 2002 
+     */
+    function getEpochTimeFromLocal( datetime = now() ) {
+        return dateDiff( "s", DateConvert( "utc2Local", "January 1 1970 00:00" ), datetime );
+    }
+  
+
 
 }

@@ -24,13 +24,13 @@ interface {
 	 *
 	 * @return IDiskProvider
 	 */
-	function configure( required string name, struct properties );
+	public IDisk function configure( required string name, struct properties );
 
 	/**
 	 * Called before the cbfs module is unloaded, or via reinits. This can be implemented
 	 * as you see fit to gracefully shutdown connections, sockets, etc.
 	 */
-	function shutdown();
+	public IDisk function shutdown();
 
 	/**
 	 * Create a file in the disk
@@ -61,14 +61,14 @@ interface {
 	 *
 	 * @return IDiskProvider
 	 */
-	function setVisibility( required path, required visibility );
+	public iDisk function setVisibility( required string path, required string visibility );
 
 	/**
 	 * Get the storage visibility of a file, the return format can be a string of `public, private, readonly` or a custom data type the implemented driver can interpret.
 	 *
 	 * @path The target file
 	 */
-	any function visibility( required path );
+	public string function visibility( required string path );
 
 	/**
 	 * Prepend contents to the beginning of a file
@@ -183,7 +183,7 @@ interface {
      *
 	 * @throws cbfs.FileNotFoundException
 	 */
-	string function url( required path );
+	string function url( required string path );
 
 	/**
 	 * Get a temporary URL for the given file
@@ -233,7 +233,7 @@ interface {
      *
 	 * @return boolean or struct report of deletion
 	 */
-	function delete( required string path, boolean throwOnMissing );
+	public boolean function delete( required string path, boolean throwOnMissing );
 
 	/**
 	 * Create a new empty file if it does not exist
@@ -316,7 +316,7 @@ interface {
 	 * @path The file path
 	 * @mode Access mode, the same attributes you use for the Linux command `chmod`
 	 */
-	function chmod( required path, required mode );
+	public IDisk function chmod( required string path, required string mode );
 
 	/**************************************** STREAM METHODS ****************************************/
 

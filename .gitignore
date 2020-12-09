@@ -11,6 +11,7 @@ test-harness/.engine/**
 test-harness/coldbox/**
 test-harness/docbox/**
 test-harness/testbox/**
+test-harness/tests/resources/storage/**
 test-harness/logs/**
 
 # log files

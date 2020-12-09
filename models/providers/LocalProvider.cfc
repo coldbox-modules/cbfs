@@ -40,17 +40,16 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" implements
         return this;
     }
 
-    function setVisibility( required path, required visibility ){
-        var system = createObject("java", "java.lang.System");
-        if( isWindows() ){
-            FileSetAttribute( buildPath( arguments.path ), arguments.visibility );
+    public IDisk function setVisibility( required string path, required string visibility ){
+        if ( isWindows() ) {
+            fileSetAttribute( buildPath( arguments.path ), arguments.visibility );
             return this;
         }
-        FileSetAccessMode( buildPath( arguments.path ), arguments.visibility );
+        fileSetAccessMode( buildPath( arguments.path ), arguments.visibility );
         return this;
     };
 
-    function visibility( required path ){
+    public string function visibility( required string path ){
         var file = getFileInfo( arguments.path );
         if( ! file.canRead ){
             return "private";
@@ -137,25 +136,25 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" implements
     	}
     }
 
-	function delete( required path, boolean throwOnMissing = false ) {
+	public boolean function delete( required string path, boolean throwOnMissing = false ) {
         if( isSimpleValue( arguments.path ) ){
             if ( ! throwOnMissing ) {
                 if ( ! this.exists( arguments.path ) ) {
-                    return this;
+                    return false;
                 }
             }
             fileDelete( buildPath( arguments.path ) );
-            return this;
+            return true;
         }
         for( file in arguments.path ){
             if ( ! throwOnMissing ) {
                 if ( ! this.exists( file ) ) {
-                    return this;
+                    return false;
                 }
             }
             fileDelete( buildPath( file ) );
         }
-        return this;
+        return true;
     }
 
 	function lastModified( required path ) {
@@ -227,6 +226,17 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" implements
             arrayAppend( result, v )
         }
         return result;
+    }
+
+    /**
+     * Sets the access attributes of the file on Unix based disks
+     *
+     * @path The file path
+     * @mode Access mode, the same attributes you use for the Linux command `chmod`
+     */
+    public IDisk function chmod( required string path, required string mode ) {
+        fileSetAccessMode( buildPath( path ), arguments.mode );
+        return this;
     }
 
     /************************* PRIVATE METHODS ****************************/
