@@ -1,5 +1,7 @@
 ﻿component extends="coldbox.system.testing.BaseTestCase" {
 
+	this.loadColdbox=true;
+
 	function run() {
 		describe( "cbfs integration", function() {
 			it( "can register and activate the module", function(){
