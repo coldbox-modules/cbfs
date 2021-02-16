@@ -1,8 +1,8 @@
 component accessors="true" extends="cbfs.models.AbstractDiskProvider" implements="cbfs.models.IDisk" {
 
     this.permissions = {
-        "file": { "public": "666", "private": "000", "readonly" : "444" },
-        "dir": { "public": "666", "private": "600", "readonly" : "644" }
+        "file": { "public": "666", "private": "000", "readonly": "444" },
+        "dir": { "public": "666", "private": "600", "readonly": "644" }
     };
 
     function create(
@@ -35,36 +35,36 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" implements
     }
 
     public IDisk function setVisibility( required string path, required string visibility ) {
-		if ( isWindows() ) {
-			switch( arguments.visibility ){
-				case "private":{
-					var mode = "system";
-					break;
-				}
-				case "readonly":{
-					var mode = arguments.visibility;
-					break;
-				}
-				default:{
-					var mode = "normal";
-				}
-			}
+        if ( isWindows() ) {
+            switch ( arguments.visibility ) {
+                case "private": {
+                    var mode = "system";
+                    break;
+                }
+                case "readonly": {
+                    var mode = arguments.visibility;
+                    break;
+                }
+                default: {
+                    var mode = "normal";
+                }
+            }
             fileSetAttribute( buildPath( arguments.path ), mode );
             return this;
         }
-		switch( arguments.visibility ){
-			case "private":{
-				var mode = this.permissions.file.private;
-				break;
-			}
-			case "readonly":{
-				var mode = this.permissions.file.readonly;
-				break;
-			}
-			default:{
-				var mode = this.permissions.file.public;
-			}
-		}
+        switch ( arguments.visibility ) {
+            case "private": {
+                var mode = this.permissions.file.private;
+                break;
+            }
+            case "readonly": {
+                var mode = this.permissions.file.readonly;
+                break;
+            }
+            default: {
+                var mode = this.permissions.file.public;
+            }
+        }
         fileSetAccessMode( buildPath( arguments.path ), mode );
         return this;
     };
@@ -146,11 +146,11 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" implements
                     return false;
                 }
             }
-			if( isDirectory( arguments.path ) ){
-				deleteDirectory( arguments.path, true );
-			} else {
-				fileDelete( buildPath( arguments.path ) );
-			}
+            if ( isDirectory( arguments.path ) ) {
+                deleteDirectory( arguments.path, true );
+            } else {
+                fileDelete( buildPath( arguments.path ) );
+            }
             return true;
         }
         for ( var file in arguments.path ) {
@@ -159,11 +159,11 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" implements
                     return false;
                 }
             }
-			if( isDirectory( file ) ){
-				deleteDirectory( file, true );
-			} else {
-				fileDelete( buildPath( file ) );
-			}
+            if ( isDirectory( file ) ) {
+                deleteDirectory( file, true );
+            } else {
+                fileDelete( buildPath( file ) );
+            }
         }
         return true;
     }
