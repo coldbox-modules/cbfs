@@ -771,6 +771,12 @@ component accessors="true" {
     };
 
     /************************* PRIVATE METHODS *******************************/
+    private function isDirectoryPath( required path ) {
+        if ( !len( getFileFromPath( buildPath( arguments.path ) ) ) && !!len( extension( arguments.path ) ) ) {
+            return true;
+        }
+        return false;
+    }
 
     private function buildPath( required string path ) {
         writeDump( var = getProperties().path );

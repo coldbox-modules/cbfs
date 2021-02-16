@@ -291,11 +291,4 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" implements
         }
     }
 
-    private function isDirectoryPath( required path ) {
-        if ( !len( getFileFromPath( buildPath( arguments.path ) ) ) ) {
-            return true;
-        }
-        return false;
-    }
-
 }
