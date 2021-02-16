@@ -1,8 +1,8 @@
 component accessors="true" extends="cbfs.models.AbstractDiskProvider" implements="cbfs.models.IDisk" {
 
     this.permissions = {
-        "file": { "public": "0644", "private": "0600" },
-        "dir": { "public": "0755", "private": "0700" }
+        "file": { "public": "666", "private": "000", "readonly" : "444" },
+        "dir": { "public": "666", "private": "600", "readonly" : "644" }
     };
 
     function create(
@@ -35,11 +35,37 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" implements
     }
 
     public IDisk function setVisibility( required string path, required string visibility ) {
-        if ( isWindows() ) {
-            fileSetAttribute( buildPath( arguments.path ), arguments.visibility );
+		if ( isWindows() ) {
+			switch( arguments.visibility ){
+				case "private":{
+					var mode = "system";
+					break;
+				}
+				case "readonly":{
+					var mode = arguments.visibility;
+					break;
+				}
+				default:{
+					var mode = "normal";
+				}
+			}
+            fileSetAttribute( buildPath( arguments.path ), mode );
             return this;
         }
-        fileSetAccessMode( buildPath( arguments.path ), arguments.visibility );
+		switch( arguments.visibility ){
+			case "private":{
+				var mode = this.permissions.file.private;
+				break;
+			}
+			case "readonly":{
+				var mode = this.permissions.file.readonly;
+				break;
+			}
+			default:{
+				var mode = this.permissions.file.public;
+			}
+		}
+        fileSetAccessMode( buildPath( arguments.path ), mode );
         return this;
     };
 
