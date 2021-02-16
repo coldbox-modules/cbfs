@@ -351,7 +351,11 @@ component accessors="true" {
      * @path The file path
      */
     string function extension( required path ) {
-        return listLast( this.name( arguments.path ), "." );
+		if( listLen( this.name( arguments.path ), "." ) > 1 ){
+			return listLast( this.name( arguments.path ), "." );
+		} else {
+			return "";
+		}
     }
 
     /**
@@ -445,7 +449,7 @@ component accessors="true" {
         try {
             return getFileInfo( buildPath( arguments.path ) ).type == "directory";
         } catch ( any e ) {
-            return false;
+            return isDirectoryPath( arguments.path );
         }
     };
 
