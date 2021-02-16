@@ -129,7 +129,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" implements
     };
 
     boolean function exists( required string path ) {
-        if ( isDirectoryPath( arguments.path ) ) {
+        if ( isDirectory( arguments.path ) ) {
             return directoryExists( buildPath( arguments.path ) );
         }
         try {
