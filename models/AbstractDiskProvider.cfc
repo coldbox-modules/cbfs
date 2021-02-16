@@ -351,11 +351,11 @@ component accessors="true" {
      * @path The file path
      */
     string function extension( required path ) {
-		if( listLen( this.name( arguments.path ), "." ) > 1 ){
-			return listLast( this.name( arguments.path ), "." );
-		} else {
-			return "";
-		}
+        if ( listLen( this.name( arguments.path ), "." ) > 1 ) {
+            return listLast( this.name( arguments.path ), "." );
+        } else {
+            return "";
+        }
     }
 
     /**
