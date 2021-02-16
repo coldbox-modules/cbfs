@@ -146,7 +146,11 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" implements
                     return false;
                 }
             }
-            fileDelete( buildPath( arguments.path ) );
+			if( isDirectory( arguments.path ) ){
+				deleteDirectory( arguments.path, true );
+			} else {
+				fileDelete( buildPath( arguments.path ) );
+			}
             return true;
         }
         for ( var file in arguments.path ) {
@@ -155,7 +159,11 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" implements
                     return false;
                 }
             }
-            fileDelete( buildPath( file ) );
+			if( isDirectory( file ) ){
+				deleteDirectory( file, true );
+			} else {
+				fileDelete( buildPath( file ) );
+			}
         }
         return true;
     }
