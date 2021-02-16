@@ -13,6 +13,7 @@ test-harness/docbox/**
 test-harness/testbox/**
 test-harness/tests/resources/storage/**
 test-harness/logs/**
+test-harness/.env
 
 # log files
 logs/**
