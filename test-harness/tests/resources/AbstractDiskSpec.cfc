@@ -261,10 +261,10 @@ component extends="coldbox.system.testing.BaseTestCase" {
                     disk.create( path = path, contents = contents, overwrite = true );
                     var after = getEpochTimeFromLocal();
                     expect( getEpochTimeFromLocal( disk.lastModified( path ) ) ).toBeGTE( before );
-					// Skip this test for remote providers as latency and timezone offsets can make the results inconsistent
-					if( !isInstanceOf( disk, "S3Provider" ) ){
-						expect( getEpochTimeFromLocal( disk.lastModified( path ) ) ).toBeLTE( after );
-					}
+                    // Skip this test for remote providers as latency and timezone offsets can make the results inconsistent
+                    if ( !isInstanceOf( disk, "S3Provider" ) ) {
+                        expect( getEpochTimeFromLocal( disk.lastModified( path ) ) ).toBeLTE( after );
+                    }
                 } );
 
                 it( "throws an exception if the file does not exist", function() {

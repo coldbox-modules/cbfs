@@ -34,9 +34,9 @@ component accessors="true" implements="cbfs.models.IDisk" {
             arguments.properties.visiblity = "public";
         }
 
-		if( !arguments.properties.keyExists( "tempDirectory" ) ){
-			arguments.properties.tempDirectory = "/includes/temp";
-		}
+        if ( !arguments.properties.keyExists( "tempDirectory" ) ) {
+            arguments.properties.tempDirectory = "/includes/temp";
+        }
 
         setName( arguments.name );
         setProperties( arguments.properties );
@@ -334,32 +334,32 @@ component accessors="true" implements="cbfs.models.IDisk" {
      */
     any function get( required path ) {
         ensureFileExists( arguments.path );
-		// ACF will not allow us to read the file directly via URL
-		if( server.coldfusion.productVersion.listFirst() == 2016 || server.coldfusion.productVersion.listFirst() == 2016 ){
-			var tempDir = getProperties().tempDirectory;
-			if( !directoryExists( expandPath( tempDir ) ) ) directoryCreate( expandPath( tempDir ) );
+        // ACF will not allow us to read the file directly via URL
+        if ( server.coldfusion.productVersion.listFirst() == 2016 || server.coldfusion.productVersion.listFirst() == 2016 ) {
+            var tempDir = getProperties().tempDirectory;
+            if ( !directoryExists( expandPath( tempDir ) ) ) directoryCreate( expandPath( tempDir ) );
 
-			var tempFileName = createUUID() & "." & extension( arguments.path );
-			var tempFilePath = expandPath( tempDir & "/" & tempFileName );
+            var tempFileName = createUUID() & "." & extension( arguments.path );
+            var tempFilePath = expandPath( tempDir & "/" & tempFileName );
 
-			variables.s3.downloadObject(
-				bucketName = variables.properties.bucketName,
-				uri = buildPath( arguments.path ),
-				filepath = tempFilePath
-			);
+            variables.s3.downloadObject(
+                bucketName = variables.properties.bucketName,
+                uri = buildPath( arguments.path ),
+                filepath = tempFilePath
+            );
 
-			var fileContents = fileRead( tempFilePath );
-			fileDelete( tempFilePath );
-			return fileContents;
-		} else {
-			return fileRead(
-				variables.s3.getAuthenticatedURL(
-					bucketName = variables.properties.bucketName,
-					uri = buildPath( arguments.path ),
-					minutesValid = 1
-				)
-			);
-		}
+            var fileContents = fileRead( tempFilePath );
+            fileDelete( tempFilePath );
+            return fileContents;
+        } else {
+            return fileRead(
+                variables.s3.getAuthenticatedURL(
+                    bucketName = variables.properties.bucketName,
+                    uri = buildPath( arguments.path ),
+                    minutesValid = 1
+                )
+            );
+        }
     }
 
     /**
@@ -557,8 +557,8 @@ component accessors="true" implements="cbfs.models.IDisk" {
      * @throws cbfs.FileNotFoundException
      */
     public boolean function isFile( required path ) {
-		var ext = extension( arguments.path );
-		ensureFileExists( arguments.path );
+        var ext = extension( arguments.path );
+        ensureFileExists( arguments.path );
         return len( ext );
     }
 
