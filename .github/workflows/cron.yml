@@ -37,11 +37,14 @@ jobs:
         run: |
           cd test-harness
           box server start cfengine=${{ matrix.cfengine }} javaVersion=${{ matrix.javaVersion }} port=8500 --noSaveSettings
-
-      - name: Run TestBox Tests
         env:
           aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+      - name: Run TestBox Tests
         run: |
           cd test-harness
           box testbox run runner="http://localhost:8500/tests/runner.cfm"
+        env:
+          aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
