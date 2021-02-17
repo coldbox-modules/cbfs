@@ -135,7 +135,7 @@ component accessors="true" implements="cbfs.models.IDisk" {
                     uri = buildPath( arguments.path )
                 )
                 .filter( function( acl ) {
-                    return acl.type == "Group" && findNoCase( "/AllUsers", acl.uri )
+                    return acl.type == "Group" && findNoCase( "/AllUsers", acl.uri );
                 } );
 
             var activePolicy = policies.len() ? policies[ 1 ] : javacast( "null", 0 );
@@ -428,7 +428,7 @@ component accessors="true" implements="cbfs.models.IDisk" {
                         if ( item.isDirectory ) {
                             this.delete( replace( item.key, getProperties().path, "" ) );
                         }
-                        variables.s3.deleteObject( bucketName = variables.properties.bucketName, uri = item.key )
+                        variables.s3.deleteObject( bucketName = variables.properties.bucketName, uri = item.key );
                     } );
                 return variables.s3.deleteObject(
                     bucketName = variables.properties.bucketName,
@@ -655,7 +655,7 @@ component accessors="true" implements="cbfs.models.IDisk" {
         return !!variables.s3
             .getBucket( bucketName = variables.properties.bucketName, prefix = fullPath )
             .filter( function( item ) {
-                return item.key == fullPath && item.isDirectory
+                return item.key == fullPath && item.isDirectory;
             } )
             .len();
     };
@@ -717,7 +717,7 @@ component accessors="true" implements="cbfs.models.IDisk" {
                 toURI = buildPath( replace( arguments.path, source, destination ) ),
                 acl = visiblity( path )
             );
-        } )
+        } );
     };
 
     /**
@@ -777,7 +777,7 @@ component accessors="true" implements="cbfs.models.IDisk" {
                     prefix = buildPath( arguments.directory ) & "/"
                 )
                 .filter( function( item ) {
-                    return !item.isDirectory
+                    return !item.isDirectory;
                 } )
                 .len()
         ) {
@@ -835,7 +835,7 @@ component accessors="true" implements="cbfs.models.IDisk" {
 
         if ( !isNull( arguments.recurse ) && !arguments.recurse ) {
             bucketContents = bucketContents.filter( function( item ) {
-                return getDirectoryFromPath( item.key ) == sourcePath
+                return getDirectoryFromPath( item.key ) == sourcePath;
             } );
         }
 
@@ -883,7 +883,7 @@ component accessors="true" implements="cbfs.models.IDisk" {
         return this
             .contents( argumentCollection = arguments )
             .filter( function( item ) {
-                return !item.isDirectory
+                return !item.isDirectory;
             } )
             .map( function( item ) {
                 return replaceNoCase( item.key, getProperties().path, "" );
@@ -909,7 +909,7 @@ component accessors="true" implements="cbfs.models.IDisk" {
         return this
             .contents( argumentCollection = arguments )
             .filter( function( item ) {
-                return item.isDirectory
+                return item.isDirectory;
             } )
             .map( function( item ) {
                 return replaceNoCase( item.key, getProperties().path, "" );
