@@ -35,7 +35,7 @@
         "**/.*",
         "test-harness",
         "*/.md",
-		"modules/s3sdk"
+		"modules/**"
     ],
     "scripts":{
         "format":"cfformat run ModuleConfig.cfc,models/**/*.cfc,test-harness/tests/resources/**/*.cfc,test-harness/tests/specs/**/*.cfc --overwrite",
