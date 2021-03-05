@@ -1,4 +1,4 @@
-component accessors="true" implements="cbfs.models.IDisk" {
+component accessors="true" extends="cbfs.models.AbstractDiskProvider" implements="cbfs.models.IDisk" {
 
     property name="name" type="string";
     property name="properties" type="struct";
