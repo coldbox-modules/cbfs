@@ -4,6 +4,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" implements
     property name="properties" type="struct";
 
     property name="streamBuilder" inject="StreamBuilder@cbstreams";
+	property name="wirebox" inject="wirebox";
 
     property name="s3";
 
@@ -16,7 +17,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" implements
      */
     public IDisk function configure( required string name, struct properties = {} ) {
         try {
-            variables.s3 = application.wirebox.getInstance( "AmazonS3@s3sdk" );
+            variables.s3 = variables.wirebox.getInstance( "AmazonS3@s3sdk" );
         } catch ( any e ) {
             throw(
                 type = "cbfs.ProviderConfigurationException",
