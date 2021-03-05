@@ -4,7 +4,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" implements
     property name="properties" type="struct";
 
     property name="streamBuilder" inject="StreamBuilder@cbstreams";
-	property name="wirebox" inject="wirebox";
+    property name="wirebox" inject="wirebox";
 
     property name="s3";
 
