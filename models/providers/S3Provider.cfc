@@ -438,21 +438,21 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" implements
         return this.info( arguments.path ).lastModified;
     }
 
-	/**
-	 * Returns the mimetype of a file
-	 *
-	 * @path
-	 **/
+    /**
+     * Returns the mimetype of a file
+     *
+     * @path
+     **/
     function mimeType( required path ) {
         return this.info( arguments.path ).type;
     }
 
-	/**
-	 * Deletes a file
-	 *
-	 * @path
-	 * @throwOnMissing   When true an error will be thrown if the file does not exist
-	 */
+    /**
+     * Deletes a file
+     *
+     * @path
+     * @throwOnMissing   When true an error will be thrown if the file does not exist
+     */
     public boolean function delete( required any path, boolean throwOnMissing = false ) {
         if ( this.exists( arguments.path ) ) {
             if ( isDirectory( arguments.path ) ) {
@@ -503,11 +503,11 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" implements
         return this.create( arguments.path, "" );
     }
 
-	/**
-	 * Returns the information on a file
-	 *
-	 * @path
-	 */
+    /**
+     * Returns the information on a file
+     *
+     * @path
+     */
     struct function info( required path ) {
         ensureFileExists( arguments.path );
         var filePath = buildPath( arguments.path );
@@ -1120,11 +1120,11 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" implements
 
     /************************* PRIVATE METHODS *******************************/
 
-	/**
-	 * Expands the full path of the requested provider route
-	 *
-	 * @path  The path to be expanded
-	 */
+    /**
+     * Expands the full path of the requested provider route
+     *
+     * @path  The path to be expanded
+     */
     private function buildPath( required string path ) {
         arguments.path = replace( arguments.path, "\", "/", "all" );
         var pathSegments = listToArray( getProperties().path, "/" );
@@ -1133,12 +1133,12 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" implements
         return pathSegments.toList( "/" );
     }
 
-	/**
-	 * Ensures a file exists
-	 *
-	 * @path The path to be checked for existence
-	 * @throws cbfs.FileNotFoundException  Throws if the file does not exist
-	 */
+    /**
+     * Ensures a file exists
+     *
+     * @path The path to be checked for existence
+     * @throws cbfs.FileNotFoundException  Throws if the file does not exist
+     */
     private function ensureFileExists( required path ) {
         if ( !this.exists( arguments.path ) ) {
             throw( type = "cbfs.FileNotFoundException", message = "File [#arguments.path#] not found." );
@@ -1146,11 +1146,11 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" implements
         return this;
     }
 
-	/**
-	 * Ensures a directory exists - will create the directory if it does not exist
-	 *
-	 * @path The path to be checked for existence
-	 */
+    /**
+     * Ensures a directory exists - will create the directory if it does not exist
+     *
+     * @path The path to be checked for existence
+     */
     private function ensureDirectoryExists( required path ) {
         var p = buildPath( arguments.path );
         var directoryPath = len( extension( p ) ) ? replaceNoCase( p, getFileFromPath( p ), "" ) : p;
