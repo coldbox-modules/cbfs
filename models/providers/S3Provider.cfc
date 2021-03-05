@@ -7,8 +7,6 @@ component accessors="true" implements="cbfs.models.IDisk" {
 
     property name="s3";
 
-    setting requestTimeout="500";
-
     /**
      * Configure the provider. Usually called at startup.
      *
