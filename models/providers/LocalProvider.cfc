@@ -217,19 +217,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" implements
      * @throwOnMissing   When true an error will be thrown if the file does not exist
      */
     public boolean function delete( required any path, boolean throwOnMissing = false ) {
-        if ( isSimpleValue( arguments.path ) ) {
-            if ( !throwOnMissing ) {
-                if ( !this.exists( arguments.path ) ) {
-                    return false;
-                }
-            }
-            if ( isDirectory( arguments.path ) ) {
-                deleteDirectory( arguments.path, true );
-            } else {
-                fileDelete( buildPath( arguments.path ) );
-            }
-            return true;
-        }
+		if( isSimpleValue( arguments.path ) ) arguments.path = listToArray( arguments.path );
         for ( var file in arguments.path ) {
             if ( !throwOnMissing ) {
                 if ( !this.exists( file ) ) {
