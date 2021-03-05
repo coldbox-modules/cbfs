@@ -5,6 +5,17 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" implements
         "dir": { "public": "666", "private": "600", "readonly": "644" }
     };
 
+	/**
+     * Create a file in the disk
+     *
+     * @path The file path to use for storage
+     * @contents The contents of the file to store
+     * @visibility The storage visibility of the file, available options are `public, private, readonly` or a custom data type the implemented driver can interpret
+     * @metadata Struct of metadata to store with the file
+     * @overwrite If we should overwrite the files or not at the destination if they exist, defaults to true
+     *
+     * @return LocalProvider
+     */
     function create(
         required path,
         required contents,
@@ -34,6 +45,14 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" implements
         return this;
     }
 
+	/**
+     * Set the storage visibility of a file, available options are `public, private, readonly` or a custom data type the implemented driver can interpret
+     *
+     * @path The target file
+     * @visibility The storage visibility of the file, available options are `public, private, readonly` or a custom data type the implemented driver can interpret
+     *
+     * @return LocalProvider
+     */
     public IDisk function setVisibility( required string path, required string visibility ) {
         if ( isWindows() ) {
             switch ( arguments.visibility ) {
@@ -69,6 +88,11 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" implements
         return this;
     };
 
+	/**
+     * Get the storage visibility of a file, the return format can be a string of `public, private, readonly` or a custom data type the implemented driver can interpret.
+     *
+     * @path The target file
+     */
     public string function visibility( required string path ) {
         var file = getFileInfo( arguments.path );
         if ( !file.canRead ) {
@@ -80,6 +104,18 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" implements
         return "public";
     };
 
+	/**
+     * Prepend contents to the beginning of a file
+     *
+     * @path The file path to use for storage
+     * @contents The contents of the file to prepend
+     * @metadata Struct of metadata to store with the file
+     * @throwOnMissing Boolean flag to throw if the file is missing. Otherwise it will be created if missing.
+     *
+     * @throws cbfs.FileNotFoundException
+     *
+     * @return LocalProvider
+     */
     function prepend(
         required string path,
         required contents,
@@ -99,6 +135,18 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" implements
         );
     }
 
+	/**
+     * Append contents to the end of a file
+     *
+     * @path The file path to use for storage
+     * @contents The contents of the file to append
+     * @metadata Struct of metadata to store with the file
+     * @throwOnMissing Boolean flag to throw if the file is missing. Otherwise it will be created if missing.
+     *
+     * @throws cbfs.FileNotFoundException
+     *
+     * @return LocalProvider
+     */
     function append(
         required string path,
         required contents,
@@ -118,16 +166,39 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" implements
         );
     }
 
+	/**
+     * Get the contents of a file
+     *
+     * @path The file path to retrieve
+     *
+     * @throws cbfs.FileNotFoundException
+     *
+     * @return The contents of the file
+     */
     any function get( required path ) {
         ensureFileExists( arguments.path );
         return fileRead( buildPath( arguments.path ) );
     }
 
+	/**
+     * Get the contents of a file as binary, such as an executable or image
+     *
+     * @path The file path to retrieve
+     *
+     * @throws cbfs.FileNotFoundException
+     *
+     * @return A binary representation of the file
+     */
     any function getAsBinary( required path ) {
         ensureFileExists( arguments.path );
         return fileReadBinary( buildPath( arguments.path ) );
     };
 
+	/**
+     * Validate if a file/directory exists
+     *
+     * @path The file/directory path to verify
+     */
     boolean function exists( required string path ) {
         if ( isDirectory( arguments.path ) ) {
             return directoryExists( buildPath( arguments.path ) );
@@ -139,6 +210,12 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" implements
         }
     }
 
+	/**
+	 * Deletes a file
+	 *
+	 * @path
+	 * @throwOnMissing   When true an error will be thrown if the file does not exist
+	 */
     public boolean function delete( required any path, boolean throwOnMissing = false ) {
         if ( isSimpleValue( arguments.path ) ) {
             if ( !throwOnMissing ) {
@@ -168,11 +245,25 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" implements
         return true;
     }
 
+	/**
+     * Retrieve the file's last modified timestamp
+     *
+     * @path The file path location
+     *
+     * @throws cbfs.FileNotFoundException
+     */
     function lastModified( required path ) {
         ensureFileExists( arguments.path );
         return getFileInfo( buildPath( arguments.path ) ).lastModified;
     }
 
+	/**
+     * Is the path a file or not
+     *
+     * @path The file path
+     *
+     * @throws cbfs.FileNotFoundException
+     */
     boolean function isFile( required path ) {
         if ( isDirectory( arguments.path ) ) {
             return false;
@@ -181,14 +272,33 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" implements
         return getFileInfo( buildPath( arguments.path ) ).type EQ "file";
     }
 
+	/**
+     * Is the path writable or not
+     *
+     * @path The file path
+     */
     boolean function isWritable( required path ) {
         return getFileInfo( buildPath( arguments.path ) ).canWrite;
     }
 
+	/**
+     * Is the path readable or not
+     *
+     * @path The file path
+     */
     boolean function isReadable( required path ) {
         return getFileInfo( buildPath( arguments.path ) ).canRead;
     }
 
+	/**
+     * Create a new directory
+     *
+     * @directory The directory path
+     * @createPath Create parent directory paths when they do not exist
+     * @ignoreExists If false, it will throw an error if the directory already exists, else it ignores it if it exists. This should default to true.
+     *
+     * @return LocalProvider
+     */
     function createDirectory( required directory, boolean createPath, boolean ignoreExists = false ) {
         if ( !arguments.ignoreExists AND directoryExists( buildPath( arguments.directory ) ) ) {
             throw( "Directory Exists" );
@@ -198,6 +308,13 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" implements
         }
     };
 
+	/**
+	 * Renames a directory path
+	 *
+	 * @oldPath The source directory
+     * @newPath The destination directory
+     * @createPath If false, expects all parent directories to exist, true will generate all necessary directories. Default is true.
+	 */
     function renameDirectory( required oldPath, required newPath, boolean createPath ) {
         directoryRename( buildPath( arguments.oldPath ), buildPath( arguments.newPath ) );
         return this;
@@ -230,6 +347,14 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" implements
         } );
     };
 
+	/**
+     * Get an array listing of all files and directories in a directory.
+     *
+     * @directory The directory
+     * @filter A string wildcard or a lambda/closure that receives the file path and should return true to include it in the returned array or not.
+     * @sort Columns by which to sort. e.g. Directory, Size DESC, DateLastModified.
+     * @recurse Recurse into subdirectories, default is false
+     */
     array function contents(
         required directory,
         any filter,
@@ -268,13 +393,22 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" implements
     }
 
     /************************* PRIVATE METHODS ****************************/
-
+	/**
+	 * Determines whether a provided path is a directory or not
+	 *
+	 * @path  The path to be checked
+	 */
     private function buildPath( required string path ) {
         // remove all relative dots
         arguments.path = reReplace( arguments.path, "\.\.\/+", "", "ALL" );
         return expandPath( getProperties().path & "/" & arguments.path );
     }
 
+	/**
+	 * Gets the relative path from a path object
+	 *
+	 * @obj the path object
+	 */
     private function getRelativePath( required obj ) {
         var path = replace( obj.directory, getProperties().path, "" ) & "/" & obj.name;
         path = replace( path, "\", "/", "ALL" );
@@ -282,6 +416,11 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" implements
         return path;
     }
 
+	/**
+	 * Ensures a directory exists - will create the directory if it does not exist
+	 *
+	 * @path The path to be checked for existence
+	 */
     private function ensureDirectoryExists( required path ) {
         var p = buildPath( arguments.path );
         var directoryPath = replaceNoCase( p, getFileFromPath( p ), "" );

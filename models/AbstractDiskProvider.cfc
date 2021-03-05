@@ -280,11 +280,22 @@ component accessors="true" {
         return this.info( buildPath( arguments.path ) ).lastModified;
     }
 
+	/**
+	 * Returns the mimetype of a file
+	 *
+	 * @path
+	 **/
     function mimeType( required path ) {
         ensureFileExists( arguments.path );
         return createObject( "java", "java.net.URLConnection" ).guessContentTypeFromName( arguments.path );
     }
 
+	/**
+	 * Deletes a file
+	 *
+	 * @path
+	 * @throwOnMissing   When true an error will be thrown if the file does not exist
+	 */
     public boolean function delete( required string path, boolean throwOnMissing = false ) {
         throw( "Implement in a subclass" );
     }
@@ -318,6 +329,11 @@ component accessors="true" {
         return this.create( arguments.path, "" );
     }
 
+	/**
+	 * Returns the information on a file
+	 *
+	 * @path
+	 */
     struct function info( required path ) {
         ensureFileExists( arguments.path );
         return getFileInfo( buildPath( arguments.path ) );
@@ -775,6 +791,12 @@ component accessors="true" {
     };
 
     /************************* PRIVATE METHODS *******************************/
+
+	/**
+	 * Determines whether a provided path is a directory or not
+	 *
+	 * @path  The path to be checked
+	 */
     private function isDirectoryPath( required path ) {
         if ( !len( getFileFromPath( buildPath( arguments.path ) ) ) && !!len( extension( arguments.path ) ) ) {
             return true;
@@ -782,17 +804,32 @@ component accessors="true" {
         return false;
     }
 
+	/**
+	 * Expands the full path of the requested provider route
+	 *
+	 * @path  The path to be expanded
+	 */
     private function buildPath( required string path ) {
-        writeDump( var = getProperties().path );
         return expandPath( getProperties().path & "/" & arguments.path );
     }
 
+	/**
+	 * Ensures a file exists
+	 *
+	 * @path The path to be checked for existence
+	 * @throws cbfs.FileNotFoundException  Throws if the file does not exist
+	 */
     private function ensureFileExists( required path ) {
         if ( !this.exists( arguments.path ) ) {
             throw( type = "cbfs.FileNotFoundException", message = "File [#arguments.path#] not found." );
         }
     }
 
+	/**
+	 * Ensures a directory exists - will create the directory if it does not exist
+	 *
+	 * @path The path to be checked for existence
+	 */
     private function ensureDirectoryExists( required path ) {
         var p = buildPath( arguments.path );
         var directoryPath = replaceNoCase( p, getFileFromPath( p ), "" );

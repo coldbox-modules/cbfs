@@ -14,7 +14,7 @@ component accessors="true" implements="cbfs.models.IDisk" {
      *
      * @properties A struct of configuration data for this provider, usually coming from the configuration file
      *
-     * @return IDiskProvider
+     * @return S3Provider
      */
     public IDisk function configure( required string name, struct properties = {} ) {
         try {
@@ -60,7 +60,7 @@ component accessors="true" implements="cbfs.models.IDisk" {
      * @metadata Struct of metadata to store with the file
      * @overwrite If we should overwrite the files or not at the destination if they exist, defaults to true
      *
-     * @return IDiskProvider
+     * @return S3Provider
      */
     function create(
         required path,
@@ -103,7 +103,7 @@ component accessors="true" implements="cbfs.models.IDisk" {
      * @path The target file
      * @visibility The storage visibility of the file, available options are `public, private, readonly` or a custom data type the implemented driver can interpret
      *
-     * @return IDiskProvider
+     * @return S3Provider
      */
     public IDisk function setVisibility( required string path, required string visibility ) {
         switch ( arguments.visibility ) {
@@ -181,7 +181,7 @@ component accessors="true" implements="cbfs.models.IDisk" {
      *
      * @throws cbfs.FileNotFoundException
      *
-     * @return IDiskProvider
+     * @return S3Provider
      */
     function prepend(
         required string path,
@@ -212,7 +212,7 @@ component accessors="true" implements="cbfs.models.IDisk" {
      *
      * @throws cbfs.FileNotFoundException
      *
-     * @return IDiskProvider
+     * @return S3Provider
      */
     function append(
         required string path,
@@ -242,7 +242,7 @@ component accessors="true" implements="cbfs.models.IDisk" {
      *
      * @throws cbfs.FileNotFoundException
      *
-     * @return IDiskProvider
+     * @return S3Provider
      */
     function copy( required source, required destination, boolean overwrite = false ) {
         if ( !arguments.overwrite && this.exists( arguments.destination ) ) {
@@ -280,7 +280,7 @@ component accessors="true" implements="cbfs.models.IDisk" {
      *
      * @throws cbfs.FileNotFoundException
      *
-     * @return IDiskProvider
+     * @return S3Provider
      */
     function move( required source, required destination, boolean overwrite = false ) {
         if ( !arguments.overwrite && this.exists( arguments.destination ) ) {
@@ -317,7 +317,7 @@ component accessors="true" implements="cbfs.models.IDisk" {
      *
      * @throws cbfs.FileNotFoundException
      *
-     * @return IDiskProvider
+     * @return S3Provider
      */
     function rename( required source, required destination, boolean overwrite = false ) {
         return this.move( argumentCollection = arguments );
@@ -439,10 +439,21 @@ component accessors="true" implements="cbfs.models.IDisk" {
         return this.info( arguments.path ).lastModified;
     }
 
+	/**
+	 * Returns the mimetype of a file
+	 *
+	 * @path
+	 **/
     function mimeType( required path ) {
         return this.info( arguments.path ).type;
     }
 
+	/**
+	 * Deletes a file
+	 *
+	 * @path
+	 * @throwOnMissing   When true an error will be thrown if the file does not exist
+	 */
     public boolean function delete( required any path, boolean throwOnMissing = false ) {
         if ( this.exists( arguments.path ) ) {
             if ( isDirectory( arguments.path ) ) {
@@ -478,7 +489,7 @@ component accessors="true" implements="cbfs.models.IDisk" {
      *
      * @throws cbfs.PathNotFoundException
      *
-     * @return IDiskProvider
+     * @return S3Provider
      */
     function touch( required path, boolean createPath = true ) {
         if ( this.exists( arguments.path ) ) {
@@ -493,6 +504,11 @@ component accessors="true" implements="cbfs.models.IDisk" {
         return this.create( arguments.path, "" );
     }
 
+	/**
+	 * Returns the information on a file
+	 *
+	 * @path
+	 */
     struct function info( required path ) {
         ensureFileExists( arguments.path );
         var filePath = buildPath( arguments.path );
@@ -692,7 +708,7 @@ component accessors="true" implements="cbfs.models.IDisk" {
      * @createPath Create parent directory paths when they do not exist
      * @ignoreExists If false, it will throw an error if the directory already exists, else it ignores it if it exists. This should default to true.
      *
-     * @return IDiskProvider
+     * @return S3Provider
      */
     function createDirectory( required directory, boolean createPath, boolean ignoreExists ) {
         return ensureDirectoryExists( arguments.directory );
@@ -712,7 +728,7 @@ component accessors="true" implements="cbfs.models.IDisk" {
      * @filter A string wildcard or a lambda/closure that receives the file path and should return true to copy it.
      * @createPath If false, expects all parent directories to exist, true will generate all necessary directories. Default is true.
      *
-     * @return IDiskProvider
+     * @return S3Provider
      */
     function copyDirectory(
         required source,
@@ -752,7 +768,7 @@ component accessors="true" implements="cbfs.models.IDisk" {
      * @newPath The destination directory
      * @createPath If false, expects all parent directories to exist, true will generate all necessary directories. Default is true.
      *
-     * @return IDiskProvider
+     * @return S3Provider
      */
     function moveDirectory( required oldPath, required newPath, boolean createPath ) {
         return this.move(
@@ -769,7 +785,7 @@ component accessors="true" implements="cbfs.models.IDisk" {
      * @newPath The destination directory
      * @createPath If false, expects all parent directories to exist, true will generate all necessary directories. Default is true.
      *
-     * @return IDiskProvider
+     * @return S3Provider
      */
     function renameDirectory( required oldPath, required newPath, boolean createPath ) {
         return this.move(
@@ -820,7 +836,7 @@ component accessors="true" implements="cbfs.models.IDisk" {
      *
      * @directory The directory
      *
-     * @return IDiskProvider
+     * @return S3Provider
      */
     function cleanDirectory( required directory ) {
         this.deleteDirectory( arguments.directory, true );
@@ -1105,6 +1121,11 @@ component accessors="true" implements="cbfs.models.IDisk" {
 
     /************************* PRIVATE METHODS *******************************/
 
+	/**
+	 * Expands the full path of the requested provider route
+	 *
+	 * @path  The path to be expanded
+	 */
     private function buildPath( required string path ) {
         arguments.path = replace( arguments.path, "\", "/", "all" );
         var pathSegments = listToArray( getProperties().path, "/" );
@@ -1113,6 +1134,12 @@ component accessors="true" implements="cbfs.models.IDisk" {
         return pathSegments.toList( "/" );
     }
 
+	/**
+	 * Ensures a file exists
+	 *
+	 * @path The path to be checked for existence
+	 * @throws cbfs.FileNotFoundException  Throws if the file does not exist
+	 */
     private function ensureFileExists( required path ) {
         if ( !this.exists( arguments.path ) ) {
             throw( type = "cbfs.FileNotFoundException", message = "File [#arguments.path#] not found." );
@@ -1120,6 +1147,11 @@ component accessors="true" implements="cbfs.models.IDisk" {
         return this;
     }
 
+	/**
+	 * Ensures a directory exists - will create the directory if it does not exist
+	 *
+	 * @path The path to be checked for existence
+	 */
     private function ensureDirectoryExists( required path ) {
         var p = buildPath( arguments.path );
         var directoryPath = len( extension( p ) ) ? replaceNoCase( p, getFileFromPath( p ), "" ) : p;
