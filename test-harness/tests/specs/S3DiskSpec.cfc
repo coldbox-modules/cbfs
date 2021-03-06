@@ -1,7 +1,7 @@
 component extends="tests.resources.AbstractDiskSpec" {
 
     this.loadColdbox = true;
-	variables.testDirectoryName = "tests/" & createUUID();
+    variables.testDirectoryName = "tests/" & createUUID();
 
     function getDisk( string name = "test", struct properties = { "path": variables.testDirectoryName } ) {
         var disk = prepareMock( new cbfs.models.providers.S3Provider() );
