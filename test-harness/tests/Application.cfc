@@ -28,6 +28,11 @@ component{
 	this.mappings[ "/moduleroot" ] = moduleRootPath;
 	this.mappings[ "/#request.MODULE_NAME#" ] = moduleRootPath & "#request.MODULE_NAME#";
 
+	public void function onRequestStart(){
+		// Request a high timeout for remote provider tests and large specs
+		setting requestTimeout="500";
+	}
+
 	public void function onRequestEnd() {
 
 		if( !isNull( application.cbController ) ){
