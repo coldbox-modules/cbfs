@@ -330,15 +330,17 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" implements
             var tempFileName = createUUID() & "." & extension( arguments.path );
 
             if ( getProperties().keyExists( "tempDirectory" ) ) {
-                var tempDir = getProperties().tempDirectory;
-                if ( !directoryExists( expandPath( tempDir ) ) ) directoryCreate( expandPath( tempDir ) );
+                ){
+                    var tempDir = getProperties().tempDirectory;
+                    if ( !directoryExists( expandPath( tempDir ) ) ) directoryCreate( expandPath( tempDir ) );
 
-                var tempFilePath = expandPath( tempDir & "/" & tempFileName );
-            } else {
-                var tempFilePath = getTempFile( getTempDirectory(), tempFileName );
-                // the function above touches a file on ACF so we need to delete it
-                if ( fileExists( tempFilePath ) ) fileDelete( tempFilePath );
-            }
+                    var tempFilePath = expandPath( tempDir & "/" & tempFileName );
+                }
+                else {
+                    var tempFilePath = getTempFile( getTempDirectory(), tempFileName );
+                    // the function above touches a file on ACF so we need to delete it
+                    if ( fileExists( tempFilePath ) ) fileDelete( tempFilePath );
+                }
 
             variables.s3.downloadObject(
                 bucketName = variables.properties.bucketName,
