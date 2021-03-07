@@ -396,7 +396,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" implements
      * @throws cbfs.FileNotFoundException
      */
     public string function url( required string path ) {
-        return temporaryURL( path = arguments.path, expiration = 1 );
+        return temporaryURL( path = arguments.path );
     }
 
     /**
@@ -407,7 +407,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" implements
      *
      * @throws cbfs.FileNotFoundException
      */
-    string function temporaryURL( required path, numeric expiration ) {
+    string function temporaryURL( required path, numeric expiration=1 ) {
         ensureFileExists( arguments.path );
         return variables.s3.getAuthenticatedURL(
             bucketName = variables.properties.bucketName,
