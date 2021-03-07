@@ -155,14 +155,10 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" implements
                 return variables.s3.ACL_PRIVATE;
             }
         } catch ( S3SDKError e ) {
-            writeDump( info( path ) );
-            abort;
             throw(
                 type = "cbfs.S3Provider.InvalidPermissionsException",
                 message = "An error occurred while attempting to read the ACL permission on the requested object [#buildPath( arguments.path )#]. Please verify the permissions of your AWS credentials."
             );
-        } catch ( any e ) {
-            rethrow;
         }
     }
 
@@ -591,8 +587,6 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" implements
             ensureFileExists( path );
         } catch ( cbfs.FileNotFoundException e ) {
             return false;
-        } catch ( any e ) {
-            rethrow;
         }
         return visibility( path ) != "private";
     }
@@ -607,8 +601,6 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" implements
             ensureFileExists( path );
         } catch ( cbfs.FileNotFoundException e ) {
             return false;
-        } catch ( any e ) {
-            rethrow;
         }
         return visibility( path ) != "private";
     }
@@ -1163,14 +1155,6 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" implements
             variables.s3.putObjectFolder( bucketName = variables.properties.bucketName, uri = directoryPath );
         }
         return this;
-    }
-
-    /**
-     * Check if is Windows
-     */
-    private function isWindows() {
-        var system = createObject( "java", "java.lang.System" );
-        return reFindNoCase( "Windows", system.getProperties()[ "os.name" ] );
     }
 
 }
