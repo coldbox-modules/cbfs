@@ -4,12 +4,10 @@
     "slug":"tester",
     "private":true,
     "description":"",
-    "dependencies":{
-        "coldbox":"^6.2.2+1396",
-        "testbox":"^4.2.1+400"
-    },
+    "dependencies":{},
     "devDependencies":{
-        "testbox":"^3.0.0"
+        "coldbox":"^6",
+        "testbox":"^4"
     },
     "installPaths":{
         "coldbox":"coldbox/",
