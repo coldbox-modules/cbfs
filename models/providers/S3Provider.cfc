@@ -33,10 +33,6 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" implements
             arguments.properties.visiblity = "public";
         }
 
-        if ( !arguments.properties.keyExists( "tempDirectory" ) ) {
-            arguments.properties.tempDirectory = "/includes/temp";
-        }
-
         setName( arguments.name );
         setProperties( arguments.properties );
         return this;
@@ -335,11 +331,19 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" implements
         ensureFileExists( arguments.path );
         // ACF will not allow us to read the file directly via URL
         if ( server.coldfusion.productVersion.listFirst() == 2016 || server.coldfusion.productVersion.listFirst() == 2016 ) {
-            var tempDir = getProperties().tempDirectory;
-            if ( !directoryExists( expandPath( tempDir ) ) ) directoryCreate( expandPath( tempDir ) );
 
             var tempFileName = createUUID() & "." & extension( arguments.path );
-            var tempFilePath = expandPath( tempDir & "/" & tempFileName );
+
+            if( getProperties.keyExists(), "tempDirectory" ){
+				var tempDir = getProperties().tempDirectory;
+				if ( !directoryExists( expandPath( tempDir ) ) ) directoryCreate( expandPath( tempDir ) );
+
+				var tempFilePath = expandPath( tempDir & "/" & tempFileName );
+			} else {
+				var tempFilePath = getTempFile( getTempDirectory(), tempFileName );
+				//the function above touches a file on ACF so we need to delete it
+				if( fileExists( tempFilePath ) ) fileDelete( tempFilePath );
+			}
 
             variables.s3.downloadObject(
                 bucketName = variables.properties.bucketName,
