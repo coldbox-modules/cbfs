@@ -329,7 +329,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" implements
         if ( server.coldfusion.productVersion.listFirst() == 2016 || server.coldfusion.productVersion.listFirst() == 2016 ) {
             var tempFileName = createUUID() & "." & extension( arguments.path );
 
-            if ( getProperties.keyExists(),"tempDirectory" ) {
+            if ( getProperties().keyExists(),"tempDirectory" ) ) {
                 var tempDir = getProperties().tempDirectory;
                 if ( !directoryExists( expandPath( tempDir ) ) ) directoryCreate( expandPath( tempDir ) );
 
