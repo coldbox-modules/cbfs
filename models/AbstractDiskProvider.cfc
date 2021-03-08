@@ -773,7 +773,6 @@ component accessors="true" {
     /************************* PRIVATE METHODS *******************************/
 
     private function buildPath( required string path ) {
-        writeDump( var = getProperties().path );
         return expandPath( getProperties().path & "/" & arguments.path );
     }
 
