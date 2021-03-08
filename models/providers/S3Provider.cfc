@@ -326,7 +326,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" implements
     any function get( required path ) {
         ensureFileExists( arguments.path );
         // ACF will not allow us to read the file directly via URL
-        if ( server.coldfusion.productVersion.listFirst() == 2016 || server.coldfusion.productVersion.listFirst() == 2016 ) {
+        if ( server.coldfusion.productVersion.listFirst() == 2016 || server.coldfusion.productVersion.listFirst() == 2018 ) {
             var tempFileName = createUUID() & "." & extension( arguments.path );
 
             if ( getProperties().keyExists( "tempDirectory" ) ) {
