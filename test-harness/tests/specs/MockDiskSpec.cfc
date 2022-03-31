@@ -1,8 +1,9 @@
 component extends="tests.resources.AbstractDiskSpec" {
 
-    function getDisk() {
-        var disk = new cbfs.models.providers.MockProvider();
-        disk.configure( "test" );
+    function getDisk( string name = "test", struct properties = { "path": "" } ) {
+        var disk = prepareMock( new cbfs.models.providers.MockProvider() );
+        disk.configure( arguments.name, arguments.properties );
+        makePublic( disk, "buildPath", "buildPath" );
         return disk;
     }
 

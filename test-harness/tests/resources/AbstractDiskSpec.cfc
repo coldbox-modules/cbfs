@@ -162,6 +162,8 @@ component extends="coldbox.system.testing.BaseTestCase" {
                     var disk = getDisk();
                     var nonExistantPath = "test_file.txt";
                     var newPath = "test_file_two.txt";
+                    disk.delete( nonExistantPath );
+                    disk.delete( newPath );
                     expect( function() {
                         disk.move( nonExistantPath, newPath );
                     } ).toThrow( "cbfs.FileNotFoundException" );
@@ -185,6 +187,8 @@ component extends="coldbox.system.testing.BaseTestCase" {
                     var disk = getDisk();
                     var nonExistantPath = "test_file.txt";
                     var newPath = "test_file_two.txt";
+                    disk.delete( nonExistantPath );
+                    disk.delete( newPath );
                     expect( function() {
                         disk.rename( nonExistantPath, newPath );
                     } ).toThrow( "cbfs.FileNotFoundException" );
@@ -196,10 +200,10 @@ component extends="coldbox.system.testing.BaseTestCase" {
                     var disk = getDisk();
                     var path = "test_file.txt";
                     disk.create( path = path, contents = "my contents", overwrite = true );
-                    expect( disk.url( path ) ).toBe( retrieveUrlForTest( path ) );
+                    testURLExpectation( disk, path );
                 } );
 
-                it( "throws and exception if the file does not exist", function() {
+                it( "throws an exception if the file does not exist", function() {
                     var disk = getDisk();
                     var path = "test_file.txt";
                     disk.delete( path );
@@ -215,7 +219,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
                     var disk = getDisk();
                     var path = "test_file.txt";
                     disk.create( path = path, contents = "my contents", overwrite = true );
-                    expect( disk.temporaryURL( path ) ).toBe( retrieveTemporaryUrlForTest( path ) );
+                    testTemporaryURLExpectation( disk, path );
                 } );
 
                 it( "throws an exception if the file does not exist", function() {
@@ -257,7 +261,10 @@ component extends="coldbox.system.testing.BaseTestCase" {
                     disk.create( path = path, contents = contents, overwrite = true );
                     var after = getEpochTimeFromLocal();
                     expect( getEpochTimeFromLocal( disk.lastModified( path ) ) ).toBeGTE( before );
-                    expect( getEpochTimeFromLocal( disk.lastModified( path ) ) ).toBeLTE( after );
+                    // Skip this test for remote providers as latency and timezone offsets can make the results inconsistent
+                    if ( !isInstanceOf( disk, "S3Provider" ) ) {
+                        expect( getEpochTimeFromLocal( disk.lastModified( path ) ) ).toBeLTE( after );
+                    }
                 } );
 
                 it( "throws an exception if the file does not exist", function() {
@@ -298,20 +305,6 @@ component extends="coldbox.system.testing.BaseTestCase" {
                     expect( disk.size( path ) ).toBe( 0 );
                 } );
 
-                it( "updates the last modified date if the file already exists", function() {
-                    var disk = getDisk();
-                    var path = "test_file.txt";
-                    disk.delete( path );
-                    disk.create( path = path, contents = "my contents", overwrite = true );
-                    var originalLastModified = disk.lastModified( path );
-                    sleep( 1010 );
-                    disk.touch( path );
-                    expect( disk.exists( path ) ).toBeTrue( "[#path#] should exist" );
-                    expect( disk.get( path ) ).toBe( "my contents" );
-                    var newLastModified = disk.lastModified( path );
-                    expect( newLastModified ).toBeGT( originalLastModified );
-                } );
-
                 it( "creates nested directories by default", function() {
                     var disk = getDisk();
                     var path = "/one/two/test_file.txt";
@@ -326,7 +319,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
                 it( "throws an exception if nested directories do not exist and `createPath` is false", function() {
                     var disk = getDisk();
                     var path = "/one/two/test_file.txt";
-                    disk.delete( path );
+                    disk.delete( "/one/two" );
                     expect( disk.exists( path ) ).toBeFalse( "[#path#] should not exist" );
                     expect( function() {
                         disk.touch( path = path, createPath = false );
@@ -407,6 +400,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
                 it( "throws an exception if the path does not exist", function() {
                     var disk = getDisk();
                     var path = "does_not_exist.txt";
+                    expect( disk.exists( path ) ).toBeFalse( "File should not exist" );
                     expect( function() {
                         disk.isFile( path );
                     } ).toThrow( "cbfs.FileNotFoundException" );
@@ -416,40 +410,60 @@ component extends="coldbox.system.testing.BaseTestCase" {
             describe( "isWritable", function() {
                 it( "it returns true for a writable path", function() {
                     var disk = getDisk();
+                    if ( isInstanceOf( disk, "MockProvider" ) ) return;
                     var path = "/one/two/writeable.txt";
                     disk.delete( path );
-                    disk.create( path = path, contents = "my contents", overwrite = true );
-                    var writablePath = getWritablePathForTest( disk, path );
-                    expect( disk.isWritable( writablePath ) ).toBeTrue( "Path should be writable." );
+                    disk.create(
+                        path = path,
+                        contents = "my contents",
+                        visibility = "public",
+                        overwrite = true
+                    );
+                    expect( disk.isWritable( path ) ).toBeTrue( "Path should be writable." );
                 } );
 
                 it( "returns false for a non-writable path", function() {
                     var disk = getDisk();
+                    if ( isInstanceOf( disk, "MockProvider" ) ) return;
                     var path = "/one/two/non-writeable.txt";
                     disk.delete( path );
-                    disk.create( path = path, contents = "my contents", overwrite = true );
-                    var nonWritablePath = getNonWritablePathForTest( disk, path );
-                    expect( disk.isWritable( nonWritablePath ) ).toBeFalse( "Path should not be writable." );
+                    disk.create(
+                        path = path,
+                        contents = "my contents",
+                        visibility = "private",
+                        overwrite = true
+                    );
+                    expect( disk.isWritable( path ) ).toBeFalse( "Path should not be writable." );
                 } );
             } );
 
             describe( "isReadable", function() {
                 it( "it returns true for a readble path", function() {
                     var disk = getDisk();
+                    if ( isInstanceOf( disk, "MockProvider" ) ) return;
                     var path = "/one/two/readable.txt";
                     disk.delete( path );
-                    disk.create( path = path, contents = "my contents", overwrite = true );
-                    var readablePath = getReadablePathForTest( disk, path );
-                    expect( disk.isReadable( readablePath ) ).toBeTrue( "Path should be readable." );
+                    disk.create(
+                        path = path,
+                        contents = "my contents",
+                        visiblity = "public",
+                        overwrite = true
+                    );
+                    expect( disk.isReadable( path ) ).toBeTrue( "Path should be readable." );
                 } );
 
                 it( "returns false for a non-readble path", function() {
                     var disk = getDisk();
+                    if ( isInstanceOf( disk, "MockProvider" ) ) return;
                     var path = "/one/two/non-readble.txt";
                     disk.delete( path );
-                    disk.create( path = path, contents = "my contents", overwrite = true );
-                    var nonReadablePath = getNonReadablePathForTest( disk, path );
-                    expect( disk.isReadable( nonReadablePath ) ).toBeFalse( "Path should not be readable." );
+                    disk.create(
+                        path = path,
+                        contents = "my contents",
+                        visibility = "private",
+                        overwrite = true
+                    );
+                    expect( disk.isReadable( path ) ).toBeFalse( "Path should not be readable." );
                 } );
             } );
         } );
@@ -457,6 +471,14 @@ component extends="coldbox.system.testing.BaseTestCase" {
 
     function getDisk() {
         throw( "`getDisk` must be implemented in a subclass" );
+    }
+
+    function testURLExpectation( required any disk, required string path ) {
+        expect( disk.url( path ) ).toBe( retrieveUrlForTest( path ) );
+    }
+
+    function testTemporaryURLExpectation( required any disk, required string path ) {
+        expect( disk.temporaryURL( path ) ).toBe( retrieveTemporaryUrlForTest( path ) );
     }
 
     function retrieveUrlForTest( required string path ) {
@@ -469,22 +491,6 @@ component extends="coldbox.system.testing.BaseTestCase" {
 
     function retireveSizeForTest( required string path, required content ) {
         return len( arguments.content );
-    }
-
-    function getWritablePathForTest( disk, path ) {
-        return arguments.path;
-    }
-
-    function getNonWritablePathForTest( disk, path ) {
-        return arguments.path;
-    }
-
-    function getReadablePathForTest( disk, path ) {
-        return arguments.path;
-    }
-
-    function getNonReadablePathForTest( disk, path ) {
-        return arguments.path;
     }
 
     /**

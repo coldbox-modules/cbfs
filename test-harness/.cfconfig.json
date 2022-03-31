@@ -2,7 +2,7 @@
     "debuggingEnabled":true,
     "debuggingReportExecutionTimes":false,
     "disableInternalCFJavaComponents":false,
-    "inspectTemplate":"always",
+    "inspectTemplate":"once",
     "requestTimeout":"0,0,0,90",
     "robustExceptionEnabled":true
 }

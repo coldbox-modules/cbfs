@@ -21,7 +21,7 @@ jobs:
       - name: Setup Java JDK
         uses: actions/setup-java@v1.4.3
         with:
-          java-version: 11 
+          java-version: 11
 
       - name: Set Up CommandBox
         uses: elpete/setup-commandbox@v1.0.0
@@ -32,13 +32,19 @@ jobs:
           cd test-harness
           box install
           box install ${{ matrix.coldbox }} --noSave
-      
+
       - name: Start server
         run: |
           cd test-harness
           box server start cfengine=${{ matrix.cfengine }} javaVersion=${{ matrix.javaVersion }} port=8500 --noSaveSettings
+        env:
+          aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
       - name: Run TestBox Tests
         run: |
           cd test-harness
           box testbox run runner="http://localhost:8500/tests/runner.cfm"
+        env:
+          aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}

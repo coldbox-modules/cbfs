@@ -1,4 +1,4 @@
-﻿/**
+/**
 ********************************************************************************
 Copyright 2005-2007 ColdBox Framework by Luis Majano and Ortus Solutions, Corp
 www.ortussolutions.com
@@ -7,7 +7,7 @@ www.ortussolutions.com
 component{
 
 	// APPLICATION CFC PROPERTIES
-	this.name 				= "ColdBoxTestingSuite";
+	this.name 				= "ColdBoxTestingSuite" & hash(getCurrentTemplatePath());
 	this.sessionManagement 	= true;
 	this.sessionTimeout 	= createTimeSpan( 0, 0, 15, 0 );
 	this.applicationTimeout = createTimeSpan( 0, 0, 15, 0 );
@@ -28,4 +28,18 @@ component{
 	this.mappings[ "/moduleroot" ] = moduleRootPath;
 	this.mappings[ "/#request.MODULE_NAME#" ] = moduleRootPath & "#request.MODULE_NAME#";
 
+	public void function onRequestStart(){
+		// Request a high timeout for remote provider tests and large specs
+		setting requestTimeout="500";
+	}
+
+	public void function onRequestEnd() {
+
+		if( !isNull( application.cbController ) ){
+			application.cbController.getLoaderService().processShutdown();
+		}
+
+		structDelete( application, "cbController" );
+		structDelete( application, "wirebox" );
+	}
 }
