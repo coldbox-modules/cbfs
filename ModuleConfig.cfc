@@ -10,7 +10,7 @@ component {
     this.title = "CB FileSystem";
     this.author = "Ortus Solutions, Corp";
     this.webURL = "https://github.com/ortus-solutions/cbfs";
-    this.description = "A powerfule filesystem abstraction module for ColdBox applications";
+    this.description = "A powerful file system abstraction module for ColdBox applications.";
     // CF Mapping
     this.cfmapping = "cbfs";
     this.modelNamespace = "cbfs";
