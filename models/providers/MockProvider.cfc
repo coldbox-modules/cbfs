@@ -1,7 +1,6 @@
 component
 	accessors ="true"
 	extends   ="cbfs.models.AbstractDiskProvider"
-	implements="cbfs.models.IDisk"
 {
 
 	property name="name"       type="string";

@@ -1,8 +1,4 @@
-component
-	accessors ="true"
-	extends   ="cbfs.models.AbstractDiskProvider"
-	implements="cbfs.models.IDisk"
-{
+component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 
 	variables.permissions = {
 		"file" : { "public" : "666", "private" : "000", "readonly" : "444" },
@@ -57,7 +53,7 @@ component
 	 *
 	 * @return LocalProvider
 	 */
-	public IDisk function setVisibility( required string path, required string visibility ){
+	function setVisibility( required string path, required string visibility ){
 		if ( isWindows() ) {
 			switch ( arguments.visibility ) {
 				case "private": {
@@ -399,7 +395,7 @@ component
 	 * @path The file path
 	 * @mode Access mode, the same attributes you use for the Linux command `chmod`
 	 */
-	public IDisk function chmod( required string path, required string mode ){
+	function chmod( required string path, required string mode ){
 		fileSetAccessMode( buildPath( path ), arguments.mode );
 		return this;
 	}

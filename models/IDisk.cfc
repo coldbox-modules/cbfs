@@ -20,6 +20,7 @@ interface {
 	/**
 	 * Configure the provider. Usually called at startup.
 	 *
+	 * @name       The name of the disk
 	 * @properties A struct of configuration data for this provider, usually coming from the configuration file
 	 *
 	 * @return IDiskProvider
@@ -612,14 +613,7 @@ interface {
 	array function allDirectoriesMap( required directory, any filter, sort );
 
 	/**
-	 * Get an array of structs of all files and directories in a directory and their appropriate information map:
-	 * - Attributes
-	 * - DateLastModified
-	 * - Directory
-	 * - Link
-	 * - Mode
-	 * - Name
-	 * - Size
+	 * Get an array of content from all the files from a specific directory
 	 *
 	 * @directory The directory
 	 * @filter    A string wildcard or a lambda/closure that receives the file path and should return true to include it in the returned array or not.
@@ -634,14 +628,7 @@ interface {
 	);
 
 	/**
-	 * Get an array of structs of all files in a directory with recursion and their appropriate information map:
-	 * - Attributes
-	 * - DateLastModified
-	 * - Directory
-	 * - Link
-	 * - Mode
-	 * - Name
-	 * - Size
+	 * Get an array of content from all the files from a specific directory with recursion
 	 *
 	 * @directory The directory
 	 * @filter    A string wildcard or a lambda/closure that receives the file path and should return true to include it in the returned array or not.

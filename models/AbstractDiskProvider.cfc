@@ -8,11 +8,12 @@ component accessors="true" {
 	/**
 	 * Configure the provider. Usually called at startup.
 	 *
+	 * @name       The name of the disk
 	 * @properties A struct of configuration data for this provider, usually coming from the configuration file
 	 *
-	 * @return IDiskProvider
+	 * @return cbfs.models.IDisk
 	 */
-	public IDisk function configure( required string name, struct properties = {} ){
+	function configure( required string name, struct properties = {} ){
 		setName( arguments.name );
 		setProperties( arguments.properties );
 		return this;
@@ -21,8 +22,10 @@ component accessors="true" {
 	/**
 	 * Called before the cbfs module is unloaded, or via reinits. This can be implemented
 	 * as you see fit to gracefully shutdown connections, sockets, etc.
+	 *
+	 * @return cbfs.models.IDisk
 	 */
-	public IDisk function shutdown(){
+	function shutdown(){
 		return this;
 	}
 
@@ -35,7 +38,7 @@ component accessors="true" {
 	 * @metadata   Struct of metadata to store with the file
 	 * @overwrite  If we should overwrite the files or not at the destination if they exist, defaults to true
 	 *
-	 * @return IDiskProvider
+	 * @return cbfs.models.IDisk
 	 */
 	function create(
 		required path,
@@ -62,9 +65,9 @@ component accessors="true" {
 	 * @path       The target file
 	 * @visibility The storage visibility of the file, available options are `public, private, readonly` or a custom data type the implemented driver can interpret
 	 *
-	 * @return IDiskProvider
+	 * @return cbfs.models.IDisk
 	 */
-	public IDisk function setVisibility( required string path, required string visibility ){
+	function setVisibility( required string path, required string visibility ){
 		return this;
 	}
 
@@ -73,7 +76,7 @@ component accessors="true" {
 	 *
 	 * @path The target file
 	 */
-	public string function visibility( required string path ){
+	string function visibility( required string path ){
 		return "public";
 	}
 
@@ -85,7 +88,7 @@ component accessors="true" {
 	 * @metadata       Struct of metadata to store with the file
 	 * @throwOnMissing Boolean flag to throw if the file is missing. Otherwise it will be created if missing.
 	 *
-	 * @return IDiskProvider
+	 * @return cbfs.models.IDisk
 	 *
 	 * @throws cbfs.FileNotFoundException
 	 */
@@ -120,7 +123,7 @@ component accessors="true" {
 	 * @metadata       Struct of metadata to store with the file
 	 * @throwOnMissing Boolean flag to throw if the file is missing. Otherwise it will be created if missing.
 	 *
-	 * @return IDiskProvider
+	 * @return cbfs.models.IDisk
 	 *
 	 * @throws cbfs.FileNotFoundException
 	 */
@@ -154,7 +157,7 @@ component accessors="true" {
 	 * @destination The end destination path
 	 * @overwrite   Flag to overwrite the file at the destination, if it exists. Defaults to true.
 	 *
-	 * @return IDiskProvider
+	 * @return cbfs.models.IDisk
 	 *
 	 * @throws cbfs.FileNotFoundException
 	 */
@@ -176,7 +179,7 @@ component accessors="true" {
 	 * @source      The source file path
 	 * @destination The end destination path
 	 *
-	 * @return IDiskProvider
+	 * @return cbfs.models.IDisk
 	 *
 	 * @throws cbfs.FileNotFoundException
 	 */
@@ -199,7 +202,7 @@ component accessors="true" {
 	 * @source      The source file path
 	 * @destination The end destination path
 	 *
-	 * @return IDiskProvider
+	 * @return cbfs.models.IDisk
 	 *
 	 * @throws cbfs.FileNotFoundException
 	 */
@@ -234,7 +237,7 @@ component accessors="true" {
 	 *
 	 * @throws cbfs.FileNotFoundException
 	 */
-	public any function getAsBinary( required path ){
+	any function getAsBinary( required path ){
 		return toBinary( this.get( arguments.path ) );
 	}
 
@@ -261,7 +264,7 @@ component accessors="true" {
 	 *
 	 * @throws cbfs.FileNotFoundException
 	 */
-	public string function url( required string path ){
+	string function url( required string path ){
 		ensureFileExists( arguments.path );
 		return arguments.path;
 	}
@@ -316,7 +319,7 @@ component accessors="true" {
 	 * @path          
 	 * @throwOnMissing When true an error will be thrown if the file does not exist
 	 */
-	public boolean function delete( required string path, boolean throwOnMissing = false ){
+	boolean function delete( required string path, boolean throwOnMissing = false ){
 		throw( "Implement in a subclass" );
 	}
 
@@ -326,7 +329,7 @@ component accessors="true" {
 	 * @path       The file path
 	 * @createPath if set to false, expects all parent directories to exist, true will generate necessary directories. Defaults to true.
 	 *
-	 * @return IDiskProvider
+	 * @return cbfs.models.IDisk
 	 *
 	 * @throws cbfs.PathNotFoundException
 	 */
@@ -405,7 +408,7 @@ component accessors="true" {
 	 *
 	 * @throws cbfs.FileNotFoundException
 	 */
-	public boolean function isFile( required path ){
+	boolean function isFile( required path ){
 		throw( "Implement in a subclass" );
 	}
 
@@ -442,7 +445,7 @@ component accessors="true" {
 	 * @path The file path
 	 * @mode Access mode, the same attributes you use for the Linux command `chmod`
 	 */
-	public IDisk function chmod( required string path, required string mode ){
+	IDisk function chmod( required string path, required string mode ){
 		throw( "Implement in a subclass" );
 	}
 
@@ -500,7 +503,7 @@ component accessors="true" {
 	 * @createPath   Create parent directory paths when they do not exist
 	 * @ignoreExists If false, it will throw an error if the directory already exists, else it ignores it if it exists. This should default to true.
 	 *
-	 * @return IDiskProvider
+	 * @return cbfs.models.IDisk
 	 */
 	function createDirectory(
 		required directory,
@@ -524,7 +527,7 @@ component accessors="true" {
 	 * @filter      A string wildcard or a lambda/closure that receives the file path and should return true to copy it.
 	 * @createPath  If false, expects all parent directories to exist, true will generate all necessary directories. Default is true.
 	 *
-	 * @return IDiskProvider
+	 * @return cbfs.models.IDisk
 	 */
 	function copyDirectory(
 		required source,
@@ -543,7 +546,7 @@ component accessors="true" {
 	 * @newPath    The destination directory
 	 * @createPath If false, expects all parent directories to exist, true will generate all necessary directories. Default is true.
 	 *
-	 * @return IDiskProvider
+	 * @return cbfs.models.IDisk
 	 */
 	function moveDirectory(
 		required oldPath,
@@ -560,7 +563,7 @@ component accessors="true" {
 	 * @newPath    The destination directory
 	 * @createPath If false, expects all parent directories to exist, true will generate all necessary directories. Default is true.
 	 *
-	 * @return IDiskProvider
+	 * @return cbfs.models.IDisk
 	 */
 	function renameDirectory(
 		required oldPath,
@@ -579,7 +582,7 @@ component accessors="true" {
 	 *
 	 * @return A boolean value or a struct of booleans determining if the directory paths got deleted or not.
 	 */
-	public boolean function deleteDirectory(
+	boolean function deleteDirectory(
 		required string directory,
 		boolean recurse        = true,
 		boolean throwOnMissing = false
@@ -592,7 +595,7 @@ component accessors="true" {
 	 *
 	 * @directory The directory
 	 *
-	 * @return IDiskProvider
+	 * @return cbfs.models.IDisk
 	 */
 	function cleanDirectory( required directory ){
 		throw( "Implement in a subclass" );
