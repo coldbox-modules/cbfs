@@ -4,20 +4,20 @@
  */
 component accessors="true" {
 
-    // DI
-    property name="moduleSettings" inject="coldbox:moduleSettings:cbfs";
+	// DI
+	property name="moduleSettings" inject="coldbox:moduleSettings:cbfs";
 
-    /**
-     * Struct that stores disk implementations
-     */
-    property name="disks" type="struct";
+	/**
+	 * Struct that stores disk implementations
+	 */
+	property name="disks" type="struct";
 
-    /**
-     * Constructor
-     */
-    function init() {
-        variables.disks = {};
-        return this;
-    }
+	/**
+	 * Constructor
+	 */
+	function init(){
+		variables.disks = {};
+		return this;
+	}
 
 }

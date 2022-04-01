@@ -1,4 +1,4 @@
-component{
+component {
 
 	function configure(){
 		setFullRewrites( true );
