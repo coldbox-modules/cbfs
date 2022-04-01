@@ -1,6 +1,6 @@
 {
     "name":"CB File Storages",
-    "version":"@build.version@+@build.number@",
+    "version":"1.0.0",
     "location":"https://downloads.ortussolutions.com/ortussolutions/coldbox-modules/cbfs/@build.version@/cbfs-@build.version@.zip",
     "author":"Ortus Solutions, Corp",
     "homepage":"https://github.com/coldbox-modules/cbfs",
@@ -22,19 +22,32 @@
     ],
     "contributors":[],
     "dependencies":{
-        "cbstreams":"^1.1.0+25"
+        "cbstreams":"^1.5"
     },
-    "devDependencies":{},
+    "devDependencies":{
+        "commandbox-cfformat":"*",
+        "commandbox-docbox":"*",
+        "commandbox-dotenv":"*",
+        "commandbox-cfconfig":"*"
+    },
     "installPaths":{
         "cbstreams":"modules/cbstreams/"
     },
     "ignore":[
         "**/.*",
         "test-harness",
-        "*/.md"
+        "/server*.json"
     ],
     "scripts":{
-        "format":"cfformat run ModuleConfig.cfc,models/**/*.cfc,test-harness/tests/resources/**/*.cfc,test-harness/tests/specs/**/*.cfc --overwrite",
-        "format:check":"cfformat check ModuleConfig.cfc,models/**/*.cfc,test-harness/tests/resources/**/*.cfc,test-harness/tests/specs/**/*.cfc"
+		"build:module":"task run taskFile=build/Build.cfc :projectName=`package show slug` :version=`package show version`",
+        "build:docs":"task run taskFile=build/Build.cfc target=docs :projectName=`package show slug` :version=`package show version`",
+        "release":"recipe build/release.boxr",
+        "format":"cfformat run models,test-harness/**/*.cfc,ModuleConfig.cfc --overwrite",
+        "format:watch":"cfformat watch models,test-harness/**/*.cfc,ModuleConfig.cfc ./.cfformat.json",
+        "format:check":"cfformat check models,test-harness/**/*.cfc,ModuleConfig.cfc",
+        "cfpm":"echo '\".engine/adobe2021/WEB-INF/cfusion/bin/cfpm.sh\"' | run",
+        "cfpm:install":"echo '\".engine/adobe2021/WEB-INF/cfusion/bin/cfpm.sh\" install ${1}' | run",
+        "install:2021":"run-script cfpm:install zip,debugger",
+        "install:dependencies":"install && cd test-harness && install"
     }
 }
