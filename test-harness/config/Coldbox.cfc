@@ -55,7 +55,7 @@
 				accessKey = getSystemSetting( "aws_access_key_id", "" ),
 				secretKey = getSystemSetting( "aws_secret_access_key", "" ),
 				awsregion = "us-east-1",
-				defaultBucketName = "cbfs-test",
+				defaultBucketName = getSystemSetting( "aws_default_bucket", "cbfs-test" ),
 				debug = true,
 				signature = "V4"
 			}
