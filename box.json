@@ -25,7 +25,7 @@
         "cbstreams":"^1.1.0+25"
     },
     "devDependencies":{
-        "s3sdk":"^4.6.0"
+        "s3sdk":"^4.8.0"
     },
     "installPaths":{
         "cbstreams":"modules/cbstreams/",
