@@ -41,9 +41,24 @@
                         "properties": {
                             "path": expandPath( "/root/tests/storage" )
                         }
+                    },
+					"s3": {
+                        "provider": "S3Provider@cbfs",
+                        "properties": {
+                            "path": "/tests/storage"
+                        }
                     }
                 }
-            }
+            },
+			s3sdk = {
+				// Your amazon, digital ocean access key
+				accessKey = getSystemSetting( "aws_access_key_id", "" ),
+				secretKey = getSystemSetting( "aws_secret_access_key", "" ),
+				awsregion = "us-east-1",
+				defaultBucketName = "cbfs-test",
+				debug = true,
+				signature = "V4"
+			}
         };
 
 		// environment settings, create a detectEnvironment() method to detect it yourself.

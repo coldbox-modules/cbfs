@@ -1,10 +1,13 @@
 ﻿component extends="coldbox.system.testing.BaseTestCase" {
 
-	function run() {
-		describe( "cbfs integration", function() {
-			it( "can register and activate the module", function(){
-                expect( getController().getModuleService().isModuleActive( "cbfs" ) )
-                    .toBeTrue( "cbfs should be active" );
+    this.loadColdbox = true;
+
+    function run() {
+        describe( "cbfs integration", function() {
+            it( "can register and activate the module", function() {
+                expect( getController().getModuleService().isModuleActive( "cbfs" ) ).toBeTrue(
+                    "cbfs should be active"
+                );
             } );
 
             it( "can inject the disk service", function() {
@@ -25,7 +28,7 @@
                 expect( localDisk.getName() ).toBe( "local" );
                 expect( localDisk.getProperties() ).toHaveKey( "path" );
             } );
-		} );
-	}
+        } );
+    }
 
 }

@@ -24,14 +24,18 @@
     "dependencies":{
         "cbstreams":"^1.1.0+25"
     },
-    "devDependencies":{},
+    "devDependencies":{
+        "s3sdk":"^4.6.0"
+    },
     "installPaths":{
-        "cbstreams":"modules/cbstreams/"
+        "cbstreams":"modules/cbstreams/",
+        "s3sdk":"modules/s3sdk/"
     },
     "ignore":[
         "**/.*",
         "test-harness",
-        "*/.md"
+        "*/.md",
+		"modules/**"
     ],
     "scripts":{
         "format":"cfformat run ModuleConfig.cfc,models/**/*.cfc,test-harness/tests/resources/**/*.cfc,test-harness/tests/specs/**/*.cfc --overwrite",

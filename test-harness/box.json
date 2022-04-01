@@ -4,11 +4,10 @@
     "slug":"tester",
     "private":true,
     "description":"",
-    "dependencies":{
-        "coldbox":"^5.0.0"
-    },
+    "dependencies":{},
     "devDependencies":{
-        "testbox":"^3.0.0"
+        "coldbox":"^6",
+        "testbox":"^4"
     },
     "installPaths":{
         "coldbox":"coldbox/",
