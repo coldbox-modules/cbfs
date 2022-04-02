@@ -8,6 +8,11 @@
 interface {
 
 	/**
+	 * Returns true if the disk has been started up, false if not.
+	 */
+	boolean function hasStarted();
+
+	/**
 	 * Returns the name of the disk.
 	 */
 	string function getName();
@@ -18,14 +23,15 @@ interface {
 	struct function getProperties();
 
 	/**
-	 * Configure the provider. Usually called at startup.
+	 * Startup a disk provider with the instance data it needs to startup. It needs to make sure
+	 * that it sets the "started" variable to true in order to operate.
 	 *
 	 * @name       The name of the disk
 	 * @properties A struct of configuration data for this provider, usually coming from the configuration file
 	 *
-	 * @return IDiskProvider
+	 * @return IDisk
 	 */
-	public IDisk function configure( required string name, struct properties );
+	public IDisk function startup( required string name, struct properties = {} );
 
 	/**
 	 * Called before the cbfs module is unloaded, or via reinits. This can be implemented
@@ -42,7 +48,7 @@ interface {
 	 * @metadata   Struct of metadata to store with the file
 	 * @override   Flag to overwrite the file at the destination, if it exists. Defaults to true.
 	 *
-	 * @return IDiskProvider
+	 * @return IDisk
 	 *
 	 * @throws cbfs.FileOverrideException
 	 */
@@ -60,7 +66,7 @@ interface {
 	 * @path       The target file
 	 * @visibility The storage visibility of the file, available options are `public, private, readonly` or a custom data type the implemented driver can interpret
 	 *
-	 * @return IDiskProvider
+	 * @return IDisk
 	 */
 	public iDisk function setVisibility( required string path, required string visibility );
 
@@ -79,7 +85,7 @@ interface {
 	 * @metadata       Struct of metadata to store with the file
 	 * @throwOnMissing Boolean flag to throw if the file is missing. Otherwise it will be created if missing.
 	 *
-	 * @return IDiskProvider
+	 * @return IDisk
 	 *
 	 * @throws cbfs.FileNotFoundException
 	 */
@@ -98,7 +104,7 @@ interface {
 	 * @metadata       Struct of metadata to store with the file
 	 * @throwOnMissing Boolean flag to throw if the file is missing. Otherwise it will be created if missing.
 	 *
-	 * @return IDiskProvider
+	 * @return IDisk
 	 *
 	 * @throws cbfs.FileNotFoundException
 	 */
@@ -116,7 +122,7 @@ interface {
 	 * @destination The end destination path
 	 * @override    Flag to overwrite the file at the destination, if it exists. Defaults to true.
 	 *
-	 * @return IDiskProvider
+	 * @return IDisk
 	 *
 	 * @throws cbfs.FileNotFoundException
 	 */
@@ -133,7 +139,7 @@ interface {
 	 * @destination The end destination path
 	 * @override    Flag to overwrite the file at the destination, if it exists. Defaults to true.
 	 *
-	 * @return IDiskProvider
+	 * @return IDisk
 	 *
 	 * @throws cbfs.FileNotFoundException
 	 */
@@ -150,7 +156,7 @@ interface {
 	 * @destination The end destination path
 	 * @override    Flag to overwrite the file at the destination, if it exists. Defaults to true.
 	 *
-	 * @return IDiskProvider
+	 * @return IDisk
 	 *
 	 * @throws cbfs.FileNotFoundException
 	 */
@@ -254,7 +260,7 @@ interface {
 	 * @path       The file path
 	 * @createPath if set to false, expects all parent directories to exist, true will generate necessary directories. Defaults to true.
 	 *
-	 * @return IDiskProvider
+	 * @return IDisk
 	 *
 	 * @throws cbfs.PathNotFoundException
 	 */
@@ -377,7 +383,7 @@ interface {
 	 * @createPath   Create parent directory paths when they do not exist
 	 * @ignoreExists If false, it will throw an error if the directory already exists, else it ignores it if it exists. This should default to true.
 	 *
-	 * @return IDiskProvider
+	 * @return IDisk
 	 */
 	function createDirectory(
 		required directory,
@@ -399,7 +405,7 @@ interface {
 	 * @filter      A string wildcard or a lambda/closure that receives the file path and should return true to copy it.
 	 * @createPath  If false, expects all parent directories to exist, true will generate all necessary directories. Default is true.
 	 *
-	 * @return IDiskProvider
+	 * @return IDisk
 	 */
 	function copyDirectory(
 		required source,
@@ -416,7 +422,7 @@ interface {
 	 * @newPath    The destination directory
 	 * @createPath If false, expects all parent directories to exist, true will generate all necessary directories. Default is true.
 	 *
-	 * @return IDiskProvider
+	 * @return IDisk
 	 */
 	function moveDirectory(
 		required oldPath,
@@ -431,7 +437,7 @@ interface {
 	 * @newPath    The destination directory
 	 * @createPath If false, expects all parent directories to exist, true will generate all necessary directories. Default is true.
 	 *
-	 * @return IDiskProvider
+	 * @return IDisk
 	 */
 	function renameDirectory(
 		required oldPath,
@@ -459,7 +465,7 @@ interface {
 	 *
 	 * @directory The directory
 	 *
-	 * @return IDiskProvider
+	 * @return IDisk
 	 */
 	function cleanDirectory( required directory );
 

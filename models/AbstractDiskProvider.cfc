@@ -1,22 +1,54 @@
+/**
+ * Copyright Since 2005 ColdBox Framework by Luis Majano and Ortus Solutions, Corp
+ * www.ortussolutions.com
+ * ---
+ * This is an abstraction of how all disks should behave or at least give
+ * basic behavior.
+ *
+ * @author Luis Majano <lmajano@ortussolutions.com>, Grant Copley <gcopley@ortussolutions.com>
+ */
 component accessors="true" {
 
-	property name="name"       type="string";
+	/**
+	 * The name of the disk
+	 */
+	property name="name" type="string";
+
+	/**
+	 * The properties bound to this disk
+	 */
 	property name="properties" type="struct";
 
+	/**
+	 * This bit is used to tell if the disk has been started or not
+	 */
+	property
+		name   ="started"
+		type   ="boolean"
+		default="false";
+
+	/**
+	 * --------------------------------------------------------------------------
+	 * Dependency Injection
+	 * --------------------------------------------------------------------------
+	 */
 	property name="streamBuilder" inject="StreamBuilder@cbstreams";
 
 	/**
-	 * Configure the provider. Usually called at startup.
-	 *
-	 * @name       The name of the disk
-	 * @properties A struct of configuration data for this provider, usually coming from the configuration file
-	 *
-	 * @return cbfs.models.IDisk
+	 * Constructor
 	 */
-	function configure( required string name, struct properties = {} ){
-		setName( arguments.name );
-		setProperties( arguments.properties );
+	function init(){
+		variables.started    = false;
+		variables.name       = "";
+		variables.properties = {};
 		return this;
+	}
+
+	/**
+	 * Check if this disk has been started or not.
+	 */
+	boolean function hasStarted(){
+		return variables.started;
 	}
 
 	/**
@@ -26,6 +58,7 @@ component accessors="true" {
 	 * @return cbfs.models.IDisk
 	 */
 	function shutdown(){
+		variables.started = false;
 		return this;
 	}
 

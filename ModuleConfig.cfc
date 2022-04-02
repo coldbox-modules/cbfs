@@ -21,7 +21,23 @@ component {
 	 * Configure this module
 	 */
 	function configure(){
-		settings = { "disks" : {} };
+		settings = {
+			// The default disk with a reserved name of 'default'
+			"defaultDisk" : "default",
+			// Register the disks on the system
+			"disks"       : {
+				// Your default application storage
+				"default" : {
+					provider   : "LocalWeb",
+					properties : { path : "#appMapping#/.cbfs", autoExpand : true }
+				},
+				// A disk that points to the CFML Engine's temp directory
+				"temp" : {
+					provider   : "LocalWeb",
+					properties : { path : getTempDirectory() }
+				}
+			}
+		};
 		binder.getInjector().registerDSL( "cbfs", "#moduleMapping#.models.dsl.cbfsDSL" );
 	}
 

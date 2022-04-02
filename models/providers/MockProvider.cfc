@@ -1,7 +1,4 @@
-component
-	accessors ="true"
-	extends   ="cbfs.models.AbstractDiskProvider"
-{
+component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 
 	property name="name"       type="string";
 	property name="properties" type="struct";
@@ -12,15 +9,19 @@ component
 	this.nonReadablePaths = {};
 
 	/**
-	 * Configure the provider. Usually called at startup.
+	 * Startup the local provider
 	 *
+	 * @name       The name of the disk
 	 * @properties A struct of configuration data for this provider, usually coming from the configuration file
 	 *
-	 * @return IDiskProvider
+	 * @return cbfs.models.IDisk
+	 *
+	 * @throws InvalidPropertyException - On any configuration property exception
 	 */
-	public IDisk function configure( required string name, struct properties = {} ){
-		setName( arguments.name );
-		setProperties( arguments.properties );
+	function startup( required string name, struct properties = {} ){
+		variables.name       = arguments.name;
+		variables.properties = arguments.properties;
+		variables.started    = true;
 		return this;
 	}
 
@@ -33,7 +34,7 @@ component
 	 * @metadata   Struct of metadata to store with the file
 	 * @overwrite  Flag to overwrite the file at the destination, if it exists. Defaults to true.
 	 *
-	 * @return IDiskProvider
+	 * @return cbfs.models.IDisk
 	 *
 	 * @throws cbfs.FileOverrideException
 	 */
@@ -75,7 +76,7 @@ component
 	 * @metadata       Struct of metadata to store with the file
 	 * @throwOnMissing Boolean flag to throw if the file is missing. Otherwise it will be created if missing.
 	 *
-	 * @return IDiskProvider
+	 * @return cbfs.models.IDisk
 	 *
 	 * @throws cbfs.FileNotFoundException
 	 */
@@ -110,7 +111,7 @@ component
 	 * @metadata       Struct of metadata to store with the file
 	 * @throwOnMissing Boolean flag to throw if the file is missing. Otherwise it will be created if missing.
 	 *
-	 * @return IDiskProvider
+	 * @return cbfs.models.IDisk
 	 *
 	 * @throws cbfs.FileNotFoundException
 	 */
@@ -144,7 +145,7 @@ component
 	 * @destination The end destination path
 	 * @overwrite   Flag to overwrite the file at the destination, if it exists. Defaults to true.
 	 *
-	 * @return IDiskProvider
+	 * @return cbfs.models.IDisk
 	 *
 	 * @throws cbfs.FileNotFoundException
 	 */
@@ -166,7 +167,7 @@ component
 	 * @source      The source file path
 	 * @destination The end destination path
 	 *
-	 * @return IDiskProvider
+	 * @return cbfs.models.IDisk
 	 *
 	 * @throws cbfs.FileNotFoundException
 	 */
@@ -189,7 +190,7 @@ component
 	 * @source      The source file path
 	 * @destination The end destination path
 	 *
-	 * @return IDiskProvider
+	 * @return cbfs.models.IDisk
 	 *
 	 * @throws cbfs.FileNotFoundException
 	 */
@@ -317,7 +318,7 @@ component
 	 * @path       The file path
 	 * @createPath if set to false, expects all parent directories to exist, true will generate necessary directories. Defaults to true.
 	 *
-	 * @return IDiskProvider
+	 * @return cbfs.models.IDisk
 	 *
 	 * @throws cbfs.PathNotFoundException
 	 */

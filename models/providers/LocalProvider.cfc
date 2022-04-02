@@ -1,9 +1,64 @@
-component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
+/**
+ * Copyright Since 2005 ColdBox Framework by Luis Majano and Ortus Solutions, Corp
+ * www.ortussolutions.com
+ * ---
+ * This is an abstraction of how all disks should behave or at least give
+ * basic behavior.
+ *
+ * @author Luis Majano <lmajano@ortussolutions.com>, Grant Copley <gcopley@ortussolutions.com>
+ */
+component
+	accessors="true"
+	extends  ="cbfs.models.AbstractDiskProvider"
+	singleton
+{
 
+	// static lookups
 	variables.permissions = {
 		"file" : { "public" : "666", "private" : "000", "readonly" : "444" },
 		"dir"  : { "public" : "666", "private" : "600", "readonly" : "644" }
 	};
+
+	variables.defaults = { path : "", autoExpand : false };
+
+	/**
+	 * Startup the local provider
+	 *
+	 * @name       The name of the disk
+	 * @properties A struct of configuration data for this provider, usually coming from the configuration file
+	 *
+	 * @return cbfs.models.IDisk
+	 *
+	 * @throws InvalidPropertyException - On any configuration property exception
+	 */
+	function startup( required string name, struct properties = {} ){
+		variables.name       = arguments.name;
+		variables.properties = arguments.properties;
+
+		// Append defaults
+		structAppend( variables.properties, variables.defaults, false );
+
+		// Property Checks
+		if ( !len( variables.properties.path ) ) {
+			throw(
+				messsage: "The local disk requires a 'path' property to bind to",
+				type    : "InvalidPropertyException"
+			);
+		}
+
+		// Do we need to expand the path
+		if ( variables.properties.autoExpand ) {
+			variables.properties.path = expandPath( variables.properties.path );
+		}
+
+		// Verify the disk storage exists, else create it
+		if ( !directoryExists( variables.properties.path ) ) {
+			directoryCreate( variables.properties.path, true );
+		}
+
+		variables.started = true;
+		return this;
+	}
 
 	/**
 	 * Create a file in the disk
@@ -221,7 +276,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	/**
 	 * Deletes a file
 	 *
-	 * @path          
+	 * @path
 	 * @throwOnMissing When true an error will be thrown if the file does not exist
 	 */
 	public boolean function delete( required any path, boolean throwOnMissing = false ){
