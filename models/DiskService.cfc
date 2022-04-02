@@ -76,61 +76,37 @@ component accessors="true" singleton {
 			return variables.disks[ arguments.name ];
 		}
 
-		return build(
-			name      : arguments.name,
-			provider  : variables.diskRegistry[ arguments.name ].provider,
-			properties: variables.diskRegistry[ arguments.name ].properties
+		// Else build, startup and return;
+		variables.disks[ arguments.name ] = buildDisk( variables.diskRegistry[ arguments.name ].provider ).startup(
+			arguments.name,
+			variables.diskRegistry[ arguments.name ].properties
 		);
+
+		return variables.disks[ arguments.name ];
 	}
 
 	/**
-	 * Build and register a new instance of a disk with the service
-	 *
-	 * @return cbfs.models.IDisk
-	 *
-	 * @throws DiskAlreadyExistsException - When the disk name is already built
-	 * @throws InvalidProviderException   - When the passed provider is invalid
-	 */
-	function build(
-		required string name,
-		required string provider,
-		struct properties = {},
-		boolean override  = false
-	){
-		// check if it exists, and if not an override, throw an exception
-		if ( variables.disks.keyExists( arguments.name ) && !arguments.override ) {
-			throw(
-				message: "The disk (#arguments.name#) has already been created",
-				detail : "If you want to override it, use the 'override' argument.",
-				type   : "DiskAlreadyExistsException"
-			);
-		}
-		// Build and Store the provider
-		return register(
-			buildDisk( arguments.provider ).startup( arguments.name, arguments.properties ),
-			arguments.override
-		);
-	}
-
-	/**
-	 * Register an instance of a disk with this service
+	 * Register a new disk blueprint with the service
 	 *
 	 * @disk     The disk instance to register: cbfs.models.IDisk
 	 * @override If true, then we override if it exists, else return the previously registered disk
-	 *
-	 * @return cbfs.models.IDisk
 	 */
-	function register( required disk, boolean override = false ){
+	DiskService function register(
+		required name,
+		required provider,
+		struct properties = {},
+		boolean override  = false
+	){
 		// If it doesn't exist or we are overriding, register it
-		if ( !variables.disks.keyExists( arguments.disk.getname() ) || arguments.override ) {
-			variables.disks[ arguments.disk.getName() ]        = arguments.disk;
-			variables.diskRegistry[ arguments.disk.getName() ] = {
-				provider   : getMetadata( arguments.disk ).name,
-				properties : arguments.disk.getProperties()
+		if ( !variables.diskRegistry.keyExists( arguments.name ) || arguments.override ) {
+			variables.diskRegistry[ arguments.name ] = {
+				provider   : arguments.provider,
+				properties : arguments.properties,
+				instance   : javacast( "null", "" )
 			};
 		}
 
-		return variables.disks[ arguments.disk.getName() ];
+		return this;
 	}
 
 	/**

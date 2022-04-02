@@ -46,6 +46,8 @@ component extends="coldbox.system.testing.BaseTestCase" {
 			story( "I want to retrieve disks", function(){
 				given( "a disk that has not been created yet", function(){
 					then( "it should build it, register it and return it", function(){
+						expect( service.getDisks().keyExists( "Unit" ) ).toBeFalse();
+						service.get()
 					} );
 				} );
 
@@ -117,33 +119,43 @@ component extends="coldbox.system.testing.BaseTestCase" {
 				} );
 			} );
 
-			story( "I want to be able to register disk instances", function(){
-				given( "a valid disk instance", function(){
+			story( "I want to be able to register disk blueprints", function(){
+				given( "valid disk properties", function(){
 					when( "override is false and no disk with the name MockProvider exists", function(){
 						then( "the disk should be registered", function(){
-							var mockProvider = createStub()
-								.$( "shutdown" )
-								.$( "getName", "MockProvider" )
-								.$( "getProperties", {} );
-							service.register( mockProvider );
+							expect( service.has( "mockProvider" ) ).toBeFalse();
+							service.register( name: "MockProvider", provider: "Mock" );
 							expect( service.has( "mockProvider" ) ).toBeTrue();
 						} );
 					} )
 				} );
-				given( "a valid disk instance", function(){
-					when( "override is false and a disk with the name MockProvider exists", function(){
-						then( "the previously registered disk should be registered", function(){
-							var mockProvider = createStub()
-								.$( "shutdown" )
-								.$( "getName", "MockProvider" )
-								.$( "getProperties" );
-							service.getDisks().append( { "MockProvider" : mockProvider } );
-							service
-								.getDiskRegistry()
-								.append( { "MockProvider" : { provider : "LocalWeb", properties : {} } } );
-							service.register( mockProvider );
-							expect( service.has( "MockProvider" ) ).toBeTrue( "MockProvider should be registered" );
-							expect( mockProvider.$never( "getProperties" ) ).toBeTrue();
+				given( "valid disk properties", function(){
+					when( "override is false and a disk with the name MockProvider is already registered", function(){
+						then( "the service will ignore the registration", function(){
+							expect( service.has( "mockProvider" ) ).toBeFalse();
+							service.register( name: "MockProvider", provider: "Mock" );
+							expect( service.has( "mockProvider" ) ).toBeTrue();
+							service.register( name: "MockProvider", provider: "Local" );
+							expect( service.has( "mockProvider" ) ).toBeTrue();
+							var registry = service.getDiskRegistry();
+							expect( registry[ "mockProvider" ].provider ).toBe( "Mock" );
+						} );
+					} )
+				} );
+				given( "valid disk properties", function(){
+					when( "override is true and a disk with the name MockProvider is already registered", function(){
+						then( "the service will re-register the disk", function(){
+							expect( service.has( "mockProvider" ) ).toBeFalse();
+							service.register( name: "MockProvider", provider: "Mock" );
+							expect( service.has( "mockProvider" ) ).toBeTrue();
+							service.register(
+								name    : "MockProvider",
+								provider: "Local",
+								override: true
+							);
+							expect( service.has( "mockProvider" ) ).toBeTrue();
+							var registry = service.getDiskRegistry();
+							expect( registry[ "mockProvider" ].provider ).toBe( "Local" );
 						} );
 					} )
 				} );
