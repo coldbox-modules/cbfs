@@ -5,7 +5,7 @@ component extends="tests.resources.AbstractDiskSpec" {
 	function getDisk( string name = "test", struct properties = { "path" : "/tests/resources/storage" } ){
 		var disk = prepareMock( new cbfs.models.providers.LocalProvider() );
 		getWirebox().autowire( disk );
-		disk.configure( arguments.name, arguments.properties );
+		disk.startup( arguments.name, arguments.properties );
 		makePublic( disk, "buildPath", "buildPath" );
 		return disk;
 	}
