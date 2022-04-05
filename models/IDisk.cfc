@@ -8,6 +8,11 @@
 interface {
 
 	/**
+	 * Get the unique UUID identifier for this disk
+	 */
+	string function getIdentifier();
+
+	/**
 	 * Returns true if the disk has been started up, false if not.
 	 */
 	boolean function hasStarted();

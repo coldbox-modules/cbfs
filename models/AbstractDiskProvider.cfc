@@ -10,6 +10,11 @@
 component accessors="true" {
 
 	/**
+	 * The unique identifier for this disk. Usually a UUID
+	 */
+	property name="identifier" type="string";
+
+	/**
 	 * The name of the disk
 	 */
 	property name="name" type="string";
@@ -38,6 +43,7 @@ component accessors="true" {
 	 * Constructor
 	 */
 	function init(){
+		variables.identifier = createUUID();
 		variables.started    = false;
 		variables.name       = "";
 		variables.properties = {};

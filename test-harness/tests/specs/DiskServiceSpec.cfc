@@ -32,7 +32,6 @@ component extends="coldbox.system.testing.BaseTestCase" {
 			it( "can be created", function(){
 				expect( service ).toBeComponent();
 				expect( service.getDisks() ).toBeEmpty();
-				expect( service.getDiskRegistry() ).toBeEmpty();
 			} );
 
 			it( "can be shutdown", function(){
@@ -43,16 +42,45 @@ component extends="coldbox.system.testing.BaseTestCase" {
 			it( "can register disks from the ColdBox application", function(){
 			} );
 
-			story( "I want to retrieve disks", function(){
+			story( "I want to get disk records for registered disks", function(){
+				given( "a valid disk name", function(){
+					then( "I will get the disk record", function(){
+						service.register( name: "Unit", provider: "Local" );
+						expect( service.getDiskRecord( "Unit" ) ).toBeStruct().toHaveKey( "provider,properties" );
+					} );
+				} );
+				given( "an invalid disk name", function(){
+					then( "It will throw an InvalidDiskException ", function(){
+						expect( function(){
+							service.getDiskRecord( "bogus" );
+						} ).toThrow( "InvalidDiskException" );
+					} );
+				} );
+			} );
+
+			story( "I want to retrieve disks via the get() operation", function(){
 				given( "a disk that has not been created yet", function(){
 					then( "it should build it, register it and return it", function(){
-						expect( service.getDisks().keyExists( "Unit" ) ).toBeFalse();
-						service.get()
+						service.register(
+							name      : "Unit",
+							provider  : "Local",
+							properties: { path : "/tests/resources/storage", autoExpand : true }
+						);
+						var oDisk = service.get( "Unit" );
+						expect( oDisk ).toBeComponent();
+						expect( oDisk.getName() ).toBe( "Unit" );
 					} );
 				} );
 
-				given( "a previously registered disk", function(){
+				given( "a previously built disk", function(){
 					then( "it should return the same disk", function(){
+						service.register(
+							name      : "Unit",
+							provider  : "Local",
+							properties: { path : "/tests/resources/storage", autoExpand : true }
+						);
+						var oDisk = service.get( "Unit" );
+						expect( service.get( "Unit" ).getIdentifier() ).toBe( oDisk.getIdentifier() );
 					} );
 				} );
 
@@ -61,60 +89,6 @@ component extends="coldbox.system.testing.BaseTestCase" {
 						expect( function(){
 							service.get( "Bogus" );
 						} ).toThrow( "InvalidDiskException" );
-					} );
-				} );
-			} );
-
-			story( "I want to be able to build disks", function(){
-				given( "given valid disk arguments", function(){
-					when( "the override is false and the disk name is available", function(){
-						then( "it should build, register and return the disk", function(){
-							var disk = service.build(
-								name      : "UnitTest",
-								provider  : "Local",
-								properties: { path : expandPath( "/tests/resources/storage" ) }
-							);
-							expect( service.has( "UnitTest" ) ).toBeTrue( "Disk should be registered" );
-							expect( disk.getName() ).toBe( "UnitTest" );
-							expect( disk.getProperties().path ).toInclude( "/tests/resources/storage" );
-							expect( disk.hasStarted() ).toBeTrue( "Should be started" );
-						} );
-					} );
-					when( "the override is false and the disk name is already in use", function(){
-						then( "it should throw a DiskAlreadyExistsException", function(){
-							service.getDisks().append( { "local" : createStub() } );
-							expect( function(){
-								service.build( "local", "Local", {} );
-							} ).toThrow( "DiskAlreadyExistsException" );
-						} );
-					} );
-					when( "the override is true", function(){
-						then( "it should build, register, override and return the disk", function(){
-							var disk = service.build(
-								name      : "UnitTest",
-								provider  : "Local",
-								properties: { path : expandPath( "/tests/resources/storage" ) }
-							);
-							expect( service.has( "UnitTest" ) ).toBeTrue( "Disk should be registered" );
-							expect( disk.getName() ).toBe( "UnitTest" );
-
-							var disk = service.build(
-								name      : "UnitTest",
-								provider  : "Local",
-								properties: { path : expandPath( "/tests/resources/" ) },
-								override  : true
-							);
-							expect( service.has( "UnitTest" ) ).toBeTrue( "Disk should be registered" );
-							expect( disk.getName() ).toBe( "UnitTest" );
-							expect( disk.getProperties().path ).notToInclude( "storage" );
-						} );
-					} );
-				} );
-				given( "a custom provider path", function(){
-					then( "it should create and register the custom provider", function(){
-						var oDisk = service.build( name: "Custom", provider: "tests.resources.CustomProvider" );
-						expect( service.has( "Custom" ) ).toBeTrue( "Disk should be registered" );
-						expect( oDisk.getName() ).toBe( "Custom" );
 					} );
 				} );
 			} );
@@ -135,10 +109,11 @@ component extends="coldbox.system.testing.BaseTestCase" {
 							expect( service.has( "mockProvider" ) ).toBeFalse();
 							service.register( name: "MockProvider", provider: "Mock" );
 							expect( service.has( "mockProvider" ) ).toBeTrue();
+
+							// Try to register it again with a different provider
 							service.register( name: "MockProvider", provider: "Local" );
 							expect( service.has( "mockProvider" ) ).toBeTrue();
-							var registry = service.getDiskRegistry();
-							expect( registry[ "mockProvider" ].provider ).toBe( "Mock" );
+							expect( service.getDiskRecord( "MockProvider" ).provider ).toBe( "Mock" );
 						} );
 					} )
 				} );
@@ -148,14 +123,15 @@ component extends="coldbox.system.testing.BaseTestCase" {
 							expect( service.has( "mockProvider" ) ).toBeFalse();
 							service.register( name: "MockProvider", provider: "Mock" );
 							expect( service.has( "mockProvider" ) ).toBeTrue();
+
+							// Register it again
 							service.register(
 								name    : "MockProvider",
 								provider: "Local",
 								override: true
 							);
 							expect( service.has( "mockProvider" ) ).toBeTrue();
-							var registry = service.getDiskRegistry();
-							expect( registry[ "mockProvider" ].provider ).toBe( "Local" );
+							expect( service.getDiskRecord( "MockProvider" ).provider ).toBe( "Local" );
 						} );
 					} )
 				} );
@@ -164,11 +140,17 @@ component extends="coldbox.system.testing.BaseTestCase" {
 			story( "I want to be able to unregister disks", function(){
 				given( "a valid disk name and the disk has been built", function(){
 					then( "the disk should be shutdown and unregistered", function(){
-						service
-							.getDiskRegistry()
-							.append( { "local" : { provider : "LocalWeb", properties : {} } } );
 						var mockProvider = createStub().$( "shutdown" );
-						service.getDisks().append( { "local" : mockProvider } );
+						service
+							.getDisks()
+							.append( {
+								"local" : {
+									provider   : "LocalWeb",
+									properties : {},
+									disk       : mockProvider
+								}
+							} );
+
 						service.unregister( "local" );
 						expect( mockProvider.$callLog().shutdown ).toHaveLength( 1 );
 						expect( service.has( "local" ) ).toBeFalse();
@@ -176,9 +158,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 				} );
 				given( "a valid disk name and the disk has NOT been built", function(){
 					then( "the disk will be unregistered", function(){
-						service
-							.getDiskRegistry()
-							.append( { "local" : { provider : "LocalWeb", properties : {} } } );
+						service.register( name: "local", provider: "Mock" );
 						service.unregister( "local" );
 						expect( service.has( "local" ) ).toBeFalse();
 					} );
@@ -195,9 +175,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 			story( "I want to check if a disk has been registered or not", function(){
 				given( "a valid disk name", function(){
 					then( "then it will validate that the disk has been regsitered", function(){
-						service
-							.getDiskRegistry()
-							.append( { "local" : { provider : "LocalWeb", properties : {} } } );
+						service.register( name: "local", provider: "Mock" );
 						expect( service.has( "local" ) ).toBeTrue();
 					} );
 				} );
@@ -216,9 +194,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 				} );
 				given( "a few registered disks", function(){
 					then( "then the names will not be empty", function(){
-						service
-							.getDiskRegistry()
-							.append( { "local" : { provider : "LocalWeb", properties : {} } } );
+						service.register( name: "local", provider: "Mock" );
 						expect( service.names() ).notToBeEmpty();
 					} );
 				} );
@@ -232,9 +208,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 				} );
 				given( "a few registered disks", function(){
 					then( "then the count will be > zero", function(){
-						service
-							.getDiskRegistry()
-							.append( { "local" : { provider : "LocalWeb", properties : {} } } );
+						service.register( name: "local", provider: "Mock" );
 						expect( service.count() ).toBeGT( 0 );
 					} );
 				} );

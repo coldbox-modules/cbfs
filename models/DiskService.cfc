@@ -2,7 +2,7 @@
  * Copyright Since 2005 ColdBox Framework by Luis Majano and Ortus Solutions, Corp
  * www.ortussolutions.com
  * ---
- * This service manages all the discs in your system.
+ * This service manages all the disks in your system.
  *
  * @author Luis Majano <lmajano@ortussolutions.com>, Grant Copley <gcopley@ortussolutions.com>
  */
@@ -17,22 +17,23 @@ component accessors="true" singleton {
 	property name="wirebox"        inject="wirebox";
 
 	/**
-	 * Struct that stores disk implementations
+	 * Struct that stores disk registration and instance data. Each disk will have the following entry:
+	 * <pre>
+	 * {
+	 *     	provider : name or class,
+	 * 		properties : struct of properties
+	 * 		disk : null or the lazy loaded disk instance
+	 * }
+	 * </pre>
 	 */
 	property name="disks" type="struct";
-
-	/**
-	 * A struct containing all the disks registered in the application
-	 */
-	property name="diskRegistry" type="struct";
 
 	/**
 	 * Constructor
 	 */
 	function init(){
 		// Init the disks
-		variables.disks        = {};
-		variables.diskRegistry = {};
+		variables.disks = {};
 		return this;
 	}
 
@@ -53,7 +54,7 @@ component accessors="true" singleton {
 	}
 
 	/**
-	 * Get a registered disk instance
+	 * Get a registered disk instance by name
 	 *
 	 * @name The name of the disk
 	 *
@@ -62,6 +63,33 @@ component accessors="true" singleton {
 	 * @throws InvalidDiskException - When the disk name is not registered
 	 */
 	function get( required name ){
+		var diskRecord = getDiskRecord( arguments.name );
+
+		// Lazy load the disk instance
+		if ( isNull( diskRecord.disk ) ) {
+			lock name="cbfs-create-#arguments.name#" type="exclusive" timeout="10" throwOnTimeout="true" {
+				if ( isNull( diskRecord.disk ) ) {
+					diskRecord.disk = buildDisk( provider: diskRecord.provider ).startup(
+						name      : arguments.name,
+						properties: diskRecord.properties
+					);
+				}
+			}
+		}
+
+		return diskRecord.disk;
+	}
+
+	/**
+	 * Get a registered disk record by name
+	 *
+	 * @name The name of the disk
+	 *
+	 * @return struct of { provider:string, properties:struct, disk:cbfs.models.IDisk }
+	 *
+	 * @throws InvalidDiskException - When the disk name is not registered
+	 */
+	struct function getDiskRecord( required name ){
 		// Check if the disk is registered, else throw exception
 		if ( missing( arguments.name ) ) {
 			throw(
@@ -70,26 +98,16 @@ component accessors="true" singleton {
 				type   : "InvalidDiskException"
 			)
 		}
-
-		// Check if it's built, else build and return
-		if ( variables.disks.keyExists( arguments.name ) ) {
-			return variables.disks[ arguments.name ];
-		}
-
-		// Else build, startup and return;
-		variables.disks[ arguments.name ] = buildDisk( variables.diskRegistry[ arguments.name ].provider ).startup(
-			arguments.name,
-			variables.diskRegistry[ arguments.name ].properties
-		);
-
 		return variables.disks[ arguments.name ];
 	}
 
 	/**
 	 * Register a new disk blueprint with the service
 	 *
-	 * @disk     The disk instance to register: cbfs.models.IDisk
-	 * @override If true, then we override if it exists, else return the previously registered disk
+	 * @name       The unique name to register the disk
+	 * @provider   The core provider name or a provider class path or WireBox ID
+	 * @properties The properties struct to startup the disk with
+	 * @override   If true, if a disk with the same name is registered, we will override it. Else, we ignore the registration.
 	 */
 	DiskService function register(
 		required name,
@@ -98,11 +116,11 @@ component accessors="true" singleton {
 		boolean override  = false
 	){
 		// If it doesn't exist or we are overriding, register it
-		if ( !variables.diskRegistry.keyExists( arguments.name ) || arguments.override ) {
-			variables.diskRegistry[ arguments.name ] = {
-				provider   : arguments.provider,
-				properties : arguments.properties,
-				instance   : javacast( "null", "" )
+		if ( !variables.disks.keyExists( arguments.name ) || arguments.override ) {
+			variables.disks[ arguments.name ] = {
+				"provider"   : arguments.provider,
+				"properties" : arguments.properties,
+				"disk"       : javacast( "null", "" )
 			};
 		}
 
@@ -126,12 +144,12 @@ component accessors="true" singleton {
 		}
 
 		// Shutdown the disk if it was every built
-		if ( variables.disks.keyExists( arguments.name ) ) {
-			variables.disks[ arguments.name ].shutdown();
+		if ( !isNull( variables.disks[ arguments.name ].disk ) ) {
+			variables.disks[ arguments.name ].disk.shutdown();
 		}
+
 		// Unregister it
 		variables.disks.delete( arguments.name );
-		variables.diskRegistry.delete( arguments.name );
 		return this;
 	}
 
@@ -141,7 +159,7 @@ component accessors="true" singleton {
 	 * @name The name of the disk
 	 */
 	boolean function has( required name ){
-		return variables.diskRegistry.keyExists( arguments.name );
+		return variables.disks.keyExists( arguments.name );
 	}
 
 	/**
@@ -157,14 +175,14 @@ component accessors="true" singleton {
 	 * Get a listing of all registered disks
 	 */
 	array function names(){
-		return variables.diskRegistry.keyArray();
+		return variables.disks.keyArray();
 	}
 
 	/**
 	 * Count all the registered disks
 	 */
 	numeric function count(){
-		return variables.diskRegistry.count();
+		return variables.disks.count();
 	}
 
 	function getDefaultDisk(){
