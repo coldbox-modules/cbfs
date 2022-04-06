@@ -2,7 +2,7 @@
  * Copyright 2013 Ortus Solutions, Corp
  * www.ortussolutions.com
  * ---
- * Welcome to the world of file abstraction
+ * Welcome to the world of file abstractions
  */
 component {
 
@@ -38,7 +38,9 @@ component {
 				}
 			}
 		};
-		binder.getInjector().registerDSL( "cbfs", "#moduleMapping#.models.dsl.cbfsDSL" );
+
+		// Register custom DSL
+		wirebox.registerDSL( "cbfs", "#moduleMapping#.dsl.cbfsDSL" );
 	}
 
 	/**

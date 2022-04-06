@@ -2,7 +2,7 @@
  * Copyright Since 2005 ColdBox Framework by Luis Majano and Ortus Solutions, Corp
  * www.ortussolutions.com
  * ---
- * This service manages all the disks in your system.
+ * This service manages all the disks in your ColdBox application.
  *
  * @author Luis Majano <lmajano@ortussolutions.com>, Grant Copley <gcopley@ortussolutions.com>
  */
