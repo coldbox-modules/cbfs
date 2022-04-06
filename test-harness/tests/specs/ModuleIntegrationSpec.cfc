@@ -27,6 +27,11 @@
 				);
 			} );
 
+			it( "can register the app disks", function(){
+				var diskService = getInstance( dsl = "cbfs" );
+				expect( diskService.get( "local" ) ).toBeComponent();
+			} );
+
 			it( "can inject the disk service using the cbfs dsl", function(){
 				var diskService = getInstance( dsl = "cbfs" );
 				expect( diskService ).toBeInstanceOf( "DiskService" );

@@ -38,9 +38,18 @@ component accessors="true" singleton {
 	}
 
 	/**
-	 * Called by the afterAspectsLoad interception to register all global and module disks
+	 * Called by the ModuleConfig to register all the ColdBox app disks defined
 	 */
-	function registerDisks(){
+	function registerAppDisks(){
+		writeDump( var = variables.moduleSettings.disks, top = 5 );
+		abort;
+		variables.moduleSettings.disks.each( function( diskName, diskDefinition ){
+			this.register(
+				name      : arguments.diskName,
+				provider  : arguments.diskDefinition.provider,
+				properties: arguments.diskDefinition.properties
+			);
+		} );
 	}
 
 	/**

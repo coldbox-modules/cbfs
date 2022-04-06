@@ -21,7 +21,7 @@ component {
 	 * Configure this module
 	 */
 	function configure(){
-		settings = {
+		variables.DEFAULTS = {
 			// The default disk with a reserved name of 'default'
 			"defaultDisk" : "default",
 			// Register the disks on the system
@@ -38,6 +38,8 @@ component {
 				}
 			}
 		};
+		// Setup the defaults
+		settings = structCopy( defaults );
 
 		// Register custom DSL
 		wirebox.registerDSL( "cbfs", "#moduleMapping#.dsl.cbfsDSL" );
@@ -47,6 +49,9 @@ component {
 	 * Fired when the module is registered and activated.
 	 */
 	function onLoad(){
+		// Make sure all disks defaults are defined
+		settings.append( variables.DEFAULTS );
+		wirebox.getInstance( "DiskService@cbfs" ).registerAppDisks();
 	}
 
 	/**
