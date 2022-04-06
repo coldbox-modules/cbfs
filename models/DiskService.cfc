@@ -186,14 +186,14 @@ component accessors="true" singleton {
 	}
 
 	/**
-	 * Get the default disk
+	 * Get the default disk according to your module setting <pre>defaultDisk</pre>
 	 */
 	function getDefaultDisk(){
-		return this.get( "default" );
+		return this.get( variables.moduleSettings.defaultDisk );
 	}
 
 	/**
-	 * Get the temp disk
+	 * Get the temp disk using the key <pre>temp</pre>
 	 */
 	function getTempDisk(){
 		return this.get( "temp" );
