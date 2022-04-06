@@ -185,10 +185,18 @@ component accessors="true" singleton {
 		return variables.disks.count();
 	}
 
+	/**
+	 * Get the default disk
+	 */
 	function getDefaultDisk(){
+		return this.get( "default" );
 	}
 
+	/**
+	 * Get the temp disk
+	 */
 	function getTempDisk(){
+		return this.get( "temp" );
 	}
 
 	/**
