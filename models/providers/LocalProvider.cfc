@@ -36,13 +36,17 @@ component
 		variables.properties = arguments.properties;
 
 		// Append defaults
-		structAppend( variables.properties, variables.defaults, false );
+		structAppend(
+			variables.properties,
+			variables.defaults,
+			false
+		);
 
 		// Property Checks
 		if ( !len( variables.properties.path ) ) {
 			throw(
-				messsage: "The local disk requires a 'path' property to bind to",
-				type    : "InvalidPropertyException"
+				messsage = "The local disk requires a 'path' property to bind to",
+				type     = "InvalidPropertyException"
 			);
 		}
 
@@ -276,7 +280,7 @@ component
 	/**
 	 * Deletes a file
 	 *
-	 * @path
+	 * @path          
 	 * @throwOnMissing When true an error will be thrown if the file does not exist
 	 */
 	public boolean function delete( required any path, boolean throwOnMissing = false ){

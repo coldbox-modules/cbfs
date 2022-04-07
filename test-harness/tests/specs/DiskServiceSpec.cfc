@@ -39,9 +39,6 @@ component extends="coldbox.system.testing.BaseTestCase" {
 				expect( service.getDisks() ).toBeEmpty();
 			} );
 
-			it( "can register disks from the ColdBox application", function(){
-			} );
-
 			story( "I want to get disk records for registered disks", function(){
 				given( "a valid disk name", function(){
 					then( "I will get the disk record", function(){
