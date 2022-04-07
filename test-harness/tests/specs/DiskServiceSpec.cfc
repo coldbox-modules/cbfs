@@ -98,7 +98,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 							service.register( name: "MockProvider", provider: "Mock" );
 							expect( service.has( "mockProvider" ) ).toBeTrue();
 						} );
-					} )
+					} );
 				} );
 				given( "valid disk properties", function(){
 					when( "override is false and a disk with the name MockProvider is already registered", function(){
@@ -112,7 +112,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 							expect( service.has( "mockProvider" ) ).toBeTrue();
 							expect( service.getDiskRecord( "MockProvider" ).provider ).toBe( "Mock" );
 						} );
-					} )
+					} );
 				} );
 				given( "valid disk properties", function(){
 					when( "override is true and a disk with the name MockProvider is already registered", function(){
@@ -130,7 +130,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 							expect( service.has( "mockProvider" ) ).toBeTrue();
 							expect( service.getDiskRecord( "MockProvider" ).provider ).toBe( "Local" );
 						} );
-					} )
+					} );
 				} );
 			} );
 
