@@ -40,13 +40,36 @@ In your `config/ColdBox.cfc` create a `cbfs` structure within the `moduleSetting
 ```js
 moduleSettings = {
 	"cbfs": {
+		"defaultDisk" : "default"
 		"disks": {
-			"public": {
+			"default": {
 				"provider": "LocalProvider@cbfs"
 			},
 		}
 	}
 }
+```
+
+## Module Disks
+
+If you want custom modules to register cbfs disks, they can!  Just add a `cbfs` key into your module's `ModuleConfig.cfc` `settings` struct.  You will have the option to register disks that are namespaced to the module and global disks that are NOT namespaced.
+
+```js
+settings = {
+	cbfs : {
+		// Disks that will be namespaced with the module name @{moduleName}
+		disks : {
+			"temp" : { provider : "Mock" },
+			"nasa" : { provider : "mock" }
+		},
+		// No namespace in global spacing
+		globalDisks : {
+			// Should be ignored, you can't override global disks
+			"temp" : { provider : "Mock" },
+			"nasa" : { provider : "mock" }
+		}
+	}
+};
 ```
 
 ********************************************************************************
