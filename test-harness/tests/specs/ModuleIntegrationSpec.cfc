@@ -35,6 +35,20 @@
 				expect( diskService.get( "temp" ) ).toBeComponent();
 			} );
 
+			it( "can register the module disks", function(){
+				var diskService = getInstance( dsl = "cbfs" );
+				// Module Ones
+				expect( diskService.get( "nasa@diskModule" ) ).toBeComponent();
+				expect( diskService.get( "temp@diskModule" ) ).toBeComponent();
+
+				// Global Ones
+				expect( diskService.get( "nasa" ) ).toBeComponent();
+				expect( diskService.get( "local" ) ).toBeComponent();
+				expect( diskService.get( "mock" ) ).toBeComponent();
+				expect( diskService.get( "default" ) ).toBeComponent();
+				expect( diskService.get( "temp" ) ).toBeComponent();
+			} );
+
 			it( "can inject the disk service using the cbfs dsl", function(){
 				var diskService = getInstance( dsl = "cbfs" );
 				expect( diskService ).toBeInstanceOf( "DiskService" );

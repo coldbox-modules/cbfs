@@ -9,6 +9,22 @@ component {
 	 * Configure this module
 	 */
 	function configure(){
+		settings = {
+			// CBFS Module
+			cbfs : {
+				// Disks that will be namespaced with the module name @diskModule
+				disks : {
+					"temp" : { provider : "Mock" },
+					"nasa" : { provider : "mock" }
+				},
+				// No namespace in global spacing
+				globalDisks : {
+					// Should be ignored, you can't override if it exists
+					"temp" : { provider : "Mock" },
+					"nasa" : { provider : "mock" }
+				}
+			}
+		};
 	}
 
 	/**

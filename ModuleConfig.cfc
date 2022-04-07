@@ -55,6 +55,21 @@ component {
 	}
 
 	/**
+	 * Listen when modules are activated to load module disks
+	 */
+	function afterAspectsLoad( event, interceptData, rc, prc, buffer ){
+		// Register all module disks
+		wirebox.getInstance( "DiskService@cbfs" ).registerModuleDisks();
+	}
+
+	/**
+	 * Listen when ColdBox Shutds down
+	 */
+	function onColdBoxShutdown( event, interceptData, rc, prc, buffer ){
+		wirebox.getInstance( "DiskService@cbfs" ).shutdown();
+	}
+
+	/**
 	 * Fired when the module is unregistered and unloaded
 	 */
 	function onUnload(){

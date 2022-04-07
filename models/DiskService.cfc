@@ -13,8 +13,10 @@ component accessors="true" singleton {
 	 * Dependency Injection
 	 * --------------------------------------------------------------------------
 	 */
+	property name="appModules"     inject="coldbox:setting:modules";
 	property name="moduleSettings" inject="coldbox:moduleSettings:cbfs";
 	property name="wirebox"        inject="wirebox";
+	property name="log"            inject="logbox:logger:{this}";
 
 	/**
 	 * Struct that stores disk registration and instance data. Each disk will have the following entry:
@@ -40,24 +42,56 @@ component accessors="true" singleton {
 	/**
 	 * Called by the ModuleConfig to register all the ColdBox app disks defined
 	 */
-	function registerAppDisks(){
-		variables.moduleSettings.disks.each( function( diskName, diskDefinition ){
+	DiskService function registerAppDisks(){
+		return registerDiskMap( variables.moduleSettings.disks );
+	}
+
+	/**
+	 * Registers all disks from the incoming struct according to our rules
+	 *
+	 * @disks     The disks to register
+	 * @namespace The namespeace to use when registering
+	 */
+	private function registerDiskMap( required struct disks, string namespace = "" ){
+		arguments.disks.each( function( diskName, diskDefinition ){
 			param name="arguments.diskDefinition.properties" default="#structNew()#";
 			this.register(
-				name      : arguments.diskName,
+				name      : arguments.diskName & namespace,
 				provider  : arguments.diskDefinition.provider,
 				properties: arguments.diskDefinition.properties
 			);
 		} );
+		return this;
+	}
+
+	/**
+	 * Called by the ModuleConfig to register all the ColdBox module disks defined
+	 */
+	DiskService function registerModuleDisks(){
+		variables.appModules
+			// Discover cbfs enabled modules
+			.filter( function( module, config ){
+				return arguments.config.settings.keyExists( "cbfs" );
+			} )
+			// Register the disks
+			.each( function( module, config ){
+				param name="arguments.config.settings.cbfs.disks"       default="#structNew()#";
+				param name="arguments.config.settings.cbfs.globalDisks" default="#structNew()#";
+				registerDiskMap( disks: arguments.config.settings.cbfs.disks, namespace: "@#module#" );
+				registerDiskMap( disks: arguments.config.settings.cbfs.globalDisks );
+			} );
+		return this;
 	}
 
 	/**
 	 * Shutdown all disks that are registered in the service
 	 */
 	DiskService function shutdown(){
+		log.info( "Starting Shutdown for cbfs.DiskService..." );
 		names().each( function( diskName ){
 			unregister( arguments.diskName );
 		} );
+		log.info( "Shutdown complete for cbfs.DiskService" );
 		return this;
 	}
 
@@ -77,6 +111,7 @@ component accessors="true" singleton {
 		if ( isNull( diskRecord.disk ) ) {
 			lock name="cbfs-create-#arguments.name#" type="exclusive" timeout="10" throwOnTimeout="true" {
 				if ( isNull( diskRecord.disk ) ) {
+					log.debug( "Disk (#arguments.name#) not built, building it now." );
 					diskRecord.disk = buildDisk( provider: diskRecord.provider ).startup(
 						name      : arguments.name,
 						properties: diskRecord.properties
@@ -130,6 +165,9 @@ component accessors="true" singleton {
 				"properties" : arguments.properties,
 				"disk"       : javacast( "null", "" )
 			};
+			log.info( "- Registered (#arguments.name#:#arguments.provider#) disk." );
+		} else {
+			log.warn( "- Ignored registration for (#arguments.name#) disk as it was already registered." );
 		}
 
 		return this;
@@ -152,6 +190,8 @@ component accessors="true" singleton {
 
 		// Unregister it
 		variables.disks.delete( arguments.name );
+
+		log.info( "Disk (#arguments.name#) sucessfully shutdown and unregistered" );
 		return this;
 	}
 
@@ -177,7 +217,10 @@ component accessors="true" singleton {
 	 * Get a listing of all registered disks
 	 */
 	array function names(){
-		return variables.disks.keyArray();
+		var names = variables.disks.keyArray();
+		// Dumb ACF 2016 Member function
+		names.sort( "textNocase" );
+		return names;
 	}
 
 	/**
