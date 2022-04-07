@@ -8,6 +8,7 @@
 .db/**
 
 # Dependencies
+test-harness/.cbfs/**
 test-harness/coldbox/**
 test-harness/docbox/**
 test-harness/testbox/**
