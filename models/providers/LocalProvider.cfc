@@ -105,6 +105,70 @@ component
 	}
 
 	/**
+	 * Copy a file from one destination to another
+	 *
+	 * @source      The source file path
+	 * @destination The end destination path
+	 * @overwrite   Flag to overwrite the file at the destination, if it exists. Defaults to true.
+	 *
+	 * @return cbfs.models.IDisk
+	 *
+	 * @throws cbfs.FileNotFoundException
+	 */
+	function copy(
+		required source,
+		required destination,
+		boolean overwrite = false
+	){
+		return this.create(
+			path      = arguments.destination,
+			contents  = this.get( arguments.source ),
+			overwrite = arguments.overwrite
+		);
+	}
+
+	/**
+	 * Rename a file from one destination to another. Shortcut to the `move()` command
+	 *
+	 * @source      The source file path
+	 * @destination The end destination path
+	 *
+	 * @return cbfs.models.IDisk
+	 *
+	 * @throws cbfs.FileNotFoundException
+	 */
+	function rename(
+		required source,
+		required destination,
+		boolean overwrite = false
+	){
+		return this.move( argumentCollection = arguments );
+	}
+
+	/**
+	 * Move a file from one destination to another
+	 *
+	 * @source      The source file path
+	 * @destination The end destination path
+	 *
+	 * @return cbfs.models.IDisk
+	 *
+	 * @throws cbfs.FileNotFoundException
+	 */
+	function move(
+		required source,
+		required destination,
+		boolean overwrite = false
+	){
+		this.create(
+			path      = arguments.destination,
+			contents  = this.get( arguments.source ),
+			overwrite = arguments.overwrite
+		);
+		return this.delete( arguments.source );
+	}
+
+	/**
 	 * Set the storage visibility of a file, available options are `public, private, readonly` or a custom data type the implemented driver can interpret
 	 *
 	 * @path       The target file
@@ -346,6 +410,19 @@ component
 	}
 
 	/**
+	 * Is the path a directory or not
+	 *
+	 * @path The directory path
+	 */
+	boolean function isDirectory( required path ){
+		try {
+			return getFileInfo( buildPath( arguments.path ) ).type == "directory";
+		} catch ( any e ) {
+			return isDirectoryPath( arguments.path );
+		}
+	};
+
+	/**
 	 * Create a new directory
 	 *
 	 * @directory    The directory path
@@ -449,6 +526,203 @@ component
 	}
 
 	/**
+	 * Get an array of all files in a directory.
+	 *
+	 * @directory The directory
+	 * @filter    A string wildcard or a lambda/closure that receives the file path and should return true to include it in the returned array or not.
+	 * @sort      Columns by which to sort. e.g. Directory, Size DESC, DateLastModified.
+	 * @recurse   Recurse into subdirectories, default is false
+	 */
+	array function files(
+		required directory,
+		any filter,
+		sort,
+		boolean recurse
+	){
+		arguments.type = "file";
+		arguments.map  = false;
+		return this.contents( argumentCollection = arguments );
+	};
+
+	/**
+	 * Get an array of all directories in a directory.
+	 *
+	 * @directory The directory
+	 * @filter    A string wildcard or a lambda/closure that receives the file path and should return true to include it in the returned array or not.
+	 * @sort      Columns by which to sort. e.g. Directory, Size DESC, DateLastModified.
+	 * @recurse   Recurse into subdirectories, default is false
+	 */
+	array function directories(
+		required directory,
+		any filter,
+		sort,
+		boolean recurse
+	){
+		arguments.type = "directory";
+		arguments.map  = false;
+		return this.contents( argumentCollection = arguments );
+	};
+
+	/**
+	 * Get an array of all files in a directory using recursion, this is a shortcut to the `files()` with recursion
+	 *
+	 * @directory The directory
+	 * @filter    A string wildcard or a lambda/closure that receives the file path and should return true to include it in the returned array or not.
+	 * @sort      Columns by which to sort. e.g. Directory, Size DESC, DateLastModified.
+	 */
+	array function allFiles( required directory, any filter, sort ){
+		arguments.recurse = true;
+		arguments.map     = false;
+		this.files( argumentCollection = arguments );
+	};
+
+	/**
+	 * Get an array of all directories in a directory using recursion
+	 *
+	 * @directory The directory
+	 * @filter    A string wildcard or a lambda/closure that receives the file path and should return true to include it in the returned array or not.
+	 * @sort      Columns by which to sort. e.g. Directory, Size DESC, DateLastModified.
+	 */
+	array function allDirectories( required directory, any filter, sort ){
+		arguments.recurse = true;
+		arguments.map     = false;
+		this.directories( argumentCollection = arguments );
+	};
+
+	/**
+	 * Get an array of structs of all files in a directory and their appropriate information map:
+	 * - Attributes
+	 * - DateLastModified
+	 * - Directory
+	 * - Link
+	 * - Mode
+	 * - Name
+	 * - Size
+	 *
+	 * @directory The directory
+	 * @filter    A string wildcard or a lambda/closure that receives the file path and should return true to include it in the returned array or not.
+	 * @sort      Columns by which to sort. e.g. Directory, Size DESC, DateLastModified.
+	 * @recurse   Recurse into subdirectories, default is false
+	 */
+	array function filesMap(
+		required directory,
+		any filter,
+		sort,
+		boolean recurse
+	){
+		arguments.map = true;
+		this.files( argumentCollection = arguments );
+	};
+
+	/**
+	 * Get an array of structs of all files in a directory with recursion and their appropriate information map:
+	 * - Attributes
+	 * - DateLastModified
+	 * - Directory
+	 * - Link
+	 * - Mode
+	 * - Name
+	 * - Size
+	 *
+	 * @directory The directory
+	 * @filter    A string wildcard or a lambda/closure that receives the file path and should return true to include it in the returned array or not.
+	 * @sort      Columns by which to sort. e.g. Directory, Size DESC, DateLastModified.
+	 */
+	array function allFilesMap( required directory, any filter, sort ){
+		arguments.map     = true;
+		arguments.recurse = true;
+		this.filesMap( argumentCollection = arguments );
+	};
+
+	/**
+	 * Get an array of structs of all directories in a directory and their appropriate information map:
+	 * - Attributes
+	 * - DateLastModified
+	 * - Directory
+	 * - Link
+	 * - Mode
+	 * - Name
+	 * - Size
+	 *
+	 * @directory The directory
+	 * @filter    A string wildcard or a lambda/closure that receives the file path and should return true to include it in the returned array or not.
+	 * @sort      Columns by which to sort. e.g. Directory, Size DESC, DateLastModified.
+	 * @recurse   Recurse into subdirectories, default is false
+	 */
+	array function directoriesMap(
+		required directory,
+		any filter,
+		sort,
+		boolean recurse
+	){
+		arguments.map = true;
+		this.directories( argumentCollection = arguments );
+	};
+
+	/**
+	 * Get an array of structs of all directories in a directory with recursion and their appropriate information map:
+	 * - Attributes
+	 * - DateLastModified
+	 * - Directory
+	 * - Link
+	 * - Mode
+	 * - Name
+	 * - Size
+	 *
+	 * @directory The directory
+	 * @filter    A string wildcard or a lambda/closure that receives the file path and should return true to include it in the returned array or not.
+	 * @sort      Columns by which to sort. e.g. Directory, Size DESC, DateLastModified.
+	 */
+	array function allDirectoriesMap( required directory, any filter, sort ){
+		arguments.recurse = false;
+		this.directoriesMap( argumentCollection = arguments );
+	};
+
+	/**
+	 * Get an array of structs of all files and directories in a directory and their appropriate information map:
+	 * - Attributes
+	 * - DateLastModified
+	 * - Directory
+	 * - Link
+	 * - Mode
+	 * - Name
+	 * - Size
+	 *
+	 * @directory The directory
+	 * @filter    A string wildcard or a lambda/closure that receives the file path and should return true to include it in the returned array or not.
+	 * @sort      Columns by which to sort. e.g. Directory, Size DESC, DateLastModified.
+	 * @recurse   Recurse into subdirectories, default is false
+	 */
+	array function contentsMap(
+		required directory,
+		any filter,
+		sort,
+		boolean recurse
+	){
+		arguments.map = true;
+		this.contents( argumentCollection = arguments );
+	};
+
+	/**
+	 * Get an array of structs of all files in a directory with recursion and their appropriate information map:
+	 * - Attributes
+	 * - DateLastModified
+	 * - Directory
+	 * - Link
+	 * - Mode
+	 * - Name
+	 * - Size
+	 *
+	 * @directory The directory
+	 * @filter    A string wildcard or a lambda/closure that receives the file path and should return true to include it in the returned array or not.
+	 * @sort      Columns by which to sort. e.g. Directory, Size DESC, DateLastModified.
+	 */
+	array function allContentsMap( required directory, any filter, sort ){
+		arguments.recurse = true;
+		this.contentsMap( argumentCollection = arguments );
+	};
+
+	/**
 	 * Sets the access attributes of the file on Unix based disks
 	 *
 	 * @path The file path
@@ -494,6 +768,103 @@ component
 
 		if ( !directoryExists( directoryPath ) ) {
 			directoryCreate( directoryPath );
+		}
+	}
+
+	/**
+	 * Get an array listing of all files and directories in a directory using recursion
+	 *
+	 * @directory The directory
+	 * @filter    A string wildcard or a lambda/closure that receives the file path and should return true to include it in the returned array or not.
+	 * @sort      Columns by which to sort. e.g. Directory, Size DESC, DateLastModified.
+	 * @recurse   Recurse into subdirectories, default is false
+	 */
+	array function allContents( required directory, any filter, sort ){
+		arguments.recurse = true;
+		arguments.map     = false;
+		return this.contents( argumentCollection = arguments );
+	}
+
+	/**************************************** STREAM METHODS ****************************************/
+
+	/**
+	 * Return a Java stream of the file using non-blocking IO classes. The stream will represent every line in the file so you can navigate through it.
+	 * This method leverages the `cbstreams` library used accordingly by implementations (https://www.forgebox.io/view/cbstreams)
+	 *
+	 * @path
+	 *
+	 * @return Stream object: See https://apidocs.ortussolutions.com/coldbox-modules/cbstreams/1.1.0/index.html
+	 */
+	function stream( required path ){
+		return streamBuilder.new().ofFile( buildPath( arguments.path ) );
+	};
+
+	/**
+	 * Create a Java stream of the incoming array of files/directories usually called from this driver as well.
+	 * <pre>
+	 * disk.streamOf( disk.files( "my.path" ) )
+	 *  .filter( function( item ){
+	 *      return item.startsWith( "a" );
+	 *  } )
+	 *  .forEach( function( item ){
+	 *      writedump( item );
+	 *  } );
+	 * </pre>
+	 *
+	 * @target The target array of files/directories to generate a stream of
+	 *
+	 * @return Stream object: See https://apidocs.ortussolutions.com/coldbox-modules/cbstreams/1.1.0/index.html
+	 */
+	function streamOf( required array target ){
+		throw( "Implement in a subclass" );
+	}
+
+
+	/**
+	 * Ensures a directory exists - will create the directory if it does not exist
+	 *
+	 * @path The path to be checked for existence
+	 */
+	private function ensureDirectoryExists( required path ){
+		var p             = buildPath( arguments.path );
+		var directoryPath = replaceNoCase( p, getFileFromPath( p ), "" );
+
+		if ( !directoryExists( directoryPath ) ) {
+			directoryCreate( directoryPath );
+		}
+	}
+
+	/**
+	 * Determines whether a provided path is a directory or not
+	 *
+	 * @path The path to be checked
+	 */
+	private function isDirectoryPath( required path ){
+		if ( !len( getFileFromPath( buildPath( arguments.path ) ) ) && !!len( extension( arguments.path ) ) ) {
+			return true;
+		}
+		return false;
+	}
+
+	/**
+	 * Expands the full path of the requested provider route
+	 *
+	 * @path The path to be expanded
+	 */
+	private function buildPath( required string path ){
+		return expandPath( getProperties().path & "/" & arguments.path );
+	}
+
+	/**
+	 * Ensures a file exists
+	 *
+	 * @path The path to be checked for existence
+	 *
+	 * @throws cbfs.FileNotFoundException Throws if the file does not exist
+	 */
+	private function ensureFileExists( required path ){
+		if ( !this.exists( arguments.path ) ) {
+			throw( type = "cbfs.FileNotFoundException", message = "File [#arguments.path#] not found." );
 		}
 	}
 

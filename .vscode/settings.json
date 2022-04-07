@@ -9,6 +9,11 @@
 			"logicalPath": "/testbox",
 			"directoryPath": "./test-harness/testbox",
 			"isPhysicalDirectoryPath": false
+		},
+		{
+			"logicalPath": "/cbfs",
+			"directoryPath": "./",
+			"isPhysicalDirectoryPath": false
 		}
 	]
 }

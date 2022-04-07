@@ -1,8 +1,21 @@
-component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
+/**
+ * Copyright Since 2005 ColdBox Framework by Luis Majano and Ortus Solutions, Corp
+ * www.ortussolutions.com
+ * ---
+ * This provider is useful for mocking purposes. They all go into a memory array
+ *
+ * @author Luis Majano <lmajano@ortussolutions.com>, Grant Copley <gcopley@ortussolutions.com>
+ */
+component
+	accessors="true"
+	extends  ="cbfs.models.AbstractDiskProvider"
+	singleton
+{
 
-	property name="name"       type="string";
-	property name="properties" type="struct";
-	property name="files";
+	/**
+	 * Mocking container
+	 */
+	property name="files" type="struct";
 
 	variables.files       = {};
 	this.nonWritablePaths = {};
