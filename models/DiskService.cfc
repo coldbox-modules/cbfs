@@ -143,17 +143,11 @@ component accessors="true" singleton {
 	 * @throws InvalidDiskException - When the name passed is not found in the registry
 	 */
 	DiskService function unregister( required name ){
-		if ( !has( arguments.name ) ) {
-			throw(
-				message: "The disk (#arguments.name#) has not been registered",
-				detail : "Registered disks are: #names().toList()#",
-				type   : "InvalidDiskException"
-			);
-		}
+		var diskRecord = getDiskRecord( arguments.name );
 
 		// Shutdown the disk if it was every built
-		if ( !isNull( variables.disks[ arguments.name ].disk ) ) {
-			variables.disks[ arguments.name ].disk.shutdown();
+		if ( !isNull( diskRecord.disk ) ) {
+			diskRecord.disk.shutdown();
 		}
 
 		// Unregister it

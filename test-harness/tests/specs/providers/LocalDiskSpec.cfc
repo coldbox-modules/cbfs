@@ -1,23 +1,12 @@
 component extends="tests.resources.AbstractDiskSpec" {
 
-	this.loadColdbox = true;
+	variables.TEST_PATH = expandPath( "/tests/resources/storage" );
 
-	function getDisk( string name = "test", struct properties = { "path" : "/tests/resources/storage" } ){
-		var disk = prepareMock( new cbfs.models.providers.LocalProvider() );
-		getWirebox().autowire( disk );
-		disk.startup( arguments.name, arguments.properties );
-		makePublic( disk, "buildPath", "buildPath" );
-		return disk;
-	}
-
-	function getNonWritablePathForTest( disk, path ){
-		disk.chmod( arguments.path, "004" );
-		return arguments.path;
-	}
-
-	function getNonReadablePathForTest( disk, path ){
-		disk.chmod( arguments.path, "000" );
-		return arguments.path;
+	function beforeAll(){
+		super.beforeAll();
+		if ( directoryExists( variables.TEST_PATH ) ) {
+			directoryDelete( variables.TEST_PATH, true );
+		}
 	}
 
 	function run(){
@@ -43,6 +32,27 @@ component extends="tests.resources.AbstractDiskSpec" {
 				expect( newLastModified ).toBeGT( originalLastModified );
 			} );
 		} );
+	}
+
+	function getDisk(
+		string name       = "test",
+		struct properties = { "path" : variables.TEST_PATH, "autoExpand" : false }
+	){
+		var disk = prepareMock( new cbfs.models.providers.LocalProvider() );
+		getWirebox().autowire( disk );
+		disk.startup( arguments.name, arguments.properties );
+		makePublic( disk, "buildPath", "buildPath" );
+		return disk;
+	}
+
+	function getNonWritablePathForTest( disk, path ){
+		disk.chmod( arguments.path, "004" );
+		return arguments.path;
+	}
+
+	function getNonReadablePathForTest( disk, path ){
+		disk.chmod( arguments.path, "000" );
+		return arguments.path;
 	}
 
 }

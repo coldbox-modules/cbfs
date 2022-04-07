@@ -1,5 +1,13 @@
 component extends="coldbox.system.testing.BaseTestCase" {
 
+	this.loadColdbox   = true;
+	this.unLoadColdBox = false;
+
+	function beforeAll(){
+		super.beforeAll();
+		setup();
+	}
+
 	function run(){
 		describe( "abstract disk spec", function(){
 			it( "can be created", function(){

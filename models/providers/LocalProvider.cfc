@@ -45,8 +45,8 @@ component
 		// Property Checks
 		if ( !len( variables.properties.path ) ) {
 			throw(
-				messsage = "The local disk requires a 'path' property to bind to",
-				type     = "InvalidPropertyException"
+				message = "The local disk requires a 'path' property to bind to",
+				type    = "InvalidPropertyException"
 			);
 		}
 
@@ -57,7 +57,7 @@ component
 
 		// Verify the disk storage exists, else create it
 		if ( !directoryExists( variables.properties.path ) ) {
-			directoryCreate( variables.properties.path, true );
+			directoryCreate( variables.properties.path );
 		}
 
 		variables.started = true;
