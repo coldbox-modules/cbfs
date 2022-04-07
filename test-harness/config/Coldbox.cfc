@@ -32,9 +32,10 @@
 			"cbfs" : {
 				"disks" : {
 					"local" : {
-						"provider"   : "LocalProvider@cbfs",
+						"provider"   : "Local",
 						"properties" : { "path" : expandPath( "/root/tests/storage" ) }
-					}
+					},
+					"mock" : { provider : "Mock" }
 				}
 			}
 		};

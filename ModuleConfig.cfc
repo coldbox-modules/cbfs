@@ -40,7 +40,6 @@ component {
 		};
 		// Setup the defaults
 		settings = structCopy( defaults );
-
 		// Register custom DSL
 		wirebox.registerDSL( "cbfs", "#moduleMapping#.dsl.cbfsDSL" );
 	}
@@ -49,8 +48,9 @@ component {
 	 * Fired when the module is registered and activated.
 	 */
 	function onLoad(){
-		// Make sure all disks defaults are defined
-		settings.append( variables.DEFAULTS );
+		// Incorporate default disks
+		settings.disks.append( variables.DEFAULTS.disks );
+		// Register all app disks
 		wirebox.getInstance( "DiskService@cbfs" ).registerAppDisks();
 	}
 
