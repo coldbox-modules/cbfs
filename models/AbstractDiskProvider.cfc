@@ -2,8 +2,7 @@
  * Copyright Since 2005 ColdBox Framework by Luis Majano and Ortus Solutions, Corp
  * www.ortussolutions.com
  * ---
- * This is an abstraction of how all disks should behave or at least give
- * basic behavior.
+ * This is an abstraction of how all disks should behave or at least give basic behavior.
  *
  * @author Luis Majano <lmajano@ortussolutions.com>, Grant Copley <gcopley@ortussolutions.com>
  */
@@ -38,6 +37,7 @@ component accessors="true" {
 	 * --------------------------------------------------------------------------
 	 */
 	property name="streamBuilder" inject="StreamBuilder@cbstreams";
+	property name="log"           inject="logbox:logger:{this}";
 
 	/**
 	 * Constructor
@@ -47,6 +47,7 @@ component accessors="true" {
 		variables.started    = false;
 		variables.name       = "";
 		variables.properties = {};
+		variables.javaSystem = createObject( "java", "java.lang.System" );
 		return this;
 	}
 
@@ -77,17 +78,16 @@ component accessors="true" {
 	 * @throws cbfs.FileNotFoundException
 	 */
 	string function checksum( required path, algorithm = "MD5" ){
-		ensureFileExists( arguments.path );
 		return hash( this.get( arguments.path ), arguments.algorithm );
 	}
 
 	/**
-	 * Extract the file name from a file path
+	 * Extract the file name from a passed file path
 	 *
 	 * @path The file path
 	 */
 	string function name( required path ){
-		return listLast( arguments.path, "/" );
+		return listLast( arguments.path, "/\" );
 	}
 
 	/**
@@ -96,11 +96,8 @@ component accessors="true" {
 	 * @path The file path
 	 */
 	string function extension( required path ){
-		if ( listLen( this.name( arguments.path ), "." ) > 1 ) {
-			return listLast( this.name( arguments.path ), "." );
-		} else {
-			return "";
-		}
+		var fileName = this.name( arguments.path );
+		return ( listLen( fileName, "." ) ? listLast( fileName, "." ) : "" );
 	}
 
 	/************************* PRIVATE METHODS *******************************/
@@ -109,8 +106,21 @@ component accessors="true" {
 	 * Check if is Windows
 	 */
 	private function isWindows(){
-		var system = createObject( "java", "java.lang.System" );
-		return reFindNoCase( "Windows", system.getProperties()[ "os.name" ] );
+		return reFindNoCase( "Windows", variables.javaSystem.getProperties()[ "os.name" ] );
+	}
+
+	/**
+	 * Check if is Linux
+	 */
+	private function isLinux(){
+		return reFindNoCase( "Linux", variables.javaSystem.getProperties()[ "os.name" ] );
+	}
+
+	/**
+	 * Check if is Mac
+	 */
+	private function isMac(){
+		return reFindNoCase( "Mac", variables.javaSystem.getProperties()[ "os.name" ] );
 	}
 
 }
