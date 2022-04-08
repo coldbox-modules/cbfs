@@ -275,8 +275,7 @@ component
 	 * @throws cbfs.FileNotFoundException
 	 */
 	any function get( required path ){
-		ensureFileExists( arguments.path );
-		return variables.files[ arguments.path ].contents;
+		return ensureFileExists( arguments.path ).contents;
 	}
 
 	/**
@@ -289,8 +288,7 @@ component
 	 * @throws cbfs.FileNotFoundException
 	 */
 	any function getAsBinary( required path ){
-		ensureFileExists( arguments.path );
-		return toBinary( toBase64( variables.files[ arguments.path ].contents ) );
+		return toBinary( toBase64( get( arguments.path ) ) );
 	}
 
 	/**
@@ -310,8 +308,7 @@ component
 	 * @throws cbfs.FileNotFoundException
 	 */
 	string function url( required string path ){
-		ensureFileExists( arguments.path );
-		return arguments.path;
+		return ensureFileExists( arguments.path ).path;
 	}
 
 	/**
@@ -334,7 +331,6 @@ component
 	 * @throws cbfs.FileNotFoundException
 	 */
 	numeric function size( required path ){
-		ensureFileExists( arguments.path );
 		return len( get( arguments.path ) );
 	}
 
@@ -346,8 +342,7 @@ component
 	 * @throws cbfs.FileNotFoundException
 	 */
 	function lastModified( required path ){
-		ensureFileExists( arguments.path );
-		return variables.files[ arguments.path ].lastModified;
+		return ensureFileExists( arguments.path ).lastModified;
 	}
 
 	/**
@@ -358,8 +353,7 @@ component
 	 * @throws cbfs.FileNotFoundException
 	 */
 	function mimeType( required path ){
-		ensureFileExists( arguments.path );
-		return variables.javaUrlConnection.guessContentTypeFromName( arguments.path );
+		return variables.javaUrlConnection.guessContentTypeFromName( ensureFileExists( arguments.path ).path );
 	}
 
 	/**
@@ -374,8 +368,8 @@ component
 	 * @throws cbfs.FileNotFoundException
 	 */
 	public boolean function delete( required any path, boolean throwOnMissing = false ){
-		if ( !this.exists( arguments.path ) ) {
-			if ( throwOnMissing ) {
+		if ( missing( arguments.path ) ) {
+			if ( arguments.throwOnMissing ) {
 				throw( type = "cbfs.FileNotFoundException", message = "File [#arguments.path#] not found." );
 			}
 			return false;
@@ -395,12 +389,12 @@ component
 	 * @throws cbfs.PathNotFoundException
 	 */
 	function touch( required path, boolean createPath = true ){
-		if ( this.exists( arguments.path ) ) {
+		if ( exists( arguments.path ) ) {
 			variables.files[ arguments.path ].lastModified = now();
 			return this;
 		}
-		if ( !createPath ) {
-			var pathParts     = path.listToArray( "/" );
+		if ( !arguments.createPath ) {
+			var pathParts     = arguments.path.listToArray( "/" );
 			var directoryPath = "/" & pathParts.slice( 1, pathParts.len() - 1 ).toList( "/" );
 			if ( !this.exists( directoryPath ) ) {
 				throw(
@@ -409,7 +403,7 @@ component
 				);
 			}
 		}
-		return this.create( arguments.path, "" );
+		return create( arguments.path, "" );
 	}
 
 	/**
@@ -513,13 +507,15 @@ component
 	 *
 	 * @path The path to check
 	 *
+	 * @return The mocked file structure
+	 *
 	 * @throws cbfs.FileNotFoundException - If the filepath is missing
 	 */
-	private MockProvider function ensureFileExists( required path ){
+	private struct function ensureFileExists( required path ){
 		if ( missing( arguments.path ) ) {
 			throw( type = "cbfs.FileNotFoundException", message = "File [#arguments.path#] not found." );
 		}
-		return this;
+		return variables.files[ arguments.path ];
 	}
 
 }
