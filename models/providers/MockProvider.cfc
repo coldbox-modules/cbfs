@@ -217,7 +217,7 @@ component
 	function copy(
 		required source,
 		required destination,
-		boolean overwrite = false
+		boolean overwrite = true
 	){
 		return create(
 			path      = arguments.destination,

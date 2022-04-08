@@ -88,7 +88,7 @@ component accessors="true" {
 	 * @path The file path
 	 */
 	string function name( required path ){
-		return listLast( arguments.path, "/\" );
+		return getFileFromPath( arguments.path );
 	}
 
 	/**

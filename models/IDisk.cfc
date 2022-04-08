@@ -144,7 +144,7 @@ interface {
 	any function copy(
 		required source,
 		required destination,
-		boolean overwrite
+		boolean overwrite = true
 	);
 
 	/**

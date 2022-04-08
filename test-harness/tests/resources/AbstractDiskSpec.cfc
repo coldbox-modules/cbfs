@@ -32,78 +32,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 				} );
 			} );
 
-			fstory( "The disk should prepend contents for files", function(){
-				when( "the target file to prepend already exists", function(){
-					then( "it will prepend contents to the beginning of the file", function(){
-						var path = "test_file.txt";
-						disk.create(
-							path      = path,
-							contents  = "my contents",
-							overwrite = true
-						);
-						disk.prepend( path, "these are " );
-						expect( disk.get( path ) ).toBe( "these are my contents" );
-					} );
-				} );
-				when( "the target file doesn't exist and throwOnMissing is false", function(){
-					then( "it will create a new file with the contents", function(){
-						var path = "test_file.txt";
-						disk.delete( path );
-						disk.prepend( path, "prepended contents" );
-						expect( disk.get( path ) ).toBe( "prepended contents" );
-					} );
-				} );
-				when( "the target file doesn't exist and throwOnMissing is true", function(){
-					then( "it should throw a FileNotFoundException exception ", function(){
-						var path = "test_file.txt";
-						disk.delete( path );
-						expect( function(){
-							disk.prepend(
-								path           = path,
-								contents       = "does not matter",
-								throwOnMissing = true
-							);
-						} ).toThrow( "cbfs.FileNotFoundException" );
-					} );
-				} );
-			} );
-
-			describe( "append", function(){
-				it( "can append contents to the beginning of a file", function(){
-					var disk = getDisk();
-					var path = "test_file.txt";
-					disk.create(
-						path      = path,
-						contents  = "my contents",
-						overwrite = true
-					);
-					disk.append( path, " are awesome" );
-					expect( disk.get( path ) ).toBe( "my contents are awesome" );
-				} );
-
-				it( "creates a new file if the file does not already exist", function(){
-					var disk = getDisk();
-					var path = "test_file.txt";
-					disk.delete( path );
-					disk.append( path, "appended contents" );
-					expect( disk.get( path ) ).toBe( "appended contents" );
-				} );
-
-				it( "throws an exception if the file does not already exist and the throwOnMissing flag is set", function(){
-					var disk = getDisk();
-					var path = "test_file.txt";
-					disk.delete( path );
-					expect( function(){
-						disk.append(
-							path           = path,
-							contents       = "does not matter",
-							throwOnMissing = true
-						);
-					} ).toThrow( "cbfs.FileNotFoundException" );
-				} );
-			} );
-
-			story( "Disk can create files", function(){
+			story( "The disk can create files", function(){
 				given( "a new file content", function(){
 					then( "it should create the file", function(){
 						var path = "test.txt";
@@ -157,6 +86,147 @@ component extends="coldbox.system.testing.BaseTestCase" {
 				} );
 			} );
 
+			story( "The disk should prepend contents for files", function(){
+				when( "the target file to prepend already exists", function(){
+					then( "it will prepend contents to the beginning of the file", function(){
+						var path = "test_file.txt";
+						disk.create(
+							path      = path,
+							contents  = "my contents",
+							overwrite = true
+						);
+						disk.prepend( path, "these are " );
+						expect( disk.get( path ) ).toBe( "these are my contents" );
+					} );
+				} );
+				when( "the target file doesn't exist and throwOnMissing is false", function(){
+					then( "it will create a new file with the contents", function(){
+						var path = "test_file.txt";
+						disk.delete( path );
+						disk.prepend( path, "prepended contents" );
+						expect( disk.get( path ) ).toBe( "prepended contents" );
+					} );
+				} );
+				when( "the target file doesn't exist and throwOnMissing is true", function(){
+					then( "it should throw a FileNotFoundException exception ", function(){
+						var path = "test_file.txt";
+						disk.delete( path );
+						expect( function(){
+							disk.prepend(
+								path           = path,
+								contents       = "does not matter",
+								throwOnMissing = true
+							);
+						} ).toThrow( "cbfs.FileNotFoundException" );
+					} );
+				} );
+			} );
+
+			story( "The disk should append contents for files", function(){
+				when( "the target file to append already exists", function(){
+					then( "it will append contents to the end of the file", function(){
+						var path = "test_file.txt";
+						disk.create(
+							path      = path,
+							contents  = "my contents",
+							overwrite = true
+						);
+						disk.append( path, " are awesome!" );
+						expect( disk.get( path ) ).toBe( "my contents are awesome!" );
+					} );
+				} );
+				when( "the target file doesn't exist and throwOnMissing is false", function(){
+					then( "it will create a new file with the contents", function(){
+						var path = "test_file.txt";
+						disk.delete( path );
+						disk.append( path, "appended contents" );
+						expect( disk.get( path ) ).toBe( "appended contents" );
+					} );
+				} );
+				when( "the target file doesn't exist and throwOnMissing is true", function(){
+					then( "it should throw a FileNotFoundException exception ", function(){
+						var path = "test_file.txt";
+						disk.delete( path );
+						expect( function(){
+							disk.append(
+								path           = path,
+								contents       = "does not matter",
+								throwOnMissing = true
+							);
+						} ).toThrow( "cbfs.FileNotFoundException" );
+					} );
+				} );
+			} );
+
+			story( "The disk can copy files", function(){
+				beforeEach( function( currentSpec ){
+					sourcePath  = "test_file.txt";
+					destination = "test_file_two.txt";
+					disk.delete( sourcePath );
+					disk.delete( destination );
+				} );
+				given( "An existing source and a non-existing destination", function(){
+					then( "it should copy the source to the destination", function(){
+						disk.create(
+							path      = sourcePath,
+							contents  = "my contents",
+							overwrite = true
+						);
+						disk.copy( sourcePath, destination );
+						expect( disk.exists( destination ) ).toBeTrue();
+						expect( disk.exists( sourcePath ) ).toBeTrue();
+						expect( disk.get( destination ) ).toBe( disk.get( sourcePath ) );
+					} );
+				} );
+				given( "An existing source and a existing destination", function(){
+					when( "overwrite is true", function(){
+						then( "it should copy the source to the destination", function(){
+							disk.create(
+								path      = sourcePath,
+								contents  = "my contents",
+								overwrite = true
+							);
+							disk.create(
+								path      = destination,
+								contents  = "old stuff",
+								overwrite = true
+							);
+							disk.copy( sourcePath, destination );
+							expect( disk.exists( destination ) ).toBeTrue();
+							expect( disk.exists( sourcePath ) ).toBeTrue();
+							expect( disk.get( destination ) ).toBe( disk.get( sourcePath ) );
+						} );
+					} );
+				} );
+				given( "An existing source and a existing destination", function(){
+					when( "overwrite is false", function(){
+						then( "it should throw an FileOverrideException", function(){
+							disk.create(
+								path      = sourcePath,
+								contents  = "my contents",
+								overwrite = true
+							);
+							disk.create(
+								path      = destination,
+								contents  = "old stuff",
+								overwrite = true
+							);
+
+							expect( function(){
+								disk.copy( sourcePath, destination, false );
+							} ).toThrow( "cbfs.FileOverrideException" );
+						} );
+					} );
+				} );
+				given( "A non-existent source", function(){
+					it( "it should throw an FileNotFoundException", function(){
+						expect( function(){
+							disk.copy( sourcePath, destination );
+						} ).toThrow( "cbfs.FileNotFoundException" );
+					} );
+				} );
+			} );
+
 			describe( "get", function(){
 				it( "can get the contents of a file", function(){
 					var disk = getDisk();
@@ -199,34 +269,6 @@ component extends="coldbox.system.testing.BaseTestCase" {
 				disk.create( path, "my contents" );
 				disk.delete( path );
 				expect( disk.exists( path ) ).toBeFalse( "#path# should not exist" );
-			} );
-
-			describe( "copy", function(){
-				it( "can copy a file from one location to another", function(){
-					var disk    = getDisk();
-					var oldPath = "test_file.txt";
-					var newPath = "test_file_two.txt";
-					disk.delete( oldPath );
-					disk.delete( newPath );
-					disk.create(
-						path      = oldPath,
-						contents  = "my contents",
-						overwrite = true
-					);
-					disk.copy( oldPath, newPath );
-					expect( disk.get( newPath ) ).toBe( disk.get( oldPath ) );
-				} );
-
-				it( "throws an exception if the source file does not exist", function(){
-					var disk            = getDisk();
-					var nonExistantPath = "test_file.txt";
-					var newPath         = "test_file_two.txt";
-					disk.delete( nonExistantPath );
-					disk.delete( newPath );
-					expect( function(){
-						disk.copy( nonExistantPath, newPath );
-					} ).toThrow( "cbfs.FileNotFoundException" );
-				} );
 			} );
 
 			describe( "move", function(){
