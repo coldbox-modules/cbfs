@@ -64,7 +64,7 @@ component
 	function create(
 		required path,
 		required contents,
-		visibility        = "",
+		visibility        = "public",
 		struct metadata   = {},
 		boolean overwrite = false
 	){
@@ -85,13 +85,57 @@ component
 			"type"         : createObject( "java", "java.net.URLConnection" ).guessContentTypeFromName( fileName ),
 			"canWrite"     : true,
 			"canRead"      : true,
-			"isHidden"     : false
+			"isHidden"     : false,
+			"metadata"     : arguments.metadata
 		};
 		return this;
 	}
 
 	/**
-	 * Prepend contents to the beginning of a file
+	 * Set the storage visibility of a file, available options are `public, private, readonly` or a custom data type the implemented driver can interpret
+	 *
+	 * @path       The target file
+	 * @visibility The storage visibility of the file, available options are `public, private, readonly` or a custom data type the implemented driver can interpret
+	 *
+	 * @return cbfs.models.IDisk
+	 *
+	 * @throws cbfs.FileNotFoundException
+	 */
+	function setVisibility( required string path, required string visibility ){
+		if ( this.exists( arguments.path ) ) {
+			variables.files[ arguments.path ].visibility = arguments.visibility;
+		} else {
+			throw(
+				message: "The file requested (#arguments.path#) doesn't exist",
+				type   : "cbfs.FileNotFoundException"
+			);
+		}
+		return this;
+	};
+
+	/**
+	 * Get the storage visibility of a file, the return format can be a string of `public, private, readonly` or a custom data type the implemented driver can interpret.
+	 *
+	 * @path The target file
+	 *
+	 * @return The visibility of the requested file
+	 *
+	 * @throws cbfs.FileNotFoundException
+	 */
+	public string function visibility( required string path ){
+		if ( this.exists( arguments.path ) ) {
+			return variables.files[ arguments.path ].visibility;
+		} else {
+			throw(
+				message: "The file requested (#arguments.path#) doesn't exist",
+				type   : "cbfs.FileNotFoundException"
+			);
+		}
+	}
+
+	/**
+	 * Prepend contents to the beginning of a file. If the file is missing and the throwOnMissing if false
+	 * We will create the file with the contents provided.
 	 *
 	 * @path           The file path to use for storage
 	 * @contents       The contents of the file to prepend
@@ -108,25 +152,24 @@ component
 		struct metadata        = {},
 		boolean throwOnMissing = false
 	){
-		if ( !this.exists( arguments.path ) ) {
+		if ( missing( arguments.path ) ) {
 			if ( arguments.throwOnMissing ) {
 				throw( type = "cbfs.FileNotFoundException", message = "File [#arguments.path#] not found." );
 			}
-			return this.create(
+			return create(
 				path     = arguments.path,
 				contents = arguments.contents,
 				metadata = arguments.metadata
 			);
 		}
-		return this.create(
-			path      = arguments.path,
-			contents  = arguments.contents & this.get( arguments.path ),
-			overwrite = true
-		);
+		variables.files[ arguments.path ].contents = arguments.contents & variables.files[ arguments.path ].contents;
+		variables.files[ arugments.path ].metadata.append( arguments.metadata, true );
+		return this;
 	}
 
 	/**
-	 * Append contents to the end of a file
+	 * Append contents to the end of a file. If the file is missing and the throwOnMissing if false
+	 * We will create the file with the contents provided.
 	 *
 	 * @path           The file path to use for storage
 	 * @contents       The contents of the file to append
@@ -143,21 +186,19 @@ component
 		struct metadata        = {},
 		boolean throwOnMissing = false
 	){
-		if ( !this.exists( arguments.path ) ) {
+		if ( missing( arguments.path ) ) {
 			if ( arguments.throwOnMissing ) {
 				throw( type = "cbfs.FileNotFoundException", message = "File [#arguments.path#] not found." );
 			}
-			return this.create(
+			return create(
 				path     = arguments.path,
 				contents = arguments.contents,
 				metadata = arguments.metadata
 			);
 		}
-		return this.create(
-			path      = arguments.path,
-			contents  = this.get( arguments.path ) & arguments.contents,
-			overwrite = true
-		);
+		variables.files[ arguments.path ].contents = variables.files[ arguments.path ].contents & arguments.contents;
+		variables.files[ arugments.path ].metadata.append( arguments.metadata, true );
+		return this;
 	}
 
 	/**
@@ -176,9 +217,9 @@ component
 		required destination,
 		boolean overwrite = false
 	){
-		return this.create(
+		return create(
 			path      = arguments.destination,
-			contents  = this.get( arguments.source ),
+			contents  = get( arguments.source ),
 			overwrite = arguments.overwrite
 		);
 	}
@@ -198,12 +239,12 @@ component
 		required destination,
 		boolean overwrite = false
 	){
-		this.create(
+		create(
 			path      = arguments.destination,
-			contents  = this.get( arguments.source ),
+			contents  = get( arguments.source ),
 			overwrite = arguments.overwrite
 		);
-		return this.delete( arguments.source );
+		return delete( arguments.source );
 	}
 
 	/**
@@ -221,7 +262,7 @@ component
 		required destination,
 		boolean overwrite = false
 	){
-		return this.move( argumentCollection = arguments );
+		return move( argumentCollection = arguments );
 	}
 
 	/**
@@ -239,17 +280,26 @@ component
 	}
 
 	/**
+	 * Get the contents of a file as binary
+	 *
+	 * @path The file path to retrieve
+	 *
+	 * @return A binary representation of the file
+	 *
+	 * @throws cbfs.FileNotFoundException
+	 */
+	any function getAsBinary( required path ){
+		ensureFileExists( arguments.path );
+		return toBinary( toBase64( variables.files[ arguments.path ].contents ) );
+	}
+
+	/**
 	 * Validate if a file/directory exists
 	 *
 	 * @path The file/directory path to verify
 	 */
 	boolean function exists( required string path ){
-		for ( var existingPath in variables.files.keyArray() ) {
-			if ( find( arguments.path, existingPath ) == 1 ) {
-				return true;
-			}
-		}
-		return false;
+		return variables.files.findKey( arguments.path ).len() > 0 ? true : false;
 	}
 
 	/**
@@ -285,7 +335,7 @@ component
 	 */
 	numeric function size( required path ){
 		ensureFileExists( arguments.path );
-		return len( this.get( arguments.path ) );
+		return len( get( arguments.path ) );
 	}
 
 	/**
@@ -309,7 +359,7 @@ component
 	 */
 	function mimeType( required path ){
 		ensureFileExists( arguments.path );
-		return createObject( "java", "java.net.URLConnection" ).guessContentTypeFromName( arguments.path );
+		return variables.javaUrlConnection.guessContentTypeFromName( arguments.path );
 	}
 
 	/**
@@ -458,10 +508,18 @@ component
 		return true;
 	}
 
-	private function ensureFileExists( required path ){
-		if ( !this.exists( arguments.path ) ) {
+	/**
+	 * This checks if the file path is missing. If it does, it throws an exception, else continues operation.
+	 *
+	 * @path The path to check
+	 *
+	 * @throws cbfs.FileNotFoundException - If the filepath is missing
+	 */
+	private MockProvider function ensureFileExists( required path ){
+		if ( missing( arguments.path ) ) {
 			throw( type = "cbfs.FileNotFoundException", message = "File [#arguments.path#] not found." );
 		}
+		return this;
 	}
 
 }

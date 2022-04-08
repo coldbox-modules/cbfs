@@ -43,11 +43,12 @@ component accessors="true" {
 	 * Constructor
 	 */
 	function init(){
-		variables.identifier = createUUID();
-		variables.started    = false;
-		variables.name       = "";
-		variables.properties = {};
-		variables.javaSystem = createObject( "java", "java.lang.System" );
+		variables.identifier        = createUUID();
+		variables.started           = false;
+		variables.name              = "";
+		variables.properties        = {};
+		variables.javaSystem        = createObject( "java", "java.lang.System" );
+		variables.javaUrlConnection = createObject( "java", "java.net.URLConnection" );
 		return this;
 	}
 
@@ -98,6 +99,15 @@ component accessors="true" {
 	string function extension( required path ){
 		var fileName = this.name( arguments.path );
 		return ( listLen( fileName, "." ) ? listLast( fileName, "." ) : "" );
+	}
+
+	/**
+	 * Validate if a file/directory doesn't exist
+	 *
+	 * @path The file/directory path to verify
+	 */
+	boolean function missing( required string path ){
+		return !this.exists( arguments.path );
 	}
 
 	/************************* PRIVATE METHODS *******************************/

@@ -71,7 +71,9 @@ interface {
 	 * @path       The target file
 	 * @visibility The storage visibility of the file, available options are `public, private, readonly` or a custom data type the implemented driver can interpret
 	 *
-	 * @return IDisk
+	 * @return cbfs.models.IDisk
+	 *
+	 * @throws cbfs.FileNotFoundException
 	 */
 	public iDisk function setVisibility( required string path, required string visibility );
 
@@ -79,11 +81,16 @@ interface {
 	 * Get the storage visibility of a file, the return format can be a string of `public, private, readonly` or a custom data type the implemented driver can interpret.
 	 *
 	 * @path The target file
+	 *
+	 * @return The visibility of the requested file
+	 *
+	 * @throws cbfs.FileNotFoundException
 	 */
 	public string function visibility( required string path );
 
 	/**
-	 * Prepend contents to the beginning of a file
+	 * Prepend contents to the beginning of a file. If the file is missing and the throwOnMissing if false
+	 * We will create the file with the contents provided.
 	 *
 	 * @path           The file path to use for storage
 	 * @contents       The contents of the file to prepend
@@ -102,7 +109,8 @@ interface {
 	);
 
 	/**
-	 * Append contents to the end of a file
+	 * Append contents to the end of a file. If the file is missing and the throwOnMissing if false
+	 * We will create the file with the contents provided.
 	 *
 	 * @path           The file path to use for storage
 	 * @contents       The contents of the file to append
@@ -199,6 +207,13 @@ interface {
 	 * @path The file/directory path to verify
 	 */
 	boolean function exists( required string path );
+
+	/**
+	 * Validate if a file/directory doesn't exist
+	 *
+	 * @path The file/directory path to verify
+	 */
+	boolean function missing( required string path );
 
 	/**
 	 * Get the URL for the given file
