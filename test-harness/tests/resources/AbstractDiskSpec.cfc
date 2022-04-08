@@ -227,6 +227,75 @@ component extends="coldbox.system.testing.BaseTestCase" {
 				} );
 			} );
 
+			fstory( "The disk can move files", function(){
+				beforeEach( function( currentSpec ){
+					sourcePath  = "test_file.txt";
+					destination = "test_file_two.txt";
+					disk.delete( sourcePath );
+					disk.delete( destination );
+				} );
+				given( "An existing source and a non-existing destination", function(){
+					then( "it should move the source to the destination", function(){
+						disk.create(
+							path      = sourcePath,
+							contents  = "my contents",
+							overwrite = true
+						);
+						disk.move( sourcePath, destination );
+						expect( disk.exists( destination ) ).toBeTrue( "destination should exist" );
+						expect( disk.missing( sourcePath ) ).toBeTrue( "source should not exist" );
+						expect( disk.get( destination ) ).toBe( "my contents" );
+					} );
+				} );
+				given( "An existing source and a existing destination", function(){
+					when( "overwrite is true", function(){
+						then( "it should move the source to the destination and overwrite it", function(){
+							disk.create(
+								path      = sourcePath,
+								contents  = "my contents",
+								overwrite = true
+							);
+							disk.create(
+								path      = destination,
+								contents  = "old stuff",
+								overwrite = true
+							);
+							disk.move( sourcePath, destination );
+							expect( disk.exists( destination ) ).toBeTrue( "destination should exist" );
+							expect( disk.missing( sourcePath ) ).toBeTrue( "source should not exist" );
+							expect( disk.get( destination ) ).toBe( "my contents" );
+						} );
+					} );
+				} );
+				given( "An existing source and a existing destination", function(){
+					when( "overwrite is false", function(){
+						then( "it should throw an FileOverrideException", function(){
+							disk.create(
+								path      = sourcePath,
+								contents  = "my contents",
+								overwrite = true
+							);
+							disk.create(
+								path      = destination,
+								contents  = "old stuff",
+								overwrite = true
+							);
+
+							expect( function(){
+								disk.move( sourcePath, destination, false );
+							} ).toThrow( "cbfs.FileOverrideException" );
+						} );
+					} );
+				} );
+				given( "A non-existent source", function(){
+					it( "it should throw an FileNotFoundException", function(){
+						expect( function(){
+							disk.move( sourcePath, destination );
+						} ).toThrow( "cbfs.FileNotFoundException" );
+					} );
+				} );
+			} );
+
 			describe( "get", function(){
 				it( "can get the contents of a file", function(){
 					var disk = getDisk();
@@ -269,33 +338,6 @@ component extends="coldbox.system.testing.BaseTestCase" {
 				disk.create( path, "my contents" );
 				disk.delete( path );
 				expect( disk.exists( path ) ).toBeFalse( "#path# should not exist" );
-			} );
-
-			describe( "move", function(){
-				it( "can move a file from one location to another", function(){
-					var disk    = getDisk();
-					var oldPath = "test_file.txt";
-					disk.create(
-						path      = oldPath,
-						contents  = "my contents",
-						overwrite = true
-					);
-					var newPath = "test_file_two.txt";
-					disk.move( oldPath, newPath );
-					expect( disk.get( newPath ) ).toBe( "my contents" );
-					expect( disk.exists( oldPath ) ).toBeFalse( "Source path [#oldPath#] should no longer exist." );
-				} );
-
-				it( "throws an exception if the source file does not exist", function(){
-					var disk            = getDisk();
-					var nonExistantPath = "test_file.txt";
-					var newPath         = "test_file_two.txt";
-					disk.delete( nonExistantPath );
-					disk.delete( newPath );
-					expect( function(){
-						disk.move( nonExistantPath, newPath );
-					} ).toThrow( "cbfs.FileNotFoundException" );
-				} );
 			} );
 
 			describe( "rename", function(){

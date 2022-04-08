@@ -161,7 +161,7 @@ interface {
 	any function move(
 		required source,
 		required destination,
-		boolean overwrite
+		boolean overwrite = true
 	);
 
 	/**

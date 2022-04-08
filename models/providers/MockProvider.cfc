@@ -239,7 +239,7 @@ component
 	function move(
 		required source,
 		required destination,
-		boolean overwrite = false
+		boolean overwrite = true
 	){
 		create(
 			path      = arguments.destination,
