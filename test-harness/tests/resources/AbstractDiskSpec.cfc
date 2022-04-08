@@ -227,7 +227,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 				} );
 			} );
 
-			fstory( "The disk can move files", function(){
+			story( "The disk can move files", function(){
 				beforeEach( function( currentSpec ){
 					sourcePath  = "test_file.txt";
 					destination = "test_file_two.txt";
@@ -296,53 +296,8 @@ component extends="coldbox.system.testing.BaseTestCase" {
 				} );
 			} );
 
-			describe( "get", function(){
-				it( "can get the contents of a file", function(){
-					var disk = getDisk();
-					var path = "test_file.txt";
-					disk.create(
-						path      = path,
-						contents  = "my contents",
-						overwrite = true
-					);
-					expect( disk.get( path ) ).toBe( "my contents" );
-				} );
-			} );
-
-			describe( "exists", function(){
-				it( "can create a file and verify it exists", function(){
-					var disk = getDisk();
-					var path = "test_file.txt";
-					disk.delete( path );
-					expect( disk.exists( path ) ).toBeFalse( "#path# should not exist" );
-					disk.create( path, "my contents" );
-					expect( disk.exists( path ) ).toBeTrue( "#path# should exist" );
-				} );
-
-				it( "can verify a directory exists", function(){
-					var disk          = getDisk();
-					var filePath      = "/one/two/test_file.txt";
-					var directoryPath = "/one/two/";
-					disk.deleteDirectory( "/one/" );
-					expect( disk.exists( directoryPath ) ).toBeFalse( "#directoryPath# should not exist" );
-					disk.create( filePath, "my contents" );
-					expect( disk.exists( directoryPath ) ).toBeTrue( "#directoryPath# should exist" );
-				} );
-			} );
-
-			it( "can delete a file", function(){
-				var disk = getDisk();
-				var path = "test_file.txt";
-				disk.delete( path );
-				expect( disk.exists( path ) ).toBeFalse( "#path# should not exist" );
-				disk.create( path, "my contents" );
-				disk.delete( path );
-				expect( disk.exists( path ) ).toBeFalse( "#path# should not exist" );
-			} );
-
-			describe( "rename", function(){
+			story( "The disk can rename files", function(){
 				it( "can rename a file", function(){
-					var disk    = getDisk();
 					var oldPath = "test_file.txt";
 					var newPath = "test_file_two.txt";
 					disk.delete( oldPath );
@@ -356,29 +311,42 @@ component extends="coldbox.system.testing.BaseTestCase" {
 					expect( disk.get( newPath ) ).toBe( "my contents" );
 					expect( disk.exists( oldPath ) ).toBeFalse( "Source path [#oldPath#] should no longer exist." );
 				} );
+			} );
 
-				it( "throws an exception if the source file does not exist", function(){
-					var disk            = getDisk();
-					var nonExistantPath = "test_file.txt";
-					var newPath         = "test_file_two.txt";
-					disk.delete( nonExistantPath );
-					disk.delete( newPath );
-					expect( function(){
-						disk.rename( nonExistantPath, newPath );
-					} ).toThrow( "cbfs.FileNotFoundException" );
+			story( "The disk can check for existence", function(){
+				given( "a file that exists", function(){
+					it( "it can verify it", function(){
+						var path = "test_file.txt";
+						disk.delete( path );
+						expect( disk.exists( path ) ).toBeFalse( "#path# should not exist" );
+						disk.create( path, "my contents" );
+						expect( disk.exists( path ) ).toBeTrue( "#path# should exist" );
+					} );
+				} );
+				given( "a directory that exists", function(){
+					it( "it can verify it", function(){
+						var filePath      = "/one/two/test_file.txt";
+						var directoryPath = "/one/two/";
+						disk.deleteDirectory( "/one/" );
+						expect( disk.exists( directoryPath ) ).toBeFalse( "#directoryPath# should not exist" );
+						disk.create( filePath, "my contents" );
+						expect( disk.exists( directoryPath ) ).toBeTrue( "#directoryPath# should exist" );
+					} );
 				} );
 			} );
 
-			describe( "url", function(){
-				it( "can retrieve the url for a file", function(){
-					var disk = getDisk();
-					var path = "test_file.txt";
-					disk.create(
-						path      = path,
-						contents  = "my contents",
-						overwrite = true
-					);
-					testURLExpectation( disk, path );
+			// TODO
+			xstory( "The disk can get a url for the given file", function(){
+				given( "a valid file", function(){
+					then( "it can retrieve the url for a file", function(){
+						var path = "test_file.txt";
+						disk.create(
+							path      = path,
+							contents  = "my contents",
+							overwrite = true
+						);
+						testURLExpectation( disk, path );
+					} );
 				} );
 
 				it( "throws an exception if the file does not exist", function(){
@@ -391,8 +359,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 					} ).toThrow( "cbfs.FileNotFoundException" );
 				} );
 			} );
-
-			describe( "temporaryURL", function(){
+			xstory( "The disk can get temporary urls for a given file", function(){
 				it( "can retrieve the temporary url for a file", function(){
 					var disk = getDisk();
 					var path = "test_file.txt";
@@ -415,9 +382,8 @@ component extends="coldbox.system.testing.BaseTestCase" {
 				} );
 			} );
 
-			describe( "size", function(){
+			story( "The disk can get file sizes in bytes", function(){
 				it( "can retrieve the size of a file", function(){
-					var disk     = getDisk();
 					var path     = "test_file.txt";
 					var contents = "my contents";
 					disk.create(
@@ -426,45 +392,40 @@ component extends="coldbox.system.testing.BaseTestCase" {
 						overwrite = true
 					);
 					expect( disk.exists( path ) ).toBeTrue( "[#path#] should exist." );
-					expect( disk.size( path ) ).toBe( retireveSizeForTest( path, contents ) );
-				} );
-
-				it( "throws an exception if the file does not exist", function(){
-					var disk = getDisk();
-					var path = "does_not_exist.txt";
-					expect( function(){
-						disk.size( path );
-					} ).toThrow( "cbfs.FileNotFoundException" );
+					expect( disk.size( path ) ).toBe( retrieveSizeForTest( path, contents ) );
 				} );
 			} );
 
-			describe( "lastModified", function(){
+			fstory( "The disk can get the lastModified property of a file", function(){
 				it( "can retrieve the last modified date of a file", function(){
 					var disk     = getDisk();
 					var path     = "test_file.txt";
 					var contents = "my contents";
 					var before   = getEpochTimeFromLocal();
+					sleep( 1000 );
 					disk.create(
 						path      = path,
 						contents  = contents,
 						overwrite = true
 					);
-					var after = getEpochTimeFromLocal();
+					expect( disk.lastModified( path ) ).toBeDate();
 					expect( getEpochTimeFromLocal( disk.lastModified( path ) ) ).toBeGTE( before );
-					// Skip this test for remote providers as latency and timezone offsets can make the results inconsistent
-					if ( !isInstanceOf( disk, "S3Provider" ) ) {
-						expect( getEpochTimeFromLocal( disk.lastModified( path ) ) ).toBeLTE( after );
-					}
-				} );
-
-				it( "throws an exception if the file does not exist", function(){
-					var disk = getDisk();
-					var path = "does_not_exist.txt";
-					expect( function(){
-						disk.lastModified( path );
-					} ).toThrow( "cbfs.FileNotFoundException" );
 				} );
 			} );
+
+			it( "can delete a file", function(){
+				var disk = getDisk();
+				var path = "test_file.txt";
+				disk.delete( path );
+				expect( disk.exists( path ) ).toBeFalse( "#path# should not exist" );
+				disk.create( path, "my contents" );
+				disk.delete( path );
+				expect( disk.exists( path ) ).toBeFalse( "#path# should not exist" );
+			} );
+
+
+
+
 
 			describe( "mimeType", function(){
 				it( "can retrieve the mime type of a file", function(){
@@ -701,7 +662,13 @@ component extends="coldbox.system.testing.BaseTestCase" {
 		return arguments.path;
 	}
 
-	function retireveSizeForTest( required string path, required content ){
+	/**
+	 * This should be implemented by a concrete provider test. This implementation is a basic one.
+	 *
+	 * @path    The path of the file
+	 * @content The contents of the file
+	 */
+	function retrieveSizeForTest( required string path, required content ){
 		return len( arguments.content );
 	}
 

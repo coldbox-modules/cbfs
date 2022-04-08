@@ -299,7 +299,12 @@ component
 	 * @path The file/directory path to verify
 	 */
 	boolean function exists( required string path ){
-		return variables.files.findKey( arguments.path ).len() > 0 ? true : false;
+		for ( var existingPath in variables.files.keyArray() ) {
+			if ( find( arguments.path, existingPath ) == 1 ) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	/**
