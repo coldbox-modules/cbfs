@@ -53,9 +53,9 @@ interface {
 	 * @metadata   Struct of metadata to store with the file
 	 * @override   Flag to overwrite the file at the destination, if it exists. Defaults to true.
 	 *
-	 * @return IDisk
+	 * @return cbfs.models.IDisk
 	 *
-	 * @throws cbfs.FileOverrideException
+	 * @throws cbfs.FileOverrideException - When a file exists and no override has been provided
 	 */
 	function create(
 		required path,

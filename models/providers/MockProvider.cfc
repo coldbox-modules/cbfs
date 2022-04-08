@@ -17,7 +17,6 @@ component
 	 */
 	property name="files" type="struct";
 
-	variables.files       = {};
 	this.nonWritablePaths = {};
 	this.nonReadablePaths = {};
 
@@ -35,6 +34,17 @@ component
 		variables.name       = arguments.name;
 		variables.properties = arguments.properties;
 		variables.started    = true;
+		variables.files      = {};
+		return this;
+	}
+
+	/**
+	 * Called before the cbfs module is unloaded, or via reinits. This can be implemented
+	 * as you see fit to gracefully shutdown connections, sockets, etc.
+	 */
+	public IDisk function shutdown(){
+		variables.files   = {};
+		variables.started = false;
 		return this;
 	}
 
@@ -49,7 +59,7 @@ component
 	 *
 	 * @return cbfs.models.IDisk
 	 *
-	 * @throws cbfs.FileOverrideException
+	 * @throws cbfs.FileOverrideException - When a file exists and no override has been provided
 	 */
 	function create(
 		required path,
@@ -64,19 +74,18 @@ component
 				message = "Cannot create file. File already exists [#arguments.path#]"
 			);
 		}
+		var fileName                      = this.name( arguments.path );
 		variables.files[ arguments.path ] = {
 			"path"         : arguments.path,
 			"contents"     : arguments.contents,
 			"visibility"   : arguments.visibility,
 			"lastModified" : now(),
 			"size"         : len( arguments.contents ),
-			"name"         : listLast( arguments.path, "/" ),
-			"type"         : createObject( "java", "java.net.URLConnection" ).guessContentTypeFromName(
-				listLast( arguments.path, "/" )
-			),
-			"canWrite" : true,
-			"canRead"  : true,
-			"isHidden" : false
+			"name"         : fileName,
+			"type"         : createObject( "java", "java.net.URLConnection" ).guessContentTypeFromName( fileName ),
+			"canWrite"     : true,
+			"canRead"      : true,
+			"isHidden"     : false
 		};
 		return this;
 	}
