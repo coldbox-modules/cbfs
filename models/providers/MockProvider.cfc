@@ -41,8 +41,10 @@ component
 	/**
 	 * Called before the cbfs module is unloaded, or via reinits. This can be implemented
 	 * as you see fit to gracefully shutdown connections, sockets, etc.
+	 *
+	 * @return cbfs.models.IDisk
 	 */
-	public IDisk function shutdown(){
+	any function shutdown(){
 		variables.files   = {};
 		variables.started = false;
 		return this;
@@ -163,7 +165,7 @@ component
 			);
 		}
 		variables.files[ arguments.path ].contents = arguments.contents & variables.files[ arguments.path ].contents;
-		variables.files[ arugments.path ].metadata.append( arguments.metadata, true );
+		variables.files[ arguments.path ].metadata.append( arguments.metadata, true );
 		return this;
 	}
 
@@ -197,7 +199,7 @@ component
 			);
 		}
 		variables.files[ arguments.path ].contents = variables.files[ arguments.path ].contents & arguments.contents;
-		variables.files[ arugments.path ].metadata.append( arguments.metadata, true );
+		variables.files[ arguments.path ].metadata.append( arguments.metadata, true );
 		return this;
 	}
 

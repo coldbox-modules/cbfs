@@ -34,15 +34,17 @@ interface {
 	 * @name       The name of the disk
 	 * @properties A struct of configuration data for this provider, usually coming from the configuration file
 	 *
-	 * @return IDisk
+	 * @return cbfs.models.IDisk
 	 */
-	public IDisk function startup( required string name, struct properties = {} );
+	any function startup( required string name, struct properties = {} );
 
 	/**
 	 * Called before the cbfs module is unloaded, or via reinits. This can be implemented
 	 * as you see fit to gracefully shutdown connections, sockets, etc.
+	 *
+	 * @return cbfs.models.IDisk
 	 */
-	public IDisk function shutdown();
+	any function shutdown();
 
 	/**
 	 * Create a file in the disk
@@ -75,7 +77,7 @@ interface {
 	 *
 	 * @throws cbfs.FileNotFoundException
 	 */
-	public iDisk function setVisibility( required string path, required string visibility );
+	any function setVisibility( required string path, required string visibility );
 
 	/**
 	 * Get the storage visibility of a file, the return format can be a string of `public, private, readonly` or a custom data type the implemented driver can interpret.
@@ -86,7 +88,7 @@ interface {
 	 *
 	 * @throws cbfs.FileNotFoundException
 	 */
-	public string function visibility( required string path );
+	string function visibility( required string path );
 
 	/**
 	 * Prepend contents to the beginning of a file. If the file is missing and the throwOnMissing if false
@@ -97,11 +99,11 @@ interface {
 	 * @metadata       Struct of metadata to store with the file
 	 * @throwOnMissing Boolean flag to throw if the file is missing. Otherwise it will be created if missing.
 	 *
-	 * @return IDisk
+	 * @return cbfs.models.IDisk
 	 *
 	 * @throws cbfs.FileNotFoundException
 	 */
-	function prepend(
+	any function prepend(
 		required string path,
 		required contents,
 		struct metadata,
@@ -117,11 +119,11 @@ interface {
 	 * @metadata       Struct of metadata to store with the file
 	 * @throwOnMissing Boolean flag to throw if the file is missing. Otherwise it will be created if missing.
 	 *
-	 * @return IDisk
+	 * @return cbfs.models.IDisk
 	 *
 	 * @throws cbfs.FileNotFoundException
 	 */
-	function append(
+	any function append(
 		required string path,
 		required contents,
 		struct metadata,
@@ -135,11 +137,11 @@ interface {
 	 * @destination The end destination path
 	 * @override    Flag to overwrite the file at the destination, if it exists. Defaults to true.
 	 *
-	 * @return IDisk
+	 * @return cbfs.models.IDisk
 	 *
 	 * @throws cbfs.FileNotFoundException
 	 */
-	function copy(
+	any function copy(
 		required source,
 		required destination,
 		boolean overwrite
@@ -152,11 +154,11 @@ interface {
 	 * @destination The end destination path
 	 * @override    Flag to overwrite the file at the destination, if it exists. Defaults to true.
 	 *
-	 * @return IDisk
+	 * @return cbfs.models.IDisk
 	 *
 	 * @throws cbfs.FileNotFoundException
 	 */
-	function move(
+	any function move(
 		required source,
 		required destination,
 		boolean overwrite
@@ -169,11 +171,11 @@ interface {
 	 * @destination The end destination path
 	 * @override    Flag to overwrite the file at the destination, if it exists. Defaults to true.
 	 *
-	 * @return IDisk
+	 * @return cbfs.models.IDisk
 	 *
 	 * @throws cbfs.FileNotFoundException
 	 */
-	function rename(
+	any function rename(
 		required source,
 		required destination,
 		boolean overwrite
@@ -272,7 +274,7 @@ interface {
 	 *
 	 * @throws cbfs.FileNotFoundException
 	 */
-	public boolean function delete( required any path, boolean throwOnMissing );
+	boolean function delete( required any path, boolean throwOnMissing );
 
 	/**
 	 * Create a new empty file if it does not exist
@@ -280,7 +282,7 @@ interface {
 	 * @path       The file path
 	 * @createPath if set to false, expects all parent directories to exist, true will generate necessary directories. Defaults to true.
 	 *
-	 * @return IDisk
+	 * @return cbfs.models.IDisk
 	 *
 	 * @throws cbfs.PathNotFoundException
 	 */
@@ -355,7 +357,7 @@ interface {
 	 * @path The file path
 	 * @mode Access mode, the same attributes you use for the Linux command `chmod`
 	 */
-	public IDisk function chmod( required string path, required string mode );
+	IDisk function chmod( required string path, required string mode );
 
 	/**************************************** STREAM METHODS ****************************************/
 
@@ -403,7 +405,7 @@ interface {
 	 * @createPath   Create parent directory paths when they do not exist
 	 * @ignoreExists If false, it will throw an error if the directory already exists, else it ignores it if it exists. This should default to true.
 	 *
-	 * @return IDisk
+	 * @return cbfs.models.IDisk
 	 */
 	function createDirectory(
 		required directory,
@@ -425,7 +427,7 @@ interface {
 	 * @filter      A string wildcard or a lambda/closure that receives the file path and should return true to copy it.
 	 * @createPath  If false, expects all parent directories to exist, true will generate all necessary directories. Default is true.
 	 *
-	 * @return IDisk
+	 * @return cbfs.models.IDisk
 	 */
 	function copyDirectory(
 		required source,
@@ -442,7 +444,7 @@ interface {
 	 * @newPath    The destination directory
 	 * @createPath If false, expects all parent directories to exist, true will generate all necessary directories. Default is true.
 	 *
-	 * @return IDisk
+	 * @return cbfs.models.IDisk
 	 */
 	function moveDirectory(
 		required oldPath,
@@ -457,7 +459,7 @@ interface {
 	 * @newPath    The destination directory
 	 * @createPath If false, expects all parent directories to exist, true will generate all necessary directories. Default is true.
 	 *
-	 * @return IDisk
+	 * @return cbfs.models.IDisk
 	 */
 	function renameDirectory(
 		required oldPath,
@@ -474,7 +476,7 @@ interface {
 	 *
 	 * @return A boolean value or a struct of booleans determining if the directory paths got deleted or not.
 	 */
-	public boolean function deleteDirectory(
+	boolean function deleteDirectory(
 		required string directory,
 		boolean recurse,
 		boolean throwOnMissing
@@ -485,7 +487,7 @@ interface {
 	 *
 	 * @directory The directory
 	 *
-	 * @return IDisk
+	 * @return cbfs.models.IDisk
 	 */
 	function cleanDirectory( required directory );
 

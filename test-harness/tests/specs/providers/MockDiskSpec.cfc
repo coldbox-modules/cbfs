@@ -1,11 +1,7 @@
 component extends="tests.resources.AbstractDiskSpec" {
 
-	function getDisk( string name = "test", struct properties = { "path" : "" } ){
-		var disk = prepareMock( new cbfs.models.providers.MockProvider() );
-		disk.startup( arguments.name, arguments.properties );
-		makePublic( disk, "buildPath", "buildPath" );
-		return disk;
-	}
+	// The name of the provider in the test-harness we want to test
+	variables.providerName = "Mock";
 
 	function getNonWritablePathForTest( disk, path ){
 		arguments.disk.nonWritablePaths[ arguments.path ] = true;
