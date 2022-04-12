@@ -212,16 +212,16 @@ component extends="coldbox.system.testing.BaseTestCase" {
 			} );
 
 
-			story( "I want to retrieve the temp disk via the shortcut method: getTempDisk()", function(){
+			story( "I want to retrieve the temp disk via the shortcut method: tempDisk()", function(){
 				it( "can retrieve the temp disk", function(){
 					service.register( name: "temp", provider: "Mock" );
-					expect( service.getTempDisk().getName() ).toBe( "temp" );
+					expect( service.tempDisk().getName() ).toBe( "temp" );
 				} );
 			} );
-			story( "I want to retrieve the default disk via the shortcut method: getDefaultDisk()", function(){
+			story( "I want to retrieve the default disk via the shortcut method: defaultDisk()", function(){
 				it( "can retrieve the default disk", function(){
 					service.register( name: "default", provider: "Mock" );
-					expect( service.getDefaultDisk().getName() ).toBe( "default" );
+					expect( service.defaultDisk().getName() ).toBe( "default" );
 				} );
 			} );
 		} );

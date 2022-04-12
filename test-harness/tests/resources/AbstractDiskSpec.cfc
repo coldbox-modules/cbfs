@@ -489,7 +489,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 				given( "A file that doesn't exist and `createPath` is false", function(){
 					then( "It should throw a `cbfs.PathNotFoundException`", function(){
 						var path = "/one/two/test_file.txt";
-						disk.delete( "/one/two" );
+						disk.deleteDirectory( "/one/two" );
 						expect( disk.exists( path ) ).toBeFalse( "[#path#] should not exist" );
 						expect( function(){
 							disk.touch( path = path, createPath = false );
@@ -498,7 +498,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 				});
 			} );
 
-			describe( "info", function(){
+			story( "The disk can return file information", function(){
 				it( "can retrieve the info about a file", function(){
 					var disk = getDisk();
 					var path = "test_file.txt";
