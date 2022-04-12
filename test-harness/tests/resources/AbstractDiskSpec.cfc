@@ -396,16 +396,14 @@ component extends="coldbox.system.testing.BaseTestCase" {
 				} );
 			} );
 
-			fstory( "The disk can get the lastModified property of a file", function(){
+			story( "The disk can get the lastModified property of a file", function(){
 				it( "can retrieve the last modified date of a file", function(){
-					var disk     = getDisk();
 					var path     = "test_file.txt";
-					var contents = "my contents";
 					var before   = getEpochTimeFromLocal();
-					sleep( 1000 );
+					sleep( 500 );
 					disk.create(
 						path      = path,
-						contents  = contents,
+						contents  = "hola amigo",
 						overwrite = true
 					);
 					expect( disk.lastModified( path ) ).toBeDate();
@@ -413,76 +411,94 @@ component extends="coldbox.system.testing.BaseTestCase" {
 				} );
 			} );
 
-			it( "can delete a file", function(){
-				var disk = getDisk();
-				var path = "test_file.txt";
-				disk.delete( path );
-				expect( disk.exists( path ) ).toBeFalse( "#path# should not exist" );
-				disk.create( path, "my contents" );
-				disk.delete( path );
-				expect( disk.exists( path ) ).toBeFalse( "#path# should not exist" );
-			} );
-
-
-
-
-
-			describe( "mimeType", function(){
-				it( "can retrieve the mime type of a file", function(){
-					var disk = getDisk();
-					var path = "test_file.txt";
+			story( "The disk can get the mime type property of a file", function(){
+				it( "can retrieve the mimetype of a file", function(){
+					var path     = "test_file.txt";
 					disk.create(
 						path      = path,
-						contents  = "my contents",
+						contents  = "hola amigo",
 						overwrite = true
 					);
 					expect( disk.mimeType( path ) ).toBe( "text/plain" );
 				} );
-
-				it( "throws an exception if the file does not exist", function(){
-					var disk = getDisk();
-					var path = "does_not_exist.txt";
-					expect( function(){
-						disk.lastModified( path );
-					} ).toThrow( "cbfs.FileNotFoundException" );
-				} );
 			} );
 
-			describe( "touch", function(){
-				it( "can create an empty file using touch", function(){
-					var disk = getDisk();
-					var path = "test_file.txt";
-					disk.delete( path );
-					expect( disk.exists( path ) ).toBeFalse( "[#path#] should not exist" );
-					disk.touch( path );
-					expect( disk.exists( path ) ).toBeTrue( "[#path#] should exist" );
-					expect( disk.get( path ) ).toBe( "" );
-					expect( disk.size( path ) ).toBe( 0 );
-				} );
+			story( "The disk can delete files", function(){
+				given( "a file exists", function(){
+					then( "it should delete it", function(){
+						var path = "test_file.txt";
+						expect( disk.exists( path ) ).toBeFalse( "#path# should not exist" );
 
-				it( "creates nested directories by default", function(){
-					var disk = getDisk();
-					var path = "/one/two/test_file.txt";
-					disk.delete( path );
-					expect( disk.exists( path ) ).toBeFalse( "[#path#] should not exist" );
-					disk.touch( path );
-					expect( disk.exists( path ) ).toBeTrue( "[#path#] should exist" );
-					expect( disk.get( path ) ).toBe( "" );
-					expect( disk.size( path ) ).toBe( 0 );
-				} );
-
-				it( "throws an exception if nested directories do not exist and `createPath` is false", function(){
-					var disk = getDisk();
-					var path = "/one/two/test_file.txt";
-					disk.delete( "/one/two" );
-					expect( disk.exists( path ) ).toBeFalse( "[#path#] should not exist" );
-					expect( function(){
-						disk.touch( path = path, createPath = false );
-					} ).toThrow( "cbfs.PathNotFoundException" );
-				} );
+						disk.create( path, "my contents" );
+						expect( disk.delete( path ) ).toBeTrue( "delete() should return true" );
+						expect( disk.exists( path ) ).toBeFalse( "#path# should not exist" );
+					});
+				});
+				given( "a file doesn't exist and throwOnMissing is false", function(){
+					then( "it should ignore it and return false", function(){
+						var path = "test_file.txt";
+						// Make sure it doesn't exist
+						disk.delete( path );
+						expect( disk.delete( path ) ).toBeFalse( "delete() should ignore it" );
+					});
+				});
+				given( "a file doesn't exist and throwOnMissing is true", function(){
+					then( "it should throw a FileNotFoundException", function(){
+						var path = "test_file.txt";
+						// Make sure it doesn't exist
+						disk.delete( path );
+						expect( function(){
+							disk.delete( path, true );
+						} ).toThrow( "cbfs.FileNotFoundException" );
+					});
+				});
 			} );
 
-			describe( "info", function(){
+			story( "The disk can touch files", function(){
+				given( "a file that doesn't exist", function(){
+					then( "it should touch it", function(){
+						var path = "test_file.txt";
+						disk.delete( path );
+						disk.touch( path );
+						expect( disk.exists( path ) ).toBeTrue( "[#path#] should exist" );
+						expect( disk.get( path ) ).toBe( "" );
+					} );
+				});
+				given( "a file that does exist", function(){
+					then( "it should touch it by modified the lastmodified timestamp", function(){
+						var path = "test_file.txt";
+						disk.delete( path );
+						disk.create( path, "hello" );
+						var before = disk.lastModified( path );
+						sleep( 1000 );
+						var after = disk.touch( path ).lastModified( path );
+						expect( disk.exists( path ) ).toBeTrue( "[#path#] should exist" );
+						expect( disk.get( path ) ).toBe( "hello" );
+						expect( before ).toBeLT( after );
+					} );
+				});
+				given( "a file that doesn't exist and it has a nested path", function(){
+					then( "it should create the nested directories and create it", function(){
+						var path = "/one/two/test_file.txt";
+						disk.delete( path );
+						disk.touch( path );
+						expect( disk.exists( path ) ).toBeTrue( "[#path#] should exist" );
+						expect( disk.get( path ) ).toBe( "" );
+					} );
+				});
+				given( "A file that doesn't exist and `createPath` is false", function(){
+					then( "It should throw a `cbfs.PathNotFoundException`", function(){
+						var path = "/one/two/test_file.txt";
+						disk.deleteDirectory( "/one/two" );
+						expect( disk.exists( path ) ).toBeFalse( "[#path#] should not exist" );
+						expect( function(){
+							disk.touch( path = path, createPath = false );
+						} ).toThrow( "cbfs.PathNotFoundException" );
+					} );
+				});
+			} );
+
+			story( "The disk can return file information", function(){
 				it( "can retrieve the info about a file", function(){
 					var disk = getDisk();
 					var path = "test_file.txt";

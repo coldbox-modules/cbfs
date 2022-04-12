@@ -360,7 +360,7 @@ component
 	 * @throws cbfs.FileNotFoundException
 	 */
 	function mimeType( required path ){
-		return variables.javaUrlConnection.guessContentTypeFromName( ensureFileExists( arguments.path ).path );
+		return getMimeType( ensureFileExists( arguments.path ).path );
 	}
 
 	/**
@@ -401,9 +401,7 @@ component
 			return this;
 		}
 		if ( !arguments.createPath ) {
-			var pathParts     = arguments.path.listToArray( "/" );
-			var directoryPath = "/" & pathParts.slice( 1, pathParts.len() - 1 ).toList( "/" );
-			if ( !this.exists( directoryPath ) ) {
+			if ( !this.exists( getDirectoryFromPath( arguments.path ) ) ) {
 				throw(
 					type    = "cbfs.PathNotFoundException",
 					message = "Directory does not already exist and the `createPath` flag is set to false"
@@ -415,14 +413,16 @@ component
 
 	/**
 	 * Return information about the file.  Will contain keys such as lastModified, size, path, name, type, canWrite, canRead, isHidden and more
+	 * depending on the provider used
 	 *
 	 * @path The file path
+	 *
+	 * @return A struct of file metadata according to provider
 	 *
 	 * @throws cbfs.FileNotFoundException
 	 */
 	struct function info( required path ){
-		ensureFileExists( arguments.path );
-		return variables.files[ arguments.path ];
+		return ensureFileExists( arguments.path );
 	}
 
 	/**
@@ -500,13 +500,16 @@ component
 		boolean recurse        = true,
 		boolean throwOnMissing = false
 	){
-		for ( var filePath in variables.files ) {
-			if ( !find( arguments.directory, filePath ) > 0 ) {
-				return false;
-			}
-			variables.files.delete( filePath );
-		}
-		return true;
+		// Discover the directories in memory that start with this directory path and wipe them
+		return variables.files
+			.keyArray()
+			.filter( function( filePath ){
+				return find( directory, filePath ) > 0;
+			} )
+			.each( function( filePath ){
+				variables.files.delete( filepath );
+			} )
+			.len() > 0 ? true : false;
 	}
 
 	/**

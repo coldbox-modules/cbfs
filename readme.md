@@ -4,7 +4,7 @@
 
 <img src="https://forgebox.io/api/v1/entry/cbfs/badges/version" />
 
-The `cbfs` module will enable you to abstract ANY filesystem within your ColdBox applications. You can configure as many disks which represent file systems in your application. Each disk is backed by a storage provider and configure within your ColdBox application.
+The `cbfs` module will enable you to abstract ANY filesystem within your ColdBox applications. You can configure as many disks which represent file systems in your application. Each disk is backed by a storage provider and configurable within your ColdBox application.
 
 ## License
 
