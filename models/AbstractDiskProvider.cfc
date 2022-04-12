@@ -133,4 +133,11 @@ component accessors="true" {
 		return reFindNoCase( "Mac", variables.javaSystem.getProperties()[ "os.name" ] );
 	}
 
+	/**
+	 * Find out the mime type of a path
+	 */
+	private function getMimeType( required path ){
+		return variables.javaUrlConnection.guessContentTypeFromName( arguments.path );
+	}
+
 }

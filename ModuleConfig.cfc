@@ -28,12 +28,12 @@ component {
 			"disks"       : {
 				// Your default application storage
 				"default" : {
-					provider   : "LocalWeb",
+					provider   : "Local",
 					properties : { path : "#appMapping#/.cbfs", autoExpand : true }
 				},
 				// A disk that points to the CFML Engine's temp directory
 				"temp" : {
-					provider   : "LocalWeb",
+					provider   : "Local",
 					properties : { path : getTempDirectory() }
 				}
 			}

@@ -360,7 +360,7 @@ component
 	 * @throws cbfs.FileNotFoundException
 	 */
 	function mimeType( required path ){
-		return variables.javaUrlConnection.guessContentTypeFromName( ensureFileExists( arguments.path ).path );
+		return getMimeType( ensureFileExists( arguments.path ).path );
 	}
 
 	/**
@@ -401,9 +401,7 @@ component
 			return this;
 		}
 		if ( !arguments.createPath ) {
-			var pathParts     = arguments.path.listToArray( "/" );
-			var directoryPath = "/" & pathParts.slice( 1, pathParts.len() - 1 ).toList( "/" );
-			if ( !this.exists( directoryPath ) ) {
+			if ( !this.exists( getDirectoryFromPath( arguments.path ) ) ) {
 				throw(
 					type    = "cbfs.PathNotFoundException",
 					message = "Directory does not already exist and the `createPath` flag is set to false"

@@ -142,7 +142,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 							.getDisks()
 							.append( {
 								"local" : {
-									provider   : "LocalWeb",
+									provider   : "Local",
 									properties : {},
 									disk       : mockProvider
 								}
