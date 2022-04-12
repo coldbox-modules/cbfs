@@ -833,15 +833,6 @@ component
 	}
 
 	/**
-	 * Expands the full path of the requested provider route
-	 *
-	 * @path The path to be expanded
-	 */
-	private function buildPath( required string path ){
-		return expandPath( getProperties().path & "/" & arguments.path );
-	}
-
-	/**
 	 * Ensures a file exists
 	 *
 	 * @path The path to be checked for existence
