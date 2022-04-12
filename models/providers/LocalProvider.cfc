@@ -753,20 +753,6 @@ component
 	}
 
 	/**
-	 * Ensures a directory exists - will create the directory if it does not exist
-	 *
-	 * @path The path to be checked for existence
-	 */
-	private function ensureDirectoryExists( required path ){
-		var p             = buildPath( arguments.path );
-		var directoryPath = replaceNoCase( p, getFileFromPath( p ), "" );
-
-		if ( !directoryExists( directoryPath ) ) {
-			directoryCreate( directoryPath );
-		}
-	}
-
-	/**
 	 * Get an array listing of all files and directories in a directory using recursion
 	 *
 	 * @directory The directory
@@ -839,15 +825,6 @@ component
 			return true;
 		}
 		return false;
-	}
-
-	/**
-	 * Expands the full path of the requested provider route
-	 *
-	 * @path The path to be expanded
-	 */
-	private function buildPath( required string path ){
-		return expandPath( getProperties().path & "/" & arguments.path );
 	}
 
 	/**
