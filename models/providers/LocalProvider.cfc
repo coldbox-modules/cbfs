@@ -14,11 +14,6 @@ component
 {
 
 	// static lookups
-	variables.permissions = {
-		"file" : { "public" : "666", "private" : "000", "readonly" : "444" },
-		"dir"  : { "public" : "666", "private" : "600", "readonly" : "644" }
-	};
-
 	variables.defaults = { path : "", autoExpand : false };
 
 	/**
@@ -344,7 +339,7 @@ component
 	/**
 	 * Deletes a file
 	 *
-	 * @path          
+	 * @path
 	 * @throwOnMissing When true an error will be thrown if the file does not exist
 	 */
 	public boolean function delete( required any path, boolean throwOnMissing = false ){

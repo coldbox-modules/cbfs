@@ -54,6 +54,7 @@ interface {
 	 * @visibility The storage visibility of the file, available options are `public, private, readonly` or a custom data type the implemented driver can interpret
 	 * @metadata   Struct of metadata to store with the file
 	 * @override   Flag to overwrite the file at the destination, if it exists. Defaults to true.
+	 * @mode Applies to *nix systems. If passed, it overrides the visbility argument and uses these octal values instead
 	 *
 	 * @return cbfs.models.IDisk
 	 *
@@ -62,9 +63,10 @@ interface {
 	function create(
 		required path,
 		required contents,
-		visibility,
+		string visibility,
 		struct metadata,
-		boolean overwrite
+		boolean overwrite,
+		string mode
 	);
 
 	/**
@@ -218,6 +220,33 @@ interface {
 	boolean function missing( required string path );
 
 	/**
+	 * Delete a file or an array of file paths. If a file does not exist a `false` will be
+	 * shown for it's return.
+	 *
+	 * @path           A single file path or an array of file paths
+	 * @throwOnMissing Boolean to throw an exception if the file is missing.
+	 *
+	 * @return boolean or struct report of deletion
+	 *
+	 * @throws cbfs.FileNotFoundException
+	 */
+	boolean function delete( required any path, boolean throwOnMissing );
+
+	/**
+	 * Create a new empty file if it does not exist
+	 *
+	 * @path       The file path
+	 * @createPath if set to false, expects all parent directories to exist, true will generate necessary directories. Defaults to true.
+	 *
+	 * @return cbfs.models.IDisk
+	 *
+	 * @throws cbfs.PathNotFoundException
+	 */
+	function touch( required path, boolean createpath );
+
+	/**************************************** UTILITY METHODS ****************************************/
+
+	/**
 	 * Get the URL for the given file
 	 *
 	 * @path The file path to build the URL for
@@ -264,31 +293,6 @@ interface {
 	function mimeType( required path );
 
 	/**
-	 * Delete a file or an array of file paths. If a file does not exist a `false` will be
-	 * shown for it's return.
-	 *
-	 * @path           A single file path or an array of file paths
-	 * @throwOnMissing Boolean to throw an exception if the file is missing.
-	 *
-	 * @return boolean or struct report of deletion
-	 *
-	 * @throws cbfs.FileNotFoundException
-	 */
-	boolean function delete( required any path, boolean throwOnMissing );
-
-	/**
-	 * Create a new empty file if it does not exist
-	 *
-	 * @path       The file path
-	 * @createPath if set to false, expects all parent directories to exist, true will generate necessary directories. Defaults to true.
-	 *
-	 * @return cbfs.models.IDisk
-	 *
-	 * @throws cbfs.PathNotFoundException
-	 */
-	function touch( required path, boolean createpath );
-
-	/**
 	 * Return information about the file.  Will contain keys such as lastModified, size, path, name, type, canWrite, canRead, isHidden and more
 	 *
 	 * @path The file path
@@ -322,7 +326,33 @@ interface {
 	string function extension( required path );
 
 	/**
-	 * Is the path a file or not
+	 * Sets the access attributes of the file on Unix based disks
+	 *
+	 * @path The file path
+	 * @mode Access mode, the same attributes you use for the Linux command `chmod`
+	 *
+	 * @return cbfs.models.IDisk
+	 */
+	function chmod( required string path, required string mode );
+
+	/**
+	 * Create a symbolic link in the system if it supports it.
+	 *
+	 * The target parameter is the target of the link. It may be an absolute or relative path and may not exist. When the target is a relative path then file system operations on the resulting link are relative to the path of the link.
+	 *
+	 * @link The path of the symbolic link to create
+	 * @target The target of the symbolic link
+	 *
+	 * @throws UnsupportedOperationException - if the implementation does not support symbolic links
+	 *
+	 * @return cbfs.models.IDisk
+	 */
+	function createSymbolicLink( required link, required target );
+
+	/**************************************** VERIFICATION METHODS ****************************************/
+
+	/**
+	 * Verifies if the passed path is an existent file
 	 *
 	 * @path The file path
 	 *
@@ -331,33 +361,39 @@ interface {
 	boolean function isFile( required path );
 
 	/**
-	 * Is the path writable or not
+	 * Is the file writable or not
 	 *
 	 * @path The file path
 	 */
 	boolean function isWritable( required path );
 
 	/**
-	 * Is the path readable or not
+	 * Is the file readable or not
 	 *
 	 * @path The file path
 	 */
 	boolean function isReadable( required path );
 
 	/**
-	 * Find path names matching a given globbing pattern
-	 *
-	 * @pattern The globbing pattern to match
-	 */
-	array function glob( required pattern );
-
-	/**
-	 * Sets the access attributes of the file on Unix based disks
+	 * Is the file executable or not
 	 *
 	 * @path The file path
-	 * @mode Access mode, the same attributes you use for the Linux command `chmod`
 	 */
-	IDisk function chmod( required string path, required string mode );
+	boolean function isExecutable( required path );
+
+	/**
+	 * Is the file is hidden or not
+	 *
+	 * @path The file path
+	 */
+	boolean function isHidden( required path );
+
+	/**
+	 * Is the file is a symbolic link
+	 *
+	 * @path The file path
+	 */
+	boolean function isSymbolicLink( required path );
 
 	/**************************************** STREAM METHODS ****************************************/
 
@@ -663,5 +699,12 @@ interface {
 	 * @sort      Columns by which to sort. e.g. Directory, Size DESC, DateLastModified.
 	 */
 	array function allContentsMap( required directory, any filter, sort );
+
+	/**
+	 * Find path names matching a given globbing pattern
+	 *
+	 * @pattern The globbing pattern to match
+	 */
+	array function glob( required pattern );
 
 }

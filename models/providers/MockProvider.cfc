@@ -17,9 +17,6 @@ component
 	 */
 	property name="files" type="struct";
 
-	this.nonWritablePaths = {};
-	this.nonReadablePaths = {};
-
 	/**
 	 * Startup the local provider
 	 *
@@ -58,6 +55,7 @@ component
 	 * @visibility The storage visibility of the file, available options are `public, private, readonly` or a custom data type the implemented driver can interpret
 	 * @metadata   Struct of metadata to store with the file
 	 * @overwrite  Flag to overwrite the file at the destination, if it exists. Defaults to true.
+	 * @mode       Applies to *nix systems. If passed, it overrides the visbility argument and uses these octal values instead
 	 *
 	 * @return cbfs.models.IDisk
 	 *
@@ -66,9 +64,10 @@ component
 	function create(
 		required path,
 		required contents,
-		visibility        = "public",
+		string visibility = "public",
 		struct metadata   = {},
-		boolean overwrite = false
+		boolean overwrite = false,
+		string mode
 	){
 		if ( !arguments.overwrite && this.exists( arguments.path ) ) {
 			throw(
@@ -76,19 +75,29 @@ component
 				message = "Cannot create file. File already exists [#arguments.path#]"
 			);
 		}
+
+		// Default mode if not passed using visibility
+		if ( isNull( arguments.mode ) ) {
+			arguments.mode = variables.PERMISSIONS.file[ arguments.visibility ];
+		}
+
 		var fileName                      = this.name( arguments.path );
 		variables.files[ arguments.path ] = {
 			"path"         : arguments.path,
 			"contents"     : arguments.contents,
+			"checksum"     : hash( arguments.contents ),
 			"visibility"   : arguments.visibility,
 			"lastModified" : now(),
 			"size"         : len( arguments.contents ),
 			"name"         : fileName,
-			"type"         : createObject( "java", "java.net.URLConnection" ).guessContentTypeFromName( fileName ),
-			"canWrite"     : true,
-			"canRead"      : true,
-			"isHidden"     : false,
-			"metadata"     : arguments.metadata
+			"mimetype"     : getMimeType( fileName ),
+			"type"         : "File",
+			"write"        : true,
+			"read"         : true,
+			"execute"      : true,
+			"hidden"       : false,
+			"metadata"     : arguments.metadata,
+			"mode"         : arguments.mode
 		};
 		return this;
 	}
@@ -308,6 +317,56 @@ component
 	}
 
 	/**
+	 * Delete a file or an array of file paths. If a file does not exist a `false` will be
+	 * shown for it's return.
+	 *
+	 * @path           A single file path or an array of file paths
+	 * @throwOnMissing Boolean to throw an exception if the file is missing.
+	 *
+	 * @return boolean or struct report of deletion
+	 *
+	 * @throws cbfs.FileNotFoundException
+	 */
+	public boolean function delete( required any path, boolean throwOnMissing = false ){
+		if ( missing( arguments.path ) ) {
+			if ( arguments.throwOnMissing ) {
+				throw( type = "cbfs.FileNotFoundException", message = "File [#arguments.path#] not found." );
+			}
+			return false;
+		}
+		variables.files.delete( arguments.path );
+		return true;
+	}
+
+	/**
+	 * Create a new empty file if it does not exist
+	 *
+	 * @path       The file path
+	 * @createPath if set to false, expects all parent directories to exist, true will generate necessary directories. Defaults to true.
+	 *
+	 * @return cbfs.models.IDisk
+	 *
+	 * @throws cbfs.PathNotFoundException
+	 */
+	function touch( required path, boolean createPath = true ){
+		if ( exists( arguments.path ) ) {
+			variables.files[ arguments.path ].lastModified = now();
+			return this;
+		}
+		if ( !arguments.createPath ) {
+			if ( !this.exists( getDirectoryFromPath( arguments.path ) ) ) {
+				throw(
+					type    = "cbfs.PathNotFoundException",
+					message = "Directory does not already exist and the `createPath` flag is set to false"
+				);
+			}
+		}
+		return create( arguments.path, "" );
+	}
+
+	/**************************************** UTILITY METHODS ****************************************/
+
+	/**
 	 * Get the URL for the given file
 	 *
 	 * @path The file path to build the URL for
@@ -364,54 +423,6 @@ component
 	}
 
 	/**
-	 * Delete a file or an array of file paths. If a file does not exist a `false` will be
-	 * shown for it's return.
-	 *
-	 * @path           A single file path or an array of file paths
-	 * @throwOnMissing Boolean to throw an exception if the file is missing.
-	 *
-	 * @return boolean or struct report of deletion
-	 *
-	 * @throws cbfs.FileNotFoundException
-	 */
-	public boolean function delete( required any path, boolean throwOnMissing = false ){
-		if ( missing( arguments.path ) ) {
-			if ( arguments.throwOnMissing ) {
-				throw( type = "cbfs.FileNotFoundException", message = "File [#arguments.path#] not found." );
-			}
-			return false;
-		}
-		variables.files.delete( arguments.path );
-		return true;
-	}
-
-	/**
-	 * Create a new empty file if it does not exist
-	 *
-	 * @path       The file path
-	 * @createPath if set to false, expects all parent directories to exist, true will generate necessary directories. Defaults to true.
-	 *
-	 * @return cbfs.models.IDisk
-	 *
-	 * @throws cbfs.PathNotFoundException
-	 */
-	function touch( required path, boolean createPath = true ){
-		if ( exists( arguments.path ) ) {
-			variables.files[ arguments.path ].lastModified = now();
-			return this;
-		}
-		if ( !arguments.createPath ) {
-			if ( !this.exists( getDirectoryFromPath( arguments.path ) ) ) {
-				throw(
-					type    = "cbfs.PathNotFoundException",
-					message = "Directory does not already exist and the `createPath` flag is set to false"
-				);
-			}
-		}
-		return create( arguments.path, "" );
-	}
-
-	/**
 	 * Return information about the file.  Will contain keys such as lastModified, size, path, name, type, canWrite, canRead, isHidden and more
 	 * depending on the provider used
 	 *
@@ -434,17 +445,7 @@ component
 	 * @throws cbfs.FileNotFoundException
 	 */
 	string function checksum( required path, algorithm = "MD5" ){
-		ensureFileExists( arguments.path );
-		return hash( this.get( arguments.path ), arguments.algorithm );
-	}
-
-	/**
-	 * Extract the file name from a file path
-	 *
-	 * @path The file path
-	 */
-	string function name( required path ){
-		return listLast( arguments.path, "/" );
+		return hash( ensureFileExists( arguments.path ).contents, arguments.algorithm );
 	}
 
 	/**
@@ -457,15 +458,49 @@ component
 	}
 
 	/**
-	 * Is the path a file or not
+	 * Sets the access attributes of the file on Unix based disks
+	 *
+	 * @path The file path
+	 * @mode Access mode, the same attributes you use for the Linux command `chmod`
+	 *
+	 * @return cbfs.models.IDisk
+	 */
+	function chmod( required string path, required string mode ){
+		ensureFileExists( arguments.path ).mode = arguments.mode;
+		return this;
+	}
+
+	/**
+	 * Create a symbolic link in the system if it supports it.
+	 *
+	 * The target parameter is the target of the link. It may be an absolute or relative path and may not exist. When the target is a relative path then file system operations on the resulting link are relative to the path of the link.
+	 *
+	 * @link The path of the symbolic link to create
+	 * @target The target of the symbolic link
+	 *
+	 * @throws UnsupportedOperationException - if the implementation does not support symbolic links
+	 *
+	 * @return cbfs.models.IDisk
+	 */
+	function createSymbolicLink( required link, required target ){
+
+		return this;
+	}
+
+	/**************************************** VERIFICATION METHODS ****************************************/
+
+	/**
+	 * Verifies if the passed path is an existent file
 	 *
 	 * @path The file path
 	 *
 	 * @throws cbfs.FileNotFoundException
 	 */
 	boolean function isFile( required path ){
-		ensureFileExists( arguments.path );
-		return variables.files.keyExists( arguments.path );
+		if ( missing( arguments.path ) ) {
+			throw( type = "cbfs.FileNotFoundException", message = "File [#arguments.path#] not found." );
+		}
+		return ( variables.files.keyExists( arguments.path ) ? true : false );
 	}
 
 	/**
@@ -474,7 +509,7 @@ component
 	 * @path The file path
 	 */
 	boolean function isWritable( required path ){
-		return !this.nonWritablePaths.keyExists( arguments.path );
+		return ensureFileExists( arguments.path ).visibility == "public";
 	}
 
 	/**
@@ -483,7 +518,44 @@ component
 	 * @path The file path
 	 */
 	boolean function isReadable( required path ){
-		return !this.nonReadablePaths.keyExists( arguments.path );
+		return isWritable( arguments.path ) || ensureFileExists( arguments.path ).visibility == "readonly";
+	}
+
+	/**
+	 * Is the file executable or not
+	 *
+	 * @path The file path
+	 */
+	boolean function isExecutable( required path ){
+		return true;
+	}
+
+	/**
+	 * Is the file is hidden or not
+	 *
+	 * @path The file path
+	 */
+	boolean function isHidden( required path ){
+		return ensureFileExists( arguments.path ).visibility == "private";
+	}
+
+	/**
+	 * Is the file is a symbolic link
+	 *
+	 * @path The file path
+	 */
+	boolean function isSymbolicLink( required path ){
+		return false;
+	}
+
+	/**************************************** DIRECTORY METHODS ****************************************/
+
+	/**
+	 * Is the path a directory or not
+	 *
+	 * @path The directory path
+	 */
+	boolean function isDirectory( required path ){
 	}
 
 	/**
@@ -511,6 +583,8 @@ component
 			} )
 			.len() > 0 ? true : false;
 	}
+
+	/********************* PRIVATE METHODS **********************/
 
 	/**
 	 * This checks if the file path is missing. If it does, it throws an exception, else continues operation.

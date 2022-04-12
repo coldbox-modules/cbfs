@@ -40,6 +40,16 @@ component accessors="true" {
 	property name="log"           inject="logbox:logger:{this}";
 
 	/**
+	 * --------------------------------------------------------------------------
+	 * Static Defaults
+	 * --------------------------------------------------------------------------
+	 */
+	variables.PERMISSIONS = {
+		"file" : { "public" : "666", "private" : "000", "readonly" : "444" },
+		"dir"  : { "public" : "666", "private" : "600", "readonly" : "644" }
+	};
+
+	/**
 	 * Constructor
 	 */
 	function init(){
@@ -68,18 +78,6 @@ component accessors="true" {
 	function shutdown(){
 		variables.started = false;
 		return this;
-	}
-
-	/**
-	 * Generate checksum for a file in different hashing algorithms
-	 *
-	 * @path      The file path
-	 * @algorithm Default is MD5, but SHA-1, SHA-256, and SHA-512 can also be used.
-	 *
-	 * @throws cbfs.FileNotFoundException
-	 */
-	string function checksum( required path, algorithm = "MD5" ){
-		return hash( this.get( arguments.path ), arguments.algorithm );
 	}
 
 	/**
