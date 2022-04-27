@@ -424,7 +424,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 							contents  = "my contents",
 							overwrite = true
 						);
-						validateUri( disk.uri( path ), path, disk );
+						validateUri( path, disk );
 					} );
 				} );
 				it( "throws an exception if the file does not exist", function(){
@@ -444,7 +444,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 						contents  = "my contents",
 						overwrite = true
 					);
-					validateTemporaryUri( disk.temporaryUri( path, 60 ), path, 60, disk );
+					validateTemporaryUri( path, disk );
 				} );
 
 				it( "throws an exception if the file does not exist", function(){
@@ -738,36 +738,23 @@ component extends="coldbox.system.testing.BaseTestCase" {
 	 * This method should validate the creation of a uri to a file via the "uri()" method.
 	 * This implementation is a basic in and out.
 	 *
-	 * @uri  The built uri via the uri() method
-	 * @path The original path used
+	 * @path The target path
 	 * @disk The disk used
 	 */
-	function validateUri(
-		required string uri,
-		required string path,
-		required any disk
-	){
-		expect( arguments.uri ).toBe( arguments.path );
+	function validateUri( required string path, required any disk ){
+		expect( disk.uri( arguments.path ) ).toBe( arguments.path );
 	}
 
 	/**
 	 * This method should validate the creation of a temporary uri to a file via the "uri()" method.
 	 * This implementation is a basic in and out.
 	 *
-	 * @uri  The built uri via the uri() method
-	 * @path The original path used
+	 * @path The target path
 	 * @disk The disk used
 	 */
-	function validateTemporaryUri(
-		required string uri,
-		required string path,
-		required numeric expiration,
-		required any disk
-	){
-		expect( arguments.uri ).toBe( arguments.path );
+	function validateTemporaryUri( required string path, required any disk ){
+		expect( disk.temporaryUri( arguments.path ) ).toInclude( arguments.path );
 	}
-
-
 
 	/**
 	 * ------------------------------------------------------------
