@@ -97,7 +97,8 @@ component
 			"execute"      : true,
 			"hidden"       : false,
 			"metadata"     : arguments.metadata,
-			"mode"         : arguments.mode
+			"mode"         : arguments.mode,
+			"symbolicLink" : false
 		};
 		return this;
 	}
@@ -367,26 +368,26 @@ component
 	/**************************************** UTILITY METHODS ****************************************/
 
 	/**
-	 * Get the URL for the given file
+	 * Get the uri for the given file
 	 *
-	 * @path The file path to build the URL for
+	 * @path The file path to build the uri for
 	 *
 	 * @throws cbfs.FileNotFoundException
 	 */
-	string function url( required string path ){
+	string function uri( required string path ){
 		return ensureFileExists( arguments.path ).path;
 	}
 
 	/**
-	 * Get a temporary URL for the given file
+	 * Get a temporary uri for the given file
 	 *
-	 * @path       The file path to build the URL for
-	 * @expiration The number of minutes this URL should be valid for.
+	 * @path       The file path to build the uri for
+	 * @expiration The number of minutes this uri should be valid for.
 	 *
 	 * @throws cbfs.FileNotFoundException
 	 */
-	string function temporaryURL( required path, numeric expiration ){
-		return this.url( arguments.path );
+	string function temporaryUri( required path, numeric expiration ){
+		return this.uri( arguments.path ) & "?expiration=#arguments.expiration#";
 	}
 
 	/**
@@ -475,15 +476,18 @@ component
 	 *
 	 * The target parameter is the target of the link. It may be an absolute or relative path and may not exist. When the target is a relative path then file system operations on the resulting link are relative to the path of the link.
 	 *
-	 * @link The path of the symbolic link to create
+	 * @link   The path of the symbolic link to create
 	 * @target The target of the symbolic link
 	 *
-	 * @throws UnsupportedOperationException - if the implementation does not support symbolic links
-	 *
 	 * @return cbfs.models.IDisk
+	 *
+	 * @throws cbfs.FileNotFoundException    - if the target does not exist
+	 * @throws UnsupportedOperationException - if the implementation does not support symbolic links
 	 */
 	function createSymbolicLink( required link, required target ){
-
+		variables.files[ arguments.link ] = ensureFileExists( arguments.target )
+			.duplicate()
+			.append( { symbolicLink : true } );
 		return this;
 	}
 
@@ -507,6 +511,8 @@ component
 	 * Is the path writable or not
 	 *
 	 * @path The file path
+	 *
+	 * @throws cbfs.FileNotFoundException - If the filepath is missing
 	 */
 	boolean function isWritable( required path ){
 		return ensureFileExists( arguments.path ).visibility == "public";
@@ -516,6 +522,8 @@ component
 	 * Is the path readable or not
 	 *
 	 * @path The file path
+	 *
+	 * @throws cbfs.FileNotFoundException - If the filepath is missing
 	 */
 	boolean function isReadable( required path ){
 		return isWritable( arguments.path ) || ensureFileExists( arguments.path ).visibility == "readonly";
@@ -525,6 +533,8 @@ component
 	 * Is the file executable or not
 	 *
 	 * @path The file path
+	 *
+	 * @throws cbfs.FileNotFoundException - If the filepath is missing
 	 */
 	boolean function isExecutable( required path ){
 		return true;
@@ -534,6 +544,8 @@ component
 	 * Is the file is hidden or not
 	 *
 	 * @path The file path
+	 *
+	 * @throws cbfs.FileNotFoundException - If the filepath is missing
 	 */
 	boolean function isHidden( required path ){
 		return ensureFileExists( arguments.path ).visibility == "private";
@@ -543,9 +555,11 @@ component
 	 * Is the file is a symbolic link
 	 *
 	 * @path The file path
+	 *
+	 * @throws cbfs.FileNotFoundException - If the filepath is missing
 	 */
 	boolean function isSymbolicLink( required path ){
-		return false;
+		return ensureFileExists( arguments.path ).symbolicLink;
 	}
 
 	/**************************************** DIRECTORY METHODS ****************************************/

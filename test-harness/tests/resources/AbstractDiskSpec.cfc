@@ -11,10 +11,8 @@ component extends="coldbox.system.testing.BaseTestCase" {
 
 	// The target provider name to test: Filled by concrete test clases
 	variables.providerName = "";
-	// The concrete test must activate these in order for the tests to execute
-	variables.testFeatures = {
-		symbolicLink : false
-	};
+	// The concrete test must activate these in order for the tests to execute according to their disk features
+	variables.testFeatures = { symbolicLink : false };
 
 	function beforeAll(){
 		// Load ColdBox
@@ -417,49 +415,44 @@ component extends="coldbox.system.testing.BaseTestCase" {
 
 			/** Utility Methods **/
 
-			// TODO
-			xstory( "The disk can get a url for the given file", function(){
+			story( "The disk can get a URI for the given file", function(){
 				given( "a valid file", function(){
-					then( "it can retrieve the url for a file", function(){
-						var path = "test_file.txt";
+					then( "it can retrieve the uri for a file", function(){
+						var path = "/dir/test_file.txt";
 						disk.create(
 							path      = path,
 							contents  = "my contents",
 							overwrite = true
 						);
-						testURLExpectation( disk, path );
+						validateUri( disk.uri( path ), path, disk );
 					} );
 				} );
-
 				it( "throws an exception if the file does not exist", function(){
-					var disk = getDisk();
 					var path = "test_file.txt";
 					disk.delete( path );
 					expect( disk.exists( path ) ).toBeFalse( "[#path#] should not exist." );
 					expect( function(){
-						disk.url( path );
+						disk.uri( path );
 					} ).toThrow( "cbfs.FileNotFoundException" );
 				} );
 			} );
-			xstory( "The disk can get temporary urls for a given file", function(){
-				it( "can retrieve the temporary url for a file", function(){
-					var disk = getDisk();
-					var path = "test_file.txt";
+			story( "The disk can get temporary uris for a given file", function(){
+				it( "can retrieve the temporary uri for a file", function(){
+					var path = "/dir/test_file.txt";
 					disk.create(
 						path      = path,
 						contents  = "my contents",
 						overwrite = true
 					);
-					testTemporaryURLExpectation( disk, path );
+					validateTemporaryUri( disk.temporaryUri( path, 60 ), path, 60, disk );
 				} );
 
 				it( "throws an exception if the file does not exist", function(){
-					var disk = getDisk();
 					var path = "test_file.txt";
 					disk.delete( path );
 					expect( disk.exists( path ) ).toBeFalse( "[#path#] should not exist." );
 					expect( function(){
-						disk.temporaryURL( path );
+						disk.temporaryUri( path );
 					} ).toThrow( "cbfs.FileNotFoundException" );
 				} );
 			} );
@@ -560,21 +553,21 @@ component extends="coldbox.system.testing.BaseTestCase" {
 			} );
 
 			story(
-				story : "The disk can create symbolic links",
-				skip : !hasFeature( 'symbolicLink' ),
+				story: "The disk can create symbolic links",
+				skip : !hasFeature( "symbolicLink" ),
 				body : function(){
-				it( "can create symbolic links", function(){
-					var path = "test_file.txt";
-					disk.create(
-						path      = path,
-						contents  = "Hello",
-						overwrite = true
-					);
-					disk.delete( "mylink.txt" );
-					disk.create( "mylink.txt", path );
-					expect( disk.isSymbolicLink( "mylink.txt" ) ).toBeTrue();
-				} );
-			} );
+					it( "can create symbolic links", function(){
+						var path = "test_file.txt";
+						disk.create(
+							path      = path,
+							contents  = "I love symbolic links",
+							overwrite = true
+						);
+						disk.createSymbolicLink( "link_file.txt", path );
+						expect( disk.isSymbolicLink( "link_file.txt" ) ).toBeTrue();
+					} );
+				}
+			);
 
 			/** Verification Methods **/
 
@@ -591,7 +584,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 						expect( disk.isFile( directoryPath ) ).toBeFalse();
 						expect( disk.isFile( filePath ) ).toBeTrue();
 					} );
-				});
+				} );
 				given( "A directory", function(){
 					then( "it will verify that it's not a file", function(){
 						var directoryPath = "/one/two";
@@ -603,7 +596,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 						);
 						expect( disk.isFile( directoryPath ) ).toBeFalse();
 					} );
-				});
+				} );
 				given( "a non-existent file", function(){
 					then( "it will throw a `cbfs.FileNotFoundException`", function(){
 						var path = "does_not_exist.txt";
@@ -613,7 +606,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 							disk.isFile( path );
 						} ).toThrow( "cbfs.FileNotFoundException" );
 					} );
-				});
+				} );
 			} );
 
 			story( "The disk can verify if a file is writable", function(){
@@ -654,7 +647,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 						);
 						expect( disk.isReadable( path ) ).toBeTrue( "Path should be readable." );
 					} );
-				});
+				} );
 				given( "a readonly file", function(){
 					it( "should returns as readable", function(){
 						var path = "/one/two/readable.txt";
@@ -667,7 +660,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 						);
 						expect( disk.isReadable( path ) ).toBeTrue( "Path should be readable." );
 					} );
-				});
+				} );
 				given( "a private file", function(){
 					it( "should return false as readable", function(){
 						var path = "/one/two/non-writeable.txt";
@@ -679,8 +672,8 @@ component extends="coldbox.system.testing.BaseTestCase" {
 							overwrite  = true
 						);
 						expect( disk.isWritable( path ) ).toBeFalse( "Path should not be readable." );
-					});
-				});
+					} );
+				} );
 			} );
 
 			story( "The disk can verify if a file is hidden", function(){
@@ -696,7 +689,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 						);
 						expect( disk.isHidden( path ) ).toBeFalse( "Path should be hidden." );
 					} );
-				});
+				} );
 				given( "a readonly file", function(){
 					it( "should return false as hidden", function(){
 						var path = "/one/two/readable.txt";
@@ -709,7 +702,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 						);
 						expect( disk.isHidden( path ) ).toBeFalse( "Path should be hidden." );
 					} );
-				});
+				} );
 				given( "a private file", function(){
 					it( "should return true as true", function(){
 						var path = "/one/two/non-writeable.txt";
@@ -721,16 +714,11 @@ component extends="coldbox.system.testing.BaseTestCase" {
 							overwrite  = true
 						);
 						expect( disk.isHidden( path ) ).toBeTrue( "Path should be hidden." );
-					});
-				});
+					} );
+				} );
 			} );
 
-			// TODO
-			// - isExecutable() Test
-			// - isSymbolicLink() Test
-
 			/** Directory Methods **/
-
 		} );
 	}
 
@@ -739,14 +727,47 @@ component extends="coldbox.system.testing.BaseTestCase" {
 	 * Concrete Expectations that can be implemented by each provider
 	 * ------------------------------------------------------------
 	 */
+
+	/**
+	 * This method should validate the info struct coming out of the disk from an "info()" call
+	 */
 	function validateInfoStruct( required info, required disk ){
+		expect( info ).toBeStruct();
 	}
-	function testURLExpectation( required any disk, required string path ){
-		expect( disk.url( path ) ).toBe( retrieveUrlForTest( path ) );
+	/**
+	 * This method should validate the creation of a uri to a file via the "uri()" method.
+	 * This implementation is a basic in and out.
+	 *
+	 * @uri  The built uri via the uri() method
+	 * @path The original path used
+	 * @disk The disk used
+	 */
+	function validateUri(
+		required string uri,
+		required string path,
+		required any disk
+	){
+		expect( arguments.uri ).toBe( arguments.path );
 	}
-	function testTemporaryURLExpectation( required any disk, required string path ){
-		expect( disk.temporaryURL( path ) ).toBe( retrieveTemporaryUrlForTest( path ) );
+
+	/**
+	 * This method should validate the creation of a temporary uri to a file via the "uri()" method.
+	 * This implementation is a basic in and out.
+	 *
+	 * @uri  The built uri via the uri() method
+	 * @path The original path used
+	 * @disk The disk used
+	 */
+	function validateTemporaryUri(
+		required string uri,
+		required string path,
+		required numeric expiration,
+		required any disk
+	){
+		expect( arguments.uri ).toBe( arguments.path );
 	}
+
+
 
 	/**
 	 * ------------------------------------------------------------
@@ -756,14 +777,6 @@ component extends="coldbox.system.testing.BaseTestCase" {
 
 	function getDisk(){
 		return getInstance( "DiskService@cbfs" ).get( variables.providerName );
-	}
-
-	function retrieveUrlForTest( required string path ){
-		return arguments.path;
-	}
-
-	function retrieveTemporaryUrlForTest( required string path ){
-		return arguments.path;
 	}
 
 	/**
