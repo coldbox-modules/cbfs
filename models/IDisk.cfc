@@ -441,22 +441,26 @@ interface {
 	 * Is the path a directory or not
 	 *
 	 * @path The directory path
+	 *
+	 * @throws cbfs.DirectoryNotFoundException - If the directory path is missing
 	 */
 	boolean function isDirectory( required path );
 
 	/**
 	 * Create a new directory
 	 *
-	 * @directory    The directory path
-	 * @createPath   Create parent directory paths when they do not exist
+	 * @directory    The directory path to be created
+	 * @createPath   Create parent directory paths when they do not exist. The default is true
 	 * @ignoreExists If false, it will throw an error if the directory already exists, else it ignores it if it exists. This should default to true.
 	 *
 	 * @return cbfs.models.IDisk
+	 *
+	 * @throws DirectoryExistsException - If the directory you are trying to create already exists and <code>ignoreExists</code> is true
 	 */
 	function createDirectory(
 		required directory,
-		boolean createPath,
-		boolean ignoreExists
+		boolean createPath   = true,
+		boolean ignoreExists = true
 	);
 
 	/**

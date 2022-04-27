@@ -719,6 +719,9 @@ component extends="coldbox.system.testing.BaseTestCase" {
 			} );
 
 			/** Directory Methods **/
+
+			story( "The disk can create and verify directories", function(){
+			} );
 		} );
 	}
 
@@ -732,7 +735,6 @@ component extends="coldbox.system.testing.BaseTestCase" {
 	 * This method should validate the info struct coming out of the disk from an "info()" call
 	 */
 	function validateInfoStruct( required info, required disk ){
-		expect( info ).toBeStruct();
 	}
 	/**
 	 * This method should validate the creation of a uri to a file via the "uri()" method.

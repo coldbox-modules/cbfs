@@ -568,8 +568,59 @@ component
 	 * Is the path a directory or not
 	 *
 	 * @path The directory path
+	 *
+	 * @throws cbfs.DirectoryNotFoundException - If the directory path is missing
 	 */
 	boolean function isDirectory( required path ){
+		try {
+			return ensureFileExists( arguments.path ).type == "Directory";
+		} catch ( "cbfs.FileNotFoundException" e ) {
+			throw( type = "cbfs.DirectoryNotFoundException", message = "Directory [#arguments.path#] not found." );
+		}
+	}
+
+	/**
+	 * Create a new directory
+	 *
+	 * @directory    The directory path to be created
+	 * @createPath   Create parent directory paths when they do not exist. The default is true
+	 * @ignoreExists If false, it will throw an error if the directory already exists, else it ignores it if it exists. This should default to true.
+	 *
+	 * @return cbfs.models.IDisk
+	 *
+	 * @throws DirectoryExistsException - If the directory you are trying to create already exists and <code>ignoreExists</code> is true
+	 */
+	function createDirectory(
+		required directory,
+		boolean createPath   = true,
+		boolean ignoreExists = true
+	){
+		if ( !arguments.ignoreExists && this.exists( arguments.directory ) ) {
+			throw(
+				type    = "cbfs.DirectoryExistsException",
+				message = "Cannot create directory. The directory already exists [#arguments.directory#]"
+			);
+		}
+
+		variables.files[ arguments.directory ] = {
+			"path"         : arguments.directory,
+			"contents"     : "",
+			"checksum"     : "",
+			"visibility"   : "public",
+			"lastModified" : now(),
+			"size"         : 0,
+			"name"         : getDirectoryFromPath( arguments.directory ),
+			"mimetype"     : "",
+			"type"         : "Directory",
+			"write"        : true,
+			"read"         : true,
+			"execute"      : false,
+			"hidden"       : false,
+			"metadata"     : {},
+			"mode"         : "777",
+			"symbolicLink" : false
+		};
+		return this;
 	}
 
 	/**
