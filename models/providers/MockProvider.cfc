@@ -287,7 +287,7 @@ component
 	 * @throws cbfs.FileNotFoundException
 	 */
 	any function get( required path ){
-		return ensureFileExists( arguments.path ).contents;
+		return ensureRecordExists( arguments.path ).contents;
 	}
 
 	/**
@@ -375,7 +375,7 @@ component
 	 * @throws cbfs.FileNotFoundException
 	 */
 	string function uri( required string path ){
-		return ensureFileExists( arguments.path ).path;
+		return ensureRecordExists( arguments.path ).path;
 	}
 
 	/**
@@ -409,7 +409,7 @@ component
 	 * @throws cbfs.FileNotFoundException
 	 */
 	function lastModified( required path ){
-		return ensureFileExists( arguments.path ).lastModified;
+		return ensureRecordExists( arguments.path ).lastModified;
 	}
 
 	/**
@@ -420,7 +420,7 @@ component
 	 * @throws cbfs.FileNotFoundException
 	 */
 	function mimeType( required path ){
-		return getMimeType( ensureFileExists( arguments.path ).path );
+		return getMimeType( ensureRecordExists( arguments.path ).path );
 	}
 
 	/**
@@ -434,7 +434,7 @@ component
 	 * @throws cbfs.FileNotFoundException
 	 */
 	struct function info( required path ){
-		return ensureFileExists( arguments.path );
+		return ensureRecordExists( arguments.path );
 	}
 
 	/**
@@ -446,7 +446,7 @@ component
 	 * @throws cbfs.FileNotFoundException
 	 */
 	string function checksum( required path, algorithm = "MD5" ){
-		return hash( ensureFileExists( arguments.path ).contents, arguments.algorithm );
+		return hash( ensureRecordExists( arguments.path ).contents, arguments.algorithm );
 	}
 
 	/**
@@ -467,7 +467,7 @@ component
 	 * @return cbfs.models.IDisk
 	 */
 	function chmod( required string path, required string mode ){
-		ensureFileExists( arguments.path ).mode = arguments.mode;
+		ensureRecordExists( arguments.path ).mode = arguments.mode;
 		return this;
 	}
 
@@ -485,7 +485,7 @@ component
 	 * @throws UnsupportedOperationException - if the implementation does not support symbolic links
 	 */
 	function createSymbolicLink( required link, required target ){
-		variables.files[ arguments.link ] = ensureFileExists( arguments.target )
+		variables.files[ arguments.link ] = ensureRecordExists( arguments.target )
 			.duplicate()
 			.append( { symbolicLink : true } );
 		return this;
@@ -515,7 +515,7 @@ component
 	 * @throws cbfs.FileNotFoundException - If the filepath is missing
 	 */
 	boolean function isWritable( required path ){
-		return ensureFileExists( arguments.path ).visibility == "public";
+		return ensureRecordExists( arguments.path ).visibility == "public";
 	}
 
 	/**
@@ -526,7 +526,7 @@ component
 	 * @throws cbfs.FileNotFoundException - If the filepath is missing
 	 */
 	boolean function isReadable( required path ){
-		return isWritable( arguments.path ) || ensureFileExists( arguments.path ).visibility == "readonly";
+		return isWritable( arguments.path ) || ensureRecordExists( arguments.path ).visibility == "readonly";
 	}
 
 	/**
@@ -548,7 +548,7 @@ component
 	 * @throws cbfs.FileNotFoundException - If the filepath is missing
 	 */
 	boolean function isHidden( required path ){
-		return ensureFileExists( arguments.path ).visibility == "private";
+		return ensureRecordExists( arguments.path ).visibility == "private";
 	}
 
 	/**
@@ -559,7 +559,7 @@ component
 	 * @throws cbfs.FileNotFoundException - If the filepath is missing
 	 */
 	boolean function isSymbolicLink( required path ){
-		return ensureFileExists( arguments.path ).symbolicLink;
+		return ensureRecordExists( arguments.path ).symbolicLink;
 	}
 
 	/**************************************** DIRECTORY METHODS ****************************************/
@@ -573,7 +573,7 @@ component
 	 */
 	boolean function isDirectory( required path ){
 		try {
-			return ensureFileExists( arguments.path ).type == "Directory";
+			return ensureRecordExists( arguments.path ).type == "Directory";
 		} catch ( "cbfs.FileNotFoundException" e ) {
 			throw( type = "cbfs.DirectoryNotFoundException", message = "Directory [#arguments.path#] not found." );
 		}
@@ -588,14 +588,14 @@ component
 	 *
 	 * @return cbfs.models.IDisk
 	 *
-	 * @throws DirectoryExistsException - If the directory you are trying to create already exists and <code>ignoreExists</code> is true
+	 * @throws cbfs.DirectoryExistsException - If the directory you are trying to create already exists and <code>ignoreExists</code> is false
 	 */
 	function createDirectory(
 		required directory,
 		boolean createPath   = true,
 		boolean ignoreExists = true
 	){
-		if ( !arguments.ignoreExists && this.exists( arguments.directory ) ) {
+		if ( this.exists( arguments.directory ) && !arguments.ignoreExists ) {
 			throw(
 				type    = "cbfs.DirectoryExistsException",
 				message = "Cannot create directory. The directory already exists [#arguments.directory#]"
@@ -609,7 +609,7 @@ component
 			"visibility"   : "public",
 			"lastModified" : now(),
 			"size"         : 0,
-			"name"         : getDirectoryFromPath( arguments.directory ),
+			"name"         : listLast( arguments.directory, "/\" ),
 			"mimetype"     : "",
 			"type"         : "Directory",
 			"write"        : true,
@@ -632,7 +632,7 @@ component
 	 *
 	 * @return A boolean value or a struct of booleans determining if the directory paths got deleted or not.
 	 */
-	public boolean function deleteDirectory(
+	boolean function deleteDirectory(
 		required string directory,
 		boolean recurse        = true,
 		boolean throwOnMissing = false
@@ -641,10 +641,10 @@ component
 		return variables.files
 			.keyArray()
 			.filter( function( filePath ){
-				return find( directory, filePath ) > 0;
+				return find( directory, arguments.filePath ) > 0;
 			} )
 			.each( function( filePath ){
-				variables.files.delete( filepath );
+				variables.files.delete( arguments.filepath );
 			} )
 			.len() > 0 ? true : false;
 	}
@@ -660,7 +660,7 @@ component
 	 *
 	 * @throws cbfs.FileNotFoundException - If the filepath is missing
 	 */
-	private struct function ensureFileExists( required path ){
+	private struct function ensureRecordExists( required path ){
 		if ( missing( arguments.path ) ) {
 			throw( type = "cbfs.FileNotFoundException", message = "File [#arguments.path#] not found." );
 		}

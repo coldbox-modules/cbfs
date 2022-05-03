@@ -720,7 +720,39 @@ component extends="coldbox.system.testing.BaseTestCase" {
 
 			/** Directory Methods **/
 
-			story( "The disk can create and verify directories", function(){
+			fstory( "The disk can create and verify directories", function(){
+				given( "a non-existent directory", function(){
+					then( "it should create the directory", function(){
+						var path = "bddtests";
+						disk.deleteDirectory( path )
+						disk.createDirectory( path );
+
+						expect( disk.exists( path ) ).toBeTrue( "#path# should exist" );
+						expect( disk.isDirectory( path ) ).toBeTrue( "#path# should be a directory" );
+					} );
+				} );
+				given( "an existent directory and ignoreExists = true", function(){
+					then( "it should ignore the creation", function(){
+						var path = "bddtests";
+						disk.deleteDirectory( path )
+						disk.createDirectory( path );
+
+						expect( function(){
+							disk.createDirectory( directory = path, ignoreExists = true );
+						} ).notToThrow();
+					} );
+				} );
+				given( "an existent directory and ignoreExists = false", function(){
+					then( "it should throw a cbfs.DirectoryExistsException ", function(){
+						var path = "bddtests";
+						disk.deleteDirectory( path )
+						disk.createDirectory( path );
+
+						expect( function(){
+							disk.createDirectory( directory = path, ignoreExists = false );
+						} ).toThrow( "cbfs.DirectoryExistsException" );
+					} );
+				} );
 			} );
 		} );
 	}
