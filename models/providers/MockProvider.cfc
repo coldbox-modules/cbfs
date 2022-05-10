@@ -624,6 +624,63 @@ component
 	}
 
 	/**
+	 * Copies a directory to a destination
+	 *
+	 * The `filter` argument can be a closure and lambda with the following format
+	 * <pre>
+	 * boolean:function( path )
+	 * </pre>
+	 *
+	 * @source      The source directory
+	 * @destination The destination directory
+	 * @recurse     If true, copies all subdirectories, otherwise only files in the source directory. Default is false.
+	 * @filter      A string wildcard or a lambda/closure that receives the file path and should return true to copy it.
+	 * @createPath  If false, expects all parent directories to exist, true will generate all necessary directories. Default is true.
+	 *
+	 * @return cbfs.models.IDisk
+	 */
+	function copyDirectory(
+		required source,
+		required destination,
+		boolean recurse,
+		any filter,
+		boolean createPath
+	){
+	}
+
+	/**
+	 * Move a directory
+	 *
+	 * @oldPath    The source directory
+	 * @newPath    The destination directory
+	 * @createPath If false, expects all parent directories to exist, true will generate all necessary directories. Default is true.
+	 *
+	 * @return cbfs.models.IDisk
+	 */
+	function moveDirectory(
+		required oldPath,
+		required newPath,
+		boolean createPath
+	){
+	}
+
+	/**
+	 * Rename a directory, facade to `moveDirectory()`
+	 *
+	 * @oldPath    The source directory
+	 * @newPath    The destination directory
+	 * @createPath If false, expects all parent directories to exist, true will generate all necessary directories. Default is true.
+	 *
+	 * @return cbfs.models.IDisk
+	 */
+	function renameDirectory(
+		required oldPath,
+		required newPath,
+		boolean createPath
+	){
+	}
+
+	/**
 	 * Delete 1 or more directory locations
 	 *
 	 * @directory      The directory or an array of directories
@@ -647,6 +704,16 @@ component
 				variables.files.delete( arguments.filepath );
 			} )
 			.len() > 0 ? true : false;
+	}
+
+	/**
+	 * Empty the specified directory of all files and folders.
+	 *
+	 * @directory The directory
+	 *
+	 * @return cbfs.models.IDisk
+	 */
+	function cleanDirectory( required directory ){
 	}
 
 	/********************* PRIVATE METHODS **********************/
