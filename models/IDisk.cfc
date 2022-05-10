@@ -478,13 +478,15 @@ interface {
 	 * @createPath  If false, expects all parent directories to exist, true will generate all necessary directories. Default is true.
 	 *
 	 * @return cbfs.models.IDisk
+	 *
+	 * @throws cbfs.DirectoryNotFoundException - When the source does not exist
 	 */
 	function copyDirectory(
 		required source,
 		required destination,
-		boolean recurse,
+		boolean recurse = false,
 		any filter,
-		boolean createPath
+		boolean createPath = true
 	);
 
 	/**
@@ -495,6 +497,8 @@ interface {
 	 * @createPath If false, expects all parent directories to exist, true will generate all necessary directories. Default is true.
 	 *
 	 * @return cbfs.models.IDisk
+	 *
+	 * @throws cbfs.DirectoryNotFoundException - When the old path does not exist
 	 */
 	function moveDirectory(
 		required oldPath,
@@ -510,6 +514,8 @@ interface {
 	 * @createPath If false, expects all parent directories to exist, true will generate all necessary directories. Default is true.
 	 *
 	 * @return cbfs.models.IDisk
+	 *
+	 * @throws cbfs.DirectoryNotFoundException - When the old path does not exist
 	 */
 	function renameDirectory(
 		required oldPath,

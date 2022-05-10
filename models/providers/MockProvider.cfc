@@ -638,14 +638,48 @@ component
 	 * @createPath  If false, expects all parent directories to exist, true will generate all necessary directories. Default is true.
 	 *
 	 * @return cbfs.models.IDisk
+	 *
+	 * @throws cbfs.DirectoryNotFoundException - When the old path does not exist
 	 */
 	function copyDirectory(
 		required source,
 		required destination,
-		boolean recurse,
+		boolean recurse = false,
 		any filter,
-		boolean createPath
+		boolean createPath = true
 	){
+		try {
+			var oldRecord = ensureRecordExists( arguments.oldPath );
+		} catch ( "cbfs.FileNotFoundException" e ) {
+			throw(
+				type    = "cbfs.DirectoryNotFoundException",
+				message = "Directory [#arguments.oldPath#] not found."
+			);
+		}
+
+		// Store new record with the previous data and new name/path
+		oldRecord.path                       = arguments.newPath;
+		oldRecord.name                       = listLast( arguments.newPath, "/\" );
+		variables.files[ arguments.newPath ] = duplicate( oldRecord );
+		// wipe out the old one
+		variables.files.delete( arguments.oldPath );
+		// Now move all the records from the previous old path to the new path
+		variables.files
+			// Get all directory contents
+			.keyArray()
+			.filter( function( item ){
+				return item.lcase().startsWith( oldPath );
+			} )
+			// Move old to new location
+			.each( function( oldItemPath ){
+				var newKey                = arguments.oldItemPath.replaceNoCase( oldPath, newPath );
+				variables.files[ newKey ] = duplicate( variables.files[ oldItemPath ] );
+				// Update pointers
+				variables.files[ newKey ].path = newKey;
+				variables.files.delete( arguments.oldItemPath );
+			} );
+
+		return this;
 	}
 
 	/**
@@ -656,12 +690,46 @@ component
 	 * @createPath If false, expects all parent directories to exist, true will generate all necessary directories. Default is true.
 	 *
 	 * @return cbfs.models.IDisk
+	 *
+	 * @throws cbfs.DirectoryNotFoundException - When the old path does not exist
 	 */
 	function moveDirectory(
 		required oldPath,
 		required newPath,
 		boolean createPath
 	){
+		try {
+			var oldRecord = ensureRecordExists( arguments.oldPath );
+		} catch ( "cbfs.FileNotFoundException" e ) {
+			throw(
+				type    = "cbfs.DirectoryNotFoundException",
+				message = "Directory [#arguments.oldPath#] not found."
+			);
+		}
+
+		// Store new record with the previous data and new name/path
+		oldRecord.path                       = arguments.newPath;
+		oldRecord.name                       = listLast( arguments.newPath, "/\" );
+		variables.files[ arguments.newPath ] = duplicate( oldRecord );
+		// wipe out the old one
+		variables.files.delete( arguments.oldPath );
+		// Now move all the records from the previous old path to the new path
+		variables.files
+			// Get all directory contents
+			.keyArray()
+			.filter( function( item ){
+				return item.lcase().startsWith( oldPath );
+			} )
+			// Move old to new location
+			.each( function( oldItemPath ){
+				var newKey                = arguments.oldItemPath.replaceNoCase( oldPath, newPath );
+				variables.files[ newKey ] = duplicate( variables.files[ oldItemPath ] );
+				// Update pointers
+				variables.files[ newKey ].path = newKey;
+				variables.files.delete( arguments.oldItemPath );
+			} );
+
+		return this;
 	}
 
 	/**
@@ -672,12 +740,15 @@ component
 	 * @createPath If false, expects all parent directories to exist, true will generate all necessary directories. Default is true.
 	 *
 	 * @return cbfs.models.IDisk
+	 *
+	 * @throws cbfs.DirectoryNotFoundException - When the old path does not exist
 	 */
 	function renameDirectory(
 		required oldPath,
 		required newPath,
 		boolean createPath
 	){
+		return this.moveDirectory( argumentCollection = arguments );
 	}
 
 	/**

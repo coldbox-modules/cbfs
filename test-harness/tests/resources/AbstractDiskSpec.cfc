@@ -720,7 +720,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 
 			/** Directory Methods **/
 
-			fstory( "The disk can create and verify directories", function(){
+			story( "The disk can create and verify directories", function(){
 				given( "a non-existent directory", function(){
 					then( "it should create the directory", function(){
 						var path = "bddtests";
@@ -751,6 +751,53 @@ component extends="coldbox.system.testing.BaseTestCase" {
 						expect( function(){
 							disk.createDirectory( directory = path, ignoreExists = false );
 						} ).toThrow( "cbfs.DirectoryExistsException" );
+					} );
+				} );
+			} );
+
+			fstory( "The disk can move directories", function(){
+				given( "a valid old path", function(){
+					then( "it should move the directory", function(){
+						var dirPath = "bddtests";
+						disk.deleteDirectory( dirPath )
+						disk.createDirectory( dirPath );
+						disk.create( dirPath & "/luis.txt", "hello mi amigo" );
+
+						expect( disk.exists( dirPath ) ).toBeTrue( "#dirPath# should exist" );
+						disk.moveDirectory( dirPath, "tddtests" );
+
+						expect( disk.exists( dirPath ) ).toBeFalse( "#dirPath# should not exist" );
+						expect( disk.exists( "tddtests" ) ).toBeTrue( "tddtests should exist" );
+					} );
+				} );
+				given( "an invalid old path", function(){
+					then( "it should throw a cbfs.DirectoryNotFoundException", function(){
+						var dirPath = "bddtests";
+						disk.deleteDirectory( dirPath );
+
+						expect( function(){
+							disk.moveDirectory( dirPath, "oldTests" );
+						} ).toThrow( "cbfs.DirectoryNotFoundException" );
+					} );
+				} );
+			} );
+
+			story( "The disk can copy directories", function(){
+				given( "a valid source and destination with no recurse and no filters", function(){
+					then( "it should copy the directory", function(){
+					} );
+				} );
+				given( "a valid source and destination with recurse and no filters", function(){
+					then( "it should copy the directory recursively", function(){
+					} );
+				} );
+				given( "an invalid source", function(){
+					then( "it should throw a cbfs.DirectoryNotFoundException", function(){
+						var dirPath = "bddtests";
+						disk.deleteDirectory( dirPath );
+						expect( function(){
+							disk.moveDirectory( dirPath, "oldTests" );
+						} ).toThrow( "cbfs.DirectoryNotFoundException" );
 					} );
 				} );
 			} );
