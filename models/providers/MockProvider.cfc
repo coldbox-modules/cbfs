@@ -634,7 +634,7 @@ component
 	 * @source      The source directory
 	 * @destination The destination directory
 	 * @recurse     If true, copies all subdirectories, otherwise only files in the source directory. Default is false.
-	 * @filter      A string wildcard or a lambda/closure that receives the file path and should return true to copy it.
+	 * @filter      A string file extension filter to apply like *.jpg or server-*.json or a lambda/closure that receives the file path and should return true to copy it.
 	 * @createPath  If false, expects all parent directories to exist, true will generate all necessary directories. Default is true.
 	 *
 	 * @return cbfs.models.IDisk
@@ -670,6 +670,17 @@ component
 			// Filter out the source
 			.filter( function( item ){
 				return item != source;
+			} )
+			// Passed String Filter
+			.filter( function( item ){
+				return isNull( filter ) || !isSimpleValue( filter ) || !len( filter ) ? true : reFindNoCase(
+					"#filter.replace( "*.", ".*\." )#",
+					item
+				);
+			} )
+			// Passed Closure Filter
+			.filter( function( item ){
+				return ( !isNull( filter ) && isClosure( filter ) ? filter( item ) : true );
 			} )
 			// Copy all recursively
 			.filter( function( item ){

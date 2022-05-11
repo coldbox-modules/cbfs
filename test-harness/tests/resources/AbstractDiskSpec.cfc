@@ -829,8 +829,49 @@ component extends="coldbox.system.testing.BaseTestCase" {
 					} );
 				} );
 
-				given( "a valid source and destination with no recurse and a filter", function(){
-					then( "it should copy the directory with the filters", function(){
+				given( "a valid source and destination with recurse and a string filter", function(){
+					then( "it should copy the directory with the string filter", function(){
+						disk.createDirectory( sourcePath );
+						disk.create( sourcePath & "/luis.cfc", "component{}" );
+						disk.create( sourcePath & "/embedded/luis.txt", "hola" );
+
+						expect( disk.exists( destinationPath ) ).toBeFalse( "#destinationPath# should not exist" );
+						expect( disk.exists( sourcePath ) ).toBeTrue( "#sourcePath# should exist" );
+						disk.copyDirectory(
+							source      = sourcePath,
+							destination = destinationPath,
+							recurse     = true,
+							filter      = "*.cfc"
+						);
+
+						expect( disk.exists( sourcePath ) ).toBeTrue( "#sourcePath# should still exist" );
+						expect( disk.exists( destinationPath ) ).toBeTrue( "#destinationPath# should exist" );
+						expect( disk.exists( "#destinationPath#/luis.cfc" ) ).toBeTrue( "non-filtered file should exist" );
+						expect( disk.exists( "#destinationPath#/embedded/luis.txt" ) ).toBeFalse( "filtered file should NOT exist" );
+					} );
+				} );
+
+				given( "a valid source and destination with recurse and a closure filter", function(){
+					then( "it should copy the directory with the closure filter", function(){
+						disk.createDirectory( sourcePath );
+						disk.create( sourcePath & "/luis.cfc", "component{}" );
+						disk.create( sourcePath & "/embedded/luis.txt", "hola" );
+
+						expect( disk.exists( destinationPath ) ).toBeFalse( "#destinationPath# should not exist" );
+						expect( disk.exists( sourcePath ) ).toBeTrue( "#sourcePath# should exist" );
+						disk.copyDirectory(
+							source      = sourcePath,
+							destination = destinationPath,
+							recurse     = true,
+							filter      = function( path ){
+								return findNoCase( "luis.cfc", path );
+							}
+						);
+
+						expect( disk.exists( sourcePath ) ).toBeTrue( "#sourcePath# should still exist" );
+						expect( disk.exists( destinationPath ) ).toBeTrue( "#destinationPath# should exist" );
+						expect( disk.exists( "#destinationPath#/luis.cfc" ) ).toBeTrue( "non-filtered file should exist" );
+						expect( disk.exists( "#destinationPath#/embedded/luis.txt" ) ).toBeFalse( "filtered file should NOT exist" );
 					} );
 				} );
 
