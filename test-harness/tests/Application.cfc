@@ -35,7 +35,7 @@ component {
 
 	function onRequestStart( required targetPage ){
 		if ( url.keyExists( "fwreinit" ) ) {
-			ormReload();
+			// ormReload();
 			if ( structKeyExists( server, "lucee" ) ) {
 				pagePoolClear();
 			}

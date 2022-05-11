@@ -755,11 +755,11 @@ component extends="coldbox.system.testing.BaseTestCase" {
 				} );
 			} );
 
-			fstory( "The disk can move directories", function(){
+			story( "The disk can move directories", function(){
 				given( "a valid old path", function(){
 					then( "it should move the directory", function(){
 						var dirPath = "bddtests";
-						disk.deleteDirectory( dirPath )
+						disk.deleteDirectory( dirPath );
 						disk.createDirectory( dirPath );
 						disk.create( dirPath & "/luis.txt", "hello mi amigo" );
 
@@ -768,6 +768,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 
 						expect( disk.exists( dirPath ) ).toBeFalse( "#dirPath# should not exist" );
 						expect( disk.exists( "tddtests" ) ).toBeTrue( "tddtests should exist" );
+						expect( disk.exists( "tddtests/luis.txt" ) ).toBeTrue( "tddtests/luis.txt should exist" );
 					} );
 				} );
 				given( "an invalid old path", function(){
@@ -782,15 +783,57 @@ component extends="coldbox.system.testing.BaseTestCase" {
 				} );
 			} );
 
-			story( "The disk can copy directories", function(){
-				given( "a valid source and destination with no recurse and no filters", function(){
+			fstory( "The disk can copy directories", function(){
+				beforeEach( function( currentSpec ){
+					sourcePath      = "bddtests";
+					destinationPath = "tddtests";
+					disk.deleteDirectory( sourcePath );
+					disk.deleteDirectory( destinationPath );
+				} );
+
+				given( "a valid source and destination with no recurse and no filter", function(){
 					then( "it should copy the directory", function(){
+						disk.createDirectory( sourcePath );
+						disk.create( sourcePath & "/luis.txt", "hello mi amigo" );
+						disk.create( sourcePath & "/embedded/luis.txt", "hola" );
+
+						expect( disk.exists( destinationPath ) ).toBeFalse( "#destinationPath# should not exist" );
+						expect( disk.exists( sourcePath ) ).toBeTrue( "#sourcePath# should exist" );
+						disk.copyDirectory( sourcePath, destinationPath );
+
+						expect( disk.exists( sourcePath ) ).toBeTrue( "#sourcePath# should still exist" );
+						expect( disk.exists( destinationPath ) ).toBeTrue( "#destinationPath# should exist" );
+						expect( disk.exists( "#destinationPath#/luis.txt" ) ).toBeTrue( " first level file should exist" );
+						expect( disk.exists( "#destinationPath#/embedded/luis.txt" ) ).toBeFalse( "embedded should have been skipped" );
 					} );
 				} );
-				given( "a valid source and destination with recurse and no filters", function(){
+
+				given( "a valid source and destination with recurse and no filter", function(){
 					then( "it should copy the directory recursively", function(){
+						disk.createDirectory( sourcePath );
+						disk.create( sourcePath & "/luis.txt", "hello mi amigo" );
+						disk.create( sourcePath & "/embedded/luis.txt", "hola" );
+
+						expect( disk.exists( destinationPath ) ).toBeFalse( "#destinationPath# should not exist" );
+						expect( disk.exists( sourcePath ) ).toBeTrue( "#sourcePath# should exist" );
+						disk.copyDirectory(
+							source      = sourcePath,
+							destination = destinationPath,
+							recurse     = true
+						);
+
+						expect( disk.exists( sourcePath ) ).toBeTrue( "#sourcePath# should still exist" );
+						expect( disk.exists( destinationPath ) ).toBeTrue( "#destinationPath# should exist" );
+						expect( disk.exists( "#destinationPath#/luis.txt" ) ).toBeTrue( " first level file should exist" );
+						expect( disk.exists( "#destinationPath#/embedded/luis.txt" ) ).toBeTrue( "embedded should exist" );
 					} );
 				} );
+
+				given( "a valid source and destination with no recurse and a filter", function(){
+					then( "it should copy the directory with the filters", function(){
+					} );
+				} );
+
 				given( "an invalid source", function(){
 					then( "it should throw a cbfs.DirectoryNotFoundException", function(){
 						var dirPath = "bddtests";

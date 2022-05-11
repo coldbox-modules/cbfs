@@ -649,34 +649,42 @@ component
 		boolean createPath = true
 	){
 		try {
-			var oldRecord = ensureRecordExists( arguments.oldPath );
+			var sourceRecord = ensureRecordExists( arguments.source );
 		} catch ( "cbfs.FileNotFoundException" e ) {
 			throw(
 				type    = "cbfs.DirectoryNotFoundException",
-				message = "Directory [#arguments.oldPath#] not found."
+				message = "Directory [#arguments.source#] not found."
 			);
 		}
 
-		// Store new record with the previous data and new name/path
-		oldRecord.path                       = arguments.newPath;
-		oldRecord.name                       = listLast( arguments.newPath, "/\" );
-		variables.files[ arguments.newPath ] = duplicate( oldRecord );
-		// wipe out the old one
-		variables.files.delete( arguments.oldPath );
-		// Now move all the records from the previous old path to the new path
+		// Copy directory
+		variables.files[ arguments.destination ] = duplicate( sourceRecord ).append( {
+			path : arguments.destination,
+			name : listLast( arguments.destination, "/\" )
+		} );
+
+		// Now copy all the embedded files/directories
 		variables.files
 			// Get all directory contents
 			.keyArray()
+			// Filter out the source
 			.filter( function( item ){
-				return item.lcase().startsWith( oldPath );
+				return item != source;
 			} )
-			// Move old to new location
-			.each( function( oldItemPath ){
-				var newKey                = arguments.oldItemPath.replaceNoCase( oldPath, newPath );
-				variables.files[ newKey ] = duplicate( variables.files[ oldItemPath ] );
+			// Copy all recursively
+			.filter( function( item ){
+				return item.lcase().startsWith( source.lcase() );
+			} )
+			// If recursive is off, filter those first level files ONLY!
+			.filter( function( item ){
+				return ( !recurse ? reFindNoCase( "#source#(\/|\\)[^\\//]*$", item ) : true );
+			} )
+			// Copy to new location
+			.each( function( item ){
+				var newKey                = arguments.item.replaceNoCase( source, destination );
+				variables.files[ newKey ] = duplicate( variables.files[ item ] );
 				// Update pointers
 				variables.files[ newKey ].path = newKey;
-				variables.files.delete( arguments.oldItemPath );
 			} );
 
 		return this;
