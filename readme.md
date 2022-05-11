@@ -40,7 +40,7 @@ In your `config/ColdBox.cfc` create a `cbfs` structure within the `moduleSetting
 ```js
 moduleSettings = {
 	"cbfs": {
-		"defaultDisk" : "default"
+		"defaultDisk" : "default",
 		"disks": {
 			"default": {
 				"provider": "LocalProvider@cbfs"
