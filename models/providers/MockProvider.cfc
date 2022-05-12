@@ -69,6 +69,9 @@ component
 		boolean overwrite = false,
 		string mode
 	){
+		// Normalize slashes
+		arguments.path = replace( arguments.path, "\", "/", "all" );
+
 		if ( !arguments.overwrite && this.exists( arguments.path ) ) {
 			throw(
 				type    = "cbfs.FileOverrideException",
@@ -100,6 +103,12 @@ component
 			"mode"         : arguments.mode,
 			"symbolicLink" : false
 		};
+
+		// Do we need to create directory entries?
+		if ( find( "/", arguments.path ) ) {
+			createDirectory( getDirectoryFromPath( arguments.path ) );
+		}
+
 		return this;
 	}
 
@@ -309,6 +318,7 @@ component
 	 * @path The file/directory path to verify
 	 */
 	boolean function exists( required string path ){
+		arguments.path = cleanupPath( arguments.path );
 		for ( var existingPath in variables.files.keyArray() ) {
 			if ( find( arguments.path, existingPath ) == 1 ) {
 				return true;
@@ -501,10 +511,8 @@ component
 	 * @throws cbfs.FileNotFoundException
 	 */
 	boolean function isFile( required path ){
-		if ( missing( arguments.path ) ) {
-			throw( type = "cbfs.FileNotFoundException", message = "File [#arguments.path#] not found." );
-		}
-		return ( variables.files.keyExists( arguments.path ) ? true : false );
+		arguments.path = cleanupPath( arguments.path );
+		return ensureRecordExists( arguments.path ).type == "File";
 	}
 
 	/**
@@ -572,11 +580,16 @@ component
 	 * @throws cbfs.DirectoryNotFoundException - If the directory path is missing
 	 */
 	boolean function isDirectory( required path ){
+		arguments.path = cleanupPath( arguments.path );
 		try {
 			return ensureRecordExists( arguments.path ).type == "Directory";
 		} catch ( "cbfs.FileNotFoundException" e ) {
 			throw( type = "cbfs.DirectoryNotFoundException", message = "Directory [#arguments.path#] not found." );
 		}
+	}
+
+	private function cleanupPath( path ){
+		return replace( arguments.path, "\", "/", "all" ).reReplace( "\/$", "" );
 	}
 
 	/**
@@ -595,6 +608,9 @@ component
 		boolean createPath   = true,
 		boolean ignoreExists = true
 	){
+		// Cleanup directory name
+		arguments.directory = cleanupPath( arguments.directory );
+
 		if ( this.exists( arguments.directory ) && !arguments.ignoreExists ) {
 			throw(
 				type    = "cbfs.DirectoryExistsException",
@@ -648,6 +664,8 @@ component
 		any filter,
 		boolean createPath = true
 	){
+		arguments.source      = cleanupPath( arguments.source );
+		arguments.destination = cleanupPath( arguments.destination );
 		try {
 			var sourceRecord = ensureRecordExists( arguments.source );
 		} catch ( "cbfs.FileNotFoundException" e ) {
@@ -717,6 +735,8 @@ component
 		required newPath,
 		boolean createPath
 	){
+		arguments.oldPath = cleanupPath( arguments.oldPath );
+		arguments.newPath = cleanupPath( arguments.newPath );
 		try {
 			var oldRecord = ensureRecordExists( arguments.oldPath );
 		} catch ( "cbfs.FileNotFoundException" e ) {
@@ -786,6 +806,7 @@ component
 		boolean recurse        = true,
 		boolean throwOnMissing = false
 	){
+		arguments.directory = cleanupPath( arguments.directory );
 		try {
 			var dirRecord = ensureRecordExists( arguments.directory );
 		} catch ( "cbfs.FileNotFoundException" e ) {

@@ -581,8 +581,8 @@ component extends="coldbox.system.testing.BaseTestCase" {
 							contents  = "my contents",
 							overwrite = true
 						);
-						expect( disk.isFile( directoryPath ) ).toBeFalse();
-						expect( disk.isFile( filePath ) ).toBeTrue();
+						expect( disk.isFile( directoryPath ) ).toBeFalse( "Directory should not be a file" );
+						expect( disk.isFile( filePath ) ).toBeTrue( "#filePath# should be a file" );
 					} );
 				} );
 				given( "A directory", function(){
