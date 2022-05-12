@@ -657,7 +657,7 @@ component
 			);
 		}
 
-		// Copy directory
+		// Copy directory record
 		variables.files[ arguments.destination ] = duplicate( sourceRecord ).append( {
 			path : arguments.destination,
 			name : listLast( arguments.destination, "/\" )
@@ -778,17 +778,31 @@ component
 	 * @throwOnMissing Throws an exception if the directory does not exist
 	 *
 	 * @return A boolean value or a struct of booleans determining if the directory paths got deleted or not.
+	 *
+	 * @throws cbfs.DirectoryNotFoundException
 	 */
 	boolean function deleteDirectory(
 		required string directory,
 		boolean recurse        = true,
 		boolean throwOnMissing = false
 	){
+		try {
+			var dirRecord = ensureRecordExists( arguments.directory );
+		} catch ( "cbfs.FileNotFoundException" e ) {
+			if ( arguments.throwOnMissing ) {
+				throw(
+					type    = "cbfs.DirectoryNotFoundException",
+					message = "Directory [#arguments.directory#] not found."
+				);
+			}
+			return false;
+		}
+
 		// Discover the directories in memory that start with this directory path and wipe them
 		return variables.files
 			.keyArray()
 			.filter( function( filePath ){
-				return find( directory, arguments.filePath ) > 0;
+				return arguments.filePath.startsWith( directory );
 			} )
 			.each( function( filePath ){
 				variables.files.delete( arguments.filepath );

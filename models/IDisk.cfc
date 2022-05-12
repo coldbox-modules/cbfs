@@ -531,6 +531,8 @@ interface {
 	 * @throwOnMissing Throws an exception if the directory does not exist
 	 *
 	 * @return A boolean value or a struct of booleans determining if the directory paths got deleted or not.
+	 *
+	 * @throws cbfs.DirectoryNotFoundException
 	 */
 	boolean function deleteDirectory(
 		required string directory,

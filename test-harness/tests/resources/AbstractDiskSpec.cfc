@@ -755,6 +755,70 @@ component extends="coldbox.system.testing.BaseTestCase" {
 				} );
 			} );
 
+			fstory( "The disk can delete directories", function(){
+				given( "a valid directory and recurse = true", function(){
+					then( "it should delete all the directories and recurse", function(){
+						var path = "deleteTests";
+						disk.createDirectory( path );
+						disk.create(
+							path      = path & "/test.txt",
+							contents  = "my contents",
+							overwrite = true
+						);
+						disk.createDirectory( path & "/embedded" );
+						disk.create(
+							path      = path & "/embedded/test.txt",
+							contents  = "my contents",
+							overwrite = true
+						);
+
+						expect( disk.deleteDirectory( path ) ).toBeTrue();
+						expect( disk.exists( path ) ).toBeFalse();
+						expect( disk.exists( path & "/test.txt" ) ).toBeFalse();
+						expect( disk.exists( path & "/embedded" ) ).toBeFalse();
+						expect( disk.exists( path & "/embedded/test.txt" ) ).toBeFalse();
+					} );
+				} );
+				given( "a valid directory and recurse = false", function(){
+					then( "it should delete only the top level files", function(){
+						var path = "deleteTests";
+						disk.createDirectory( path );
+						disk.create(
+							path      = path & "/test.txt",
+							contents  = "my contents",
+							overwrite = true
+						);
+						disk.createDirectory( path & "/embedded" );
+						disk.create(
+							path      = path & "/embedded/test.txt",
+							contents  = "my contents",
+							overwrite = true
+						);
+
+						expect( disk.deleteDirectory( path ) ).toBeTrue();
+						expect( disk.exists( path ) ).toBeFalse();
+						expect( disk.exists( path & "/test.txt" ) ).toBeFalse();
+						expect( disk.exists( path & "/embedded" ) ).toBeFalse();
+						expect( disk.exists( path & "/embedded/test.txt" ) ).toBeFalse();
+					} );
+				} );
+				given( "an non existent directory and throwOnMissing = false", function(){
+					then( "it should ignore the deletion ", function(){
+						var path = "bogus";
+						expect( disk.deleteDirectory( path ) ).toBeFalse();
+					} );
+				} );
+				given( "an non existent directory and throwOnMissing = true", function(){
+					then( "it should throw a cbfs.DirectoryNotFoundException", function(){
+						var path = "bogus";
+
+						expect( function(){
+							disk.deleteDirectory( directory = path, throwOnMissing = true );
+						} ).toThrow( "cbfs.DirectoryNotFoundException" );
+					} );
+				} );
+			} );
+
 			story( "The disk can move directories", function(){
 				given( "a valid old path", function(){
 					then( "it should move the directory", function(){
@@ -783,7 +847,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 				} );
 			} );
 
-			fstory( "The disk can copy directories", function(){
+			story( "The disk can copy directories", function(){
 				beforeEach( function( currentSpec ){
 					sourcePath      = "bddtests";
 					destinationPath = "tddtests";
