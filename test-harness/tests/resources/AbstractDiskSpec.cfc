@@ -755,7 +755,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 				} );
 			} );
 
-			fstory( "The disk can delete directories", function(){
+			story( "The disk can delete directories", function(){
 				given( "a valid directory and recurse = true", function(){
 					then( "it should delete all the directories and recurse", function(){
 						var path = "deleteTests";
