@@ -546,6 +546,8 @@ interface {
 	 * @directory The directory
 	 *
 	 * @return cbfs.models.IDisk
+	 *
+	 * @throws cbfs.DirectoryNotFoundException
 	 */
 	function cleanDirectory( required directory );
 

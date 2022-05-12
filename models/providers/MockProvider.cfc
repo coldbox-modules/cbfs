@@ -588,6 +588,11 @@ component
 		}
 	}
 
+	/**
+	 * Cleanup file paths for consistency
+	 *
+	 * @path The path to clean
+	 */
 	private function cleanupPath( path ){
 		return replace( arguments.path, "\", "/", "all" ).reReplace( "\/$", "" );
 	}
@@ -839,6 +844,30 @@ component
 	 * @return cbfs.models.IDisk
 	 */
 	function cleanDirectory( required directory ){
+		arguments.directory = cleanupPath( arguments.directory );
+		try {
+			var dirRecord = ensureRecordExists( arguments.directory );
+		} catch ( "cbfs.FileNotFoundException" e ) {
+			throw(
+				type    = "cbfs.DirectoryNotFoundException",
+				message = "Directory [#arguments.directory#] not found."
+			);
+			return false;
+		}
+
+		variables.files
+			.keyArray()
+			// exclude yourself
+			.filter( function( filepath ){
+				return filepath != directory;
+			} )
+			// wipe out
+			.filter( function( filePath ){
+				return arguments.filePath.startsWith( directory );
+			} )
+			.each( function( filePath ){
+				variables.files.delete( arguments.filepath );
+			} )
 	}
 
 	/********************* PRIVATE METHODS **********************/

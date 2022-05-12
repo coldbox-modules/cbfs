@@ -949,6 +949,32 @@ component extends="coldbox.system.testing.BaseTestCase" {
 					} );
 				} );
 			} );
+
+			fstory( "The disk can clean directories", function(){
+				given( "a valid directory", function(){
+					then( "it will clean the directory", function(){
+						var dirPath = "bddtests";
+
+						disk.createDirectory( dirPath );
+						disk.create( dirPath & "/luis.txt", "hello mi amigo" );
+						disk.create( dirPath & "/embedded/luis.txt", "hello mi amigo" );
+
+						disk.cleanDirectory( dirPath );
+
+						expect( disk.exists( dirPath ) ).toBeTrue( "directory should remain" );
+						expect( disk.exists( dirPath & "/luis.txt" ) ).toBeFalse();
+						expect( disk.exists( dirPath & "/embedded/luis.txt" ) ).toBeFalse();
+					} );
+				} );
+				given( "an invalid directory", function(){
+					then( "it should throw a cbfs.DirectoryNotFoundException", function(){
+						var dirPath = "boguspath";
+						expect( function(){
+							disk.cleanDirectory( dirPath );
+						} ).toThrow( "cbfs.DirectoryNotFoundException" );
+					} );
+				} );
+			} );
 		} );
 	}
 
