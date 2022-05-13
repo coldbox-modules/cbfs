@@ -1038,6 +1038,18 @@ component extends="coldbox.system.testing.BaseTestCase" {
 						expect( results.len() ).toBe( 1 );
 					} );
 				} );
+				given( "a valid directory with a files() call", function(){
+					then( "it will list the directory for files only", function(){
+						var dirPath = "bddtests";
+
+						disk.createDirectory( dirPath );
+						disk.create( dirPath & "/luis.txt", "hello mi amigo" );
+						disk.create( dirPath & "/embedded/luis.txt", "hello mi amigo" );
+
+						var results = disk.files( dirPath );
+						expect( results.len() ).toBe( 1 );
+					} );
+				} );
 				given( "a valid directory with type of 'dir'", function(){
 					then( "it will list the directory for directories only", function(){
 						var dirPath = "bddtests";
@@ -1047,6 +1059,18 @@ component extends="coldbox.system.testing.BaseTestCase" {
 						disk.create( dirPath & "/embedded/luis.txt", "hello mi amigo" );
 
 						var results = disk.contents( directory = dirPath, type = "dir" );
+						expect( results.len() ).toBe( 1 );
+					} );
+				} );
+				given( "a valid directory with a directories() call", function(){
+					then( "it will list the directory for directories only", function(){
+						var dirPath = "bddtests";
+
+						disk.createDirectory( dirPath );
+						disk.create( dirPath & "/luis.txt", "hello mi amigo" );
+						disk.create( dirPath & "/embedded/luis.txt", "hello mi amigo" );
+
+						var results = disk.directories( dirPath );
 						expect( results.len() ).toBe( 1 );
 					} );
 				} );

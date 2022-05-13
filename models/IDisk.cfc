@@ -594,12 +594,14 @@ interface {
 	 * @filter    A string wildcard or a lambda/closure that receives the file path and should return true to include it in the returned array or not.
 	 * @sort      Columns by which to sort. e.g. Directory, Size DESC, DateLastModified.
 	 * @recurse   Recurse into subdirectories, default is false
+	 *
+	 * @throws cbfs.DirectoryNotFoundException
 	 */
 	array function files(
 		required directory,
 		any filter,
 		sort,
-		boolean recurse
+		boolean recurse = false
 	);
 
 	/**
@@ -609,12 +611,14 @@ interface {
 	 * @filter    A string wildcard or a lambda/closure that receives the file path and should return true to include it in the returned array or not.
 	 * @sort      Columns by which to sort. e.g. Directory, Size DESC, DateLastModified.
 	 * @recurse   Recurse into subdirectories, default is false
+	 *
+	 * @throws cbfs.DirectoryNotFoundException
 	 */
 	array function directories(
 		required directory,
 		any filter,
 		sort,
-		boolean recurse
+		boolean recurse = false
 	);
 
 	/**
@@ -623,6 +627,8 @@ interface {
 	 * @directory The directory
 	 * @filter    A string wildcard or a lambda/closure that receives the file path and should return true to include it in the returned array or not.
 	 * @sort      Columns by which to sort. e.g. Directory, Size DESC, DateLastModified.
+	 *
+	 * @throws cbfs.DirectoryNotFoundException
 	 */
 	array function allFiles( required directory, any filter, sort );
 
@@ -632,6 +638,8 @@ interface {
 	 * @directory The directory
 	 * @filter    A string wildcard or a lambda/closure that receives the file path and should return true to include it in the returned array or not.
 	 * @sort      Columns by which to sort. e.g. Directory, Size DESC, DateLastModified.
+	 *
+	 * @throws cbfs.DirectoryNotFoundException
 	 */
 	array function allDirectories( required directory, any filter, sort );
 
