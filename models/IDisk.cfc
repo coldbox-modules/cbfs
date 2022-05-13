@@ -688,60 +688,20 @@ interface {
 	array function allFilesMap( required directory, any filter, sort );
 
 	/**
-	 * Get an array of structs of all directories in a directory and their appropriate information map:
-	 * - Attributes
-	 * - DateLastModified
-	 * - Directory
-	 * - Link
-	 * - Mode
-	 * - Name
-	 * - Size
-	 *
-	 * @directory The directory
-	 * @filter    A string wildcard or a lambda/closure that receives the file path and should return true to include it in the returned array or not.
-	 * @sort      Columns by which to sort. e.g. Directory, Size DESC, DateLastModified.
-	 * @recurse   Recurse into subdirectories, default is false
-	 *
-	 * @throws cbfs.DirectoryNotFoundException
-	 */
-	array function directoriesMap(
-		required directory,
-		any filter,
-		sort,
-		boolean recurse = false
-	);
-
-	/**
-	 * Get an array of structs of all directories in a directory with recursion and their appropriate information map:
-	 * - Attributes
-	 * - DateLastModified
-	 * - Directory
-	 * - Link
-	 * - Mode
-	 * - Name
-	 * - Size
-	 *
-	 * @directory The directory
-	 * @filter    A string wildcard or a lambda/closure that receives the file path and should return true to include it in the returned array or not.
-	 * @sort      Columns by which to sort. e.g. Directory, Size DESC, DateLastModified.
-	 *
-	 * @throws cbfs.DirectoryNotFoundException
-	 */
-	array function allDirectoriesMap( required directory, any filter, sort );
-
-	/**
 	 * Get an array of content from all the files from a specific directory
 	 *
 	 * @directory The directory
 	 * @filter    A string wildcard or a lambda/closure that receives the file path and should return true to include it in the returned array or not.
 	 * @sort      Columns by which to sort. e.g. Directory, Size DESC, DateLastModified.
 	 * @recurse   Recurse into subdirectories, default is false
+	 *
+	 * @throws cbfs.DirectoryNotFoundException
 	 */
 	array function contentsMap(
 		required directory,
 		any filter,
 		sort,
-		boolean recurse
+		boolean recurse = false
 	);
 
 	/**
@@ -750,6 +710,8 @@ interface {
 	 * @directory The directory
 	 * @filter    A string wildcard or a lambda/closure that receives the file path and should return true to include it in the returned array or not.
 	 * @sort      Columns by which to sort. e.g. Directory, Size DESC, DateLastModified.
+	 *
+	 * @throws cbfs.DirectoryNotFoundException
 	 */
 	array function allContentsMap( required directory, any filter, sort );
 

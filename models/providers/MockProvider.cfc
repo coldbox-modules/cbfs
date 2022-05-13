@@ -1122,6 +1122,88 @@ component
 		return filesMap( argumentCollection = arguments );
 	}
 
+	/**
+	 * Get an array of content from all the files from a specific directory
+	 *
+	 * @directory The directory
+	 * @filter    A string wildcard or a lambda/closure that receives the file path and should return true to include it in the returned array or not.
+	 * @sort      Columns by which to sort. e.g. Directory, Size DESC, DateLastModified.
+	 * @recurse   Recurse into subdirectories, default is false
+	 *
+	 * @throws cbfs.DirectoryNotFoundException
+	 */
+	array function contentsMap(
+		required directory,
+		any filter,
+		sort,
+		boolean recurse = false
+	){
+		// Verify Directory
+		arguments.directory = cleanupPath( arguments.directory );
+		try {
+			var dirRecord = ensureRecordExists( arguments.directory );
+		} catch ( "cbfs.FileNotFoundException" e ) {
+			throw(
+				type    = "cbfs.DirectoryNotFoundException",
+				message = "Directory [#arguments.directory#] not found."
+			);
+			return false;
+		}
+
+		// Return results
+		return variables.files
+			.keyArray()
+			// Filter out the source
+			.filter( function( item ){
+				return item != directory;
+			} )
+			// the target directory to list out
+			.filter( function( item ){
+				return item.startsWith( directory );
+			} )
+			// Filter out only files in the directory
+			.filter( function( item ){
+				return variables.files[ item ].type == "file";
+			} )
+			// Passed String Filter
+			.filter( function( item ){
+				return isNull( filter ) || !isSimpleValue( filter ) || !len( filter ) ? true : reFindNoCase(
+					"#filter.replace( "*.", ".*\." )#",
+					item
+				);
+			} )
+			// Passed Closure Filter
+			.filter( function( item ){
+				return ( !isNull( filter ) && isClosure( filter ) ? filter( item ) : true );
+			} )
+			// If recursive is off, filter those first level files ONLY!
+			.filter( function( item ){
+				return ( !recurse ? reFindNoCase( "#directory#(\/|\\)[^\\//]*$", item ) : true );
+			} )
+			.map( function( item ){
+				return {
+					"contents" : variables.files[ item ].contents,
+					"path"     : item,
+					"size"     : variables.files[ item ].size
+				};
+			} );
+	}
+
+	/**
+	 * Get an array of content from all the files from a specific directory with recursion
+	 *
+	 * @directory The directory
+	 * @filter    A string wildcard or a lambda/closure that receives the file path and should return true to include it in the returned array or not.
+	 * @sort      Columns by which to sort. e.g. Directory, Size DESC, DateLastModified.
+	 *
+	 * @throws cbfs.DirectoryNotFoundException
+	 */
+	array function allContentsMap( required directory, any filter, sort ){
+		arguments.recurse = true;
+		return contentsMap( argumentCollection = arguments );
+	}
+
+
 	/********************* PRIVATE METHODS **********************/
 
 	/**

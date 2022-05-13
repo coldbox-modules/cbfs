@@ -1084,7 +1084,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 				} );
 			} );
 
-			fstory( "The disk can get file information maps", function(){
+			story( "The disk can get file information maps", function(){
 				beforeEach( function( currentSpec ){
 					disk.deleteDirectory( "bddtests" );
 				} );
@@ -1101,7 +1101,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 						expect( results.len() ).toBe( 2 );
 					} );
 				} );
-				fgiven( "a valid directory with recurse = true", function(){
+				given( "a valid directory with recurse = true", function(){
 					then( "it can get a recursive file map structure", function(){
 						var dirPath = "bddtests";
 
@@ -1112,6 +1112,45 @@ component extends="coldbox.system.testing.BaseTestCase" {
 
 						var results = disk.allFilesMap( dirPath );
 						expect( results.len() ).toBe( 3 );
+					} );
+				} );
+			} );
+
+			fstory( "The disk can get multiple file content maps", function(){
+				beforeEach( function( currentSpec ){
+					disk.deleteDirectory( "bddtests" );
+				} );
+				given( "a valid directory", function(){
+					then( "it can get a file content map structure", function(){
+						var dirPath = "bddtests";
+
+						disk.createDirectory( dirPath );
+						disk.create( dirPath & "/luis.txt", "hello mi amigo" );
+						disk.create( dirPath & "/Test.cfc", "component{}" );
+						disk.create( dirPath & "/embedded/luis.txt", "hello mi amigo" );
+
+						var results = disk.contentsMap( dirPath );
+						expect( results.len() ).toBe( 2 );
+						debug( results );
+						expect( results[ 1 ].contents ).notToBeEmpty();
+						expect( results[ 1 ].path ).notToBeEmpty();
+						expect( results[ 1 ].size ).notToBeEmpty();
+					} );
+				} );
+				given( "a valid directory with recurse = true", function(){
+					then( "it can get a recursive file content map structure", function(){
+						var dirPath = "bddtests";
+
+						disk.createDirectory( dirPath );
+						disk.create( dirPath & "/luis.txt", "hello mi amigo" );
+						disk.create( dirPath & "/Test.cfc", "component{}" );
+						disk.create( dirPath & "/embedded/luis.txt", "hello mi amigo" );
+
+						var results = disk.allContentsMap( dirPath );
+						expect( results.len() ).toBe( 3 );
+						expect( results[ 1 ].contents ).notToBeEmpty();
+						expect( results[ 1 ].path ).notToBeEmpty();
+						expect( results[ 1 ].size ).notToBeEmpty();
 					} );
 				} );
 			} );
