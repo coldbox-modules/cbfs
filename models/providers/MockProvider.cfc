@@ -1203,6 +1203,15 @@ component
 		return contentsMap( argumentCollection = arguments );
 	}
 
+	/**
+	 * Find path names matching a given globbing pattern
+	 *
+	 * @pattern The globbing pattern to match
+	 */
+	array function glob( required pattern ){
+		// Not implemented yet. HELP!!
+	}
+
 
 	/********************* PRIVATE METHODS **********************/
 
