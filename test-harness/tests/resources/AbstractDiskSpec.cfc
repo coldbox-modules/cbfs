@@ -986,7 +986,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 				} );
 			} );
 
-			fstory( "The disk can get the contents of a directory", function(){
+			story( "The disk can get the contents of a directory", function(){
 				beforeEach( function( currentSpec ){
 					disk.deleteDirectory( "bddtests" );
 				} );
@@ -1083,7 +1083,39 @@ component extends="coldbox.system.testing.BaseTestCase" {
 					} );
 				} );
 			} );
-		} );
+
+			fstory( "The disk can get file information maps", function(){
+				beforeEach( function( currentSpec ){
+					disk.deleteDirectory( "bddtests" );
+				} );
+				given( "a valid directory", function(){
+					then( "it can get a file map structure", function(){
+						var dirPath = "bddtests";
+
+						disk.createDirectory( dirPath );
+						disk.create( dirPath & "/luis.txt", "hello mi amigo" );
+						disk.create( dirPath & "/Test.cfc", "component{}" );
+						disk.create( dirPath & "/embedded/luis.txt", "hello mi amigo" );
+
+						var results = disk.filesMap( dirPath );
+						expect( results.len() ).toBe( 2 );
+					} );
+				} );
+				fgiven( "a valid directory with recurse = true", function(){
+					then( "it can get a recursive file map structure", function(){
+						var dirPath = "bddtests";
+
+						disk.createDirectory( dirPath );
+						disk.create( dirPath & "/luis.txt", "hello mi amigo" );
+						disk.create( dirPath & "/Test.cfc", "component{}" );
+						disk.create( dirPath & "/embedded/luis.txt", "hello mi amigo" );
+
+						var results = disk.allFilesMap( dirPath );
+						expect( results.len() ).toBe( 3 );
+					} );
+				} );
+			} );
+		} ); // end suite
 	}
 
 	/**

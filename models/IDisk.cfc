@@ -652,17 +652,20 @@ interface {
 	 * - Mode
 	 * - Name
 	 * - Size
+	 * - etc
 	 *
 	 * @directory The directory
 	 * @filter    A string wildcard or a lambda/closure that receives the file path and should return true to include it in the returned array or not.
 	 * @sort      Columns by which to sort. e.g. Directory, Size DESC, DateLastModified.
 	 * @recurse   Recurse into subdirectories, default is false
+	 *
+	 * @throws cbfs.DirectoryNotFoundException
 	 */
 	array function filesMap(
 		required directory,
 		any filter,
 		sort,
-		boolean recurse
+		boolean recurse = false
 	);
 
 	/**
@@ -674,10 +677,13 @@ interface {
 	 * - Mode
 	 * - Name
 	 * - Size
+	 * - etc
 	 *
 	 * @directory The directory
 	 * @filter    A string wildcard or a lambda/closure that receives the file path and should return true to include it in the returned array or not.
 	 * @sort      Columns by which to sort. e.g. Directory, Size DESC, DateLastModified.
+	 *
+	 * @throws cbfs.DirectoryNotFoundException
 	 */
 	array function allFilesMap( required directory, any filter, sort );
 
@@ -695,12 +701,14 @@ interface {
 	 * @filter    A string wildcard or a lambda/closure that receives the file path and should return true to include it in the returned array or not.
 	 * @sort      Columns by which to sort. e.g. Directory, Size DESC, DateLastModified.
 	 * @recurse   Recurse into subdirectories, default is false
+	 *
+	 * @throws cbfs.DirectoryNotFoundException
 	 */
 	array function directoriesMap(
 		required directory,
 		any filter,
 		sort,
-		boolean recurse
+		boolean recurse = false
 	);
 
 	/**
@@ -716,6 +724,8 @@ interface {
 	 * @directory The directory
 	 * @filter    A string wildcard or a lambda/closure that receives the file path and should return true to include it in the returned array or not.
 	 * @sort      Columns by which to sort. e.g. Directory, Size DESC, DateLastModified.
+	 *
+	 * @throws cbfs.DirectoryNotFoundException
 	 */
 	array function allDirectoriesMap( required directory, any filter, sort );
 
