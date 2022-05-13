@@ -27,6 +27,10 @@ component extends="coldbox.system.testing.BaseTestCase" {
 				disk = getDisk();
 			} );
 
+			/********************************************************/
+			/** FILE Operations **/
+			/********************************************************/
+
 			story( "The disk should be created and started by the service", function(){
 				it( "is started by the service", function(){
 					expect( disk ).toBeComponent();
@@ -413,7 +417,9 @@ component extends="coldbox.system.testing.BaseTestCase" {
 				} );
 			} );
 
+			/********************************************************/
 			/** Utility Methods **/
+			/********************************************************/
 
 			story( "The disk can get a URI for the given file", function(){
 				given( "a valid file", function(){
@@ -569,7 +575,9 @@ component extends="coldbox.system.testing.BaseTestCase" {
 				}
 			);
 
+			/********************************************************/
 			/** Verification Methods **/
+			/********************************************************/
 
 			story( "The disk can verify if a path is a file", function(){
 				given( "A file exists", function(){
@@ -718,7 +726,9 @@ component extends="coldbox.system.testing.BaseTestCase" {
 				} );
 			} );
 
+			/********************************************************/
 			/** Directory Methods **/
+			/********************************************************/
 
 			story( "The disk can create and verify directories", function(){
 				given( "a non-existent directory", function(){
@@ -950,7 +960,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 				} );
 			} );
 
-			fstory( "The disk can clean directories", function(){
+			story( "The disk can clean directories", function(){
 				given( "a valid directory", function(){
 					then( "it will clean the directory", function(){
 						var dirPath = "bddtests";
@@ -971,6 +981,80 @@ component extends="coldbox.system.testing.BaseTestCase" {
 						var dirPath = "boguspath";
 						expect( function(){
 							disk.cleanDirectory( dirPath );
+						} ).toThrow( "cbfs.DirectoryNotFoundException" );
+					} );
+				} );
+			} );
+
+			fstory( "The disk can get the contents of a directory", function(){
+				beforeEach( function( currentSpec ){
+					disk.deleteDirectory( "bddtests" );
+				} );
+				given( "a valid directory", function(){
+					then( "it will list the directory", function(){
+						var dirPath = "bddtests";
+
+						disk.createDirectory( dirPath );
+						disk.create( dirPath & "/luis.txt", "hello mi amigo" );
+						disk.create( dirPath & "/embedded/luis.txt", "hello mi amigo" );
+
+						var results = disk.contents( dirPath );
+						expect( results.len() ).toBe( 2 );
+					} );
+				} );
+				given( "a valid directory and recurse = true", function(){
+					then( "it will list the directory recursively", function(){
+						var dirPath = "bddtests";
+
+						disk.createDirectory( dirPath );
+						disk.create( dirPath & "/luis.txt", "hello mi amigo" );
+						disk.create( dirPath & "/embedded/luis.txt", "hello mi amigo" );
+
+						var results = disk.contents( directory = dirPath, recurse = true );
+						expect( results ).toInclude( "bddtests/embedded/luis.txt" );
+					} );
+				} );
+				given( "a valid directory using allContents()", function(){
+					then( "it will list the directory recursively", function(){
+						var dirPath = "bddtests";
+
+						disk.createDirectory( dirPath );
+						disk.create( dirPath & "/luis.txt", "hello mi amigo" );
+						disk.create( dirPath & "/embedded/luis.txt", "hello mi amigo" );
+
+						var results = disk.allContents( dirPath );
+						expect( results ).toInclude( "bddtests/embedded/luis.txt" );
+					} );
+				} );
+				given( "a valid directory with type of 'file'", function(){
+					then( "it will list the directory for files only", function(){
+						var dirPath = "bddtests";
+
+						disk.createDirectory( dirPath );
+						disk.create( dirPath & "/luis.txt", "hello mi amigo" );
+						disk.create( dirPath & "/embedded/luis.txt", "hello mi amigo" );
+
+						var results = disk.contents( directory = dirPath, type = "file" );
+						expect( results.len() ).toBe( 1 );
+					} );
+				} );
+				given( "a valid directory with type of 'dir'", function(){
+					then( "it will list the directory for directories only", function(){
+						var dirPath = "bddtests";
+
+						disk.createDirectory( dirPath );
+						disk.create( dirPath & "/luis.txt", "hello mi amigo" );
+						disk.create( dirPath & "/embedded/luis.txt", "hello mi amigo" );
+
+						var results = disk.contents( directory = dirPath, type = "dir" );
+						expect( results.len() ).toBe( 1 );
+					} );
+				} );
+				given( "an invalid directory", function(){
+					then( "it should throw a cbfs.DirectoryNotFoundException", function(){
+						var dirPath = "boguspath";
+						expect( function(){
+							disk.contents( dirPath );
 						} ).toThrow( "cbfs.DirectoryNotFoundException" );
 					} );
 				} );

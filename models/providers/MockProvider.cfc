@@ -870,6 +870,96 @@ component
 			} )
 	}
 
+	/**
+	 * Get an array listing of all files and directories in a directory.
+	 *
+	 * @directory The directory
+	 * @filter    A string wildcard or a lambda/closure that receives the file path and should return true to include it in the returned array or not.
+	 * @sort      Columns by which to sort. e.g. Directory, Size DESC, DateLastModified.
+	 * @recurse   Recurse into subdirectories, default is false
+	 * @type      Filter the result to only include files, directories, or both. ('file', 'dir', 'all')
+	 *
+	 * @throws cbfs.DirectoryNotFoundException
+	 */
+	array function contents(
+		required directory,
+		any filter,
+		sort,
+		boolean recurse = false,
+		type            = "all"
+	){
+		// Verify Directory
+		arguments.directory = cleanupPath( arguments.directory );
+		try {
+			var dirRecord = ensureRecordExists( arguments.directory );
+		} catch ( "cbfs.FileNotFoundException" e ) {
+			throw(
+				type    = "cbfs.DirectoryNotFoundException",
+				message = "Directory [#arguments.directory#] not found."
+			);
+			return false;
+		}
+
+		// Return results
+		return variables.files
+			.keyArray()
+			// Filter out the source
+			.filter( function( item ){
+				return item != directory;
+			} )
+			// the target directory to list out
+			.filter( function( item ){
+				return item.startsWith( directory );
+			} )
+			// Passed String Filter
+			.filter( function( item ){
+				return isNull( filter ) || !isSimpleValue( filter ) || !len( filter ) ? true : reFindNoCase(
+					"#filter.replace( "*.", ".*\." )#",
+					item
+				);
+			} )
+			// Passed Closure Filter
+			.filter( function( item ){
+				return ( !isNull( filter ) && isClosure( filter ) ? filter( item ) : true );
+			} )
+			// If recursive is off, filter those first level files ONLY!
+			.filter( function( item ){
+				return ( !recurse ? reFindNoCase( "#directory#(\/|\\)[^\\//]*$", item ) : true );
+			} )
+			// File Type Filter
+			.filter( function( item ){
+				if ( type == "all" ) {
+					return true;
+				} else if ( type === "file" && variables.files[ item ].type == "file" ) {
+					return true;
+				} else if ( type === "dir" && variables.files[ item ].type == "Directory" ) {
+					return true;
+				}
+				return false;
+			} );
+	}
+
+	/**
+	 * Get an array listing of all files and directories in a directory using recursion
+	 *
+	 * @directory The directory
+	 * @filter    A string wildcard or a lambda/closure that receives the file path and should return true to include it in the returned array or not.
+	 * @sort      Columns by which to sort. e.g. Directory, Size DESC, DateLastModified.
+	 * @type      Filter the result to only include files, directories, or both. ('file', 'dir', 'all')
+	 *
+	 * @throws cbfs.DirectoryNotFoundException
+	 */
+	array function allContents(
+		required directory,
+		any filter,
+		sort,
+		type = "all"
+	){
+		arguments.recurse = true;
+		return contents( argumentCollection = arguments );
+	}
+
+
 	/********************* PRIVATE METHODS **********************/
 
 	/**

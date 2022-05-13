@@ -558,12 +558,16 @@ interface {
 	 * @filter    A string wildcard or a lambda/closure that receives the file path and should return true to include it in the returned array or not.
 	 * @sort      Columns by which to sort. e.g. Directory, Size DESC, DateLastModified.
 	 * @recurse   Recurse into subdirectories, default is false
+	 * @type      Filter the result to only include files, directories, or both. ('file', 'dir', 'all')
+	 *
+	 * @throws cbfs.DirectoryNotFoundException
 	 */
 	array function contents(
 		required directory,
 		any filter,
 		sort,
-		boolean recurse
+		boolean recurse = false,
+		type            = "all"
 	);
 
 	/**
@@ -572,9 +576,16 @@ interface {
 	 * @directory The directory
 	 * @filter    A string wildcard or a lambda/closure that receives the file path and should return true to include it in the returned array or not.
 	 * @sort      Columns by which to sort. e.g. Directory, Size DESC, DateLastModified.
-	 * @recurse   Recurse into subdirectories, default is false
+	 * @type      Filter the result to only include files, directories, or both. ('file', 'dir', 'all')
+	 *
+	 * @throws cbfs.DirectoryNotFoundException
 	 */
-	array function allContents( required directory, any filter, sort );
+	array function allContents(
+		required directory,
+		any filter,
+		sort,
+		type = "all"
+	);
 
 	/**
 	 * Get an array of all files in a directory.
