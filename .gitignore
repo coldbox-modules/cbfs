@@ -23,3 +23,4 @@ logs/**
 
 # Resource tests
 test-harness/tests/resources/storage/**
+test-harness/tests/storage/**

@@ -1116,7 +1116,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 				} );
 			} );
 
-			fstory( "The disk can get multiple file content maps", function(){
+			story( "The disk can get multiple file content maps", function(){
 				beforeEach( function( currentSpec ){
 					disk.deleteDirectory( "bddtests" );
 				} );
