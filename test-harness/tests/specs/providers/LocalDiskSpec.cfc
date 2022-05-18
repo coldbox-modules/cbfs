@@ -2,7 +2,7 @@ component extends="tests.resources.AbstractDiskSpec" {
 
 	// The name of the provider in the test-harness we want to test
 	variables.providerName = "Local";
-	variables.TEST_PATH    = expandPath( "/root/tests/storage" );
+	variables.TEST_PATH    = expandPath( "/tests/storage" );
 	// Which features does this disk support for testing
 	variables.testFeatures = { symbolicLink : false };
 

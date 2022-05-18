@@ -10,6 +10,7 @@
 	</thead>
 	<tbody>
 		<cfloop array="#prc.diskService.names()#" index="thisDisk">
+		<cfset disk = prc.diskService.get( thisDisk )>
 		<cfset diskRecord = prc.diskService.getDiskRecord( thisDisk )>
 		<tr>
 			<td>

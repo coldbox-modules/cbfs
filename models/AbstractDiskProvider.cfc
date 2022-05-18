@@ -48,6 +48,11 @@ component accessors="true" {
 		"file" : { "public" : "666", "private" : "000", "readonly" : "444" },
 		"dir"  : { "public" : "666", "private" : "600", "readonly" : "644" }
 	};
+	variables.VISIBILITY_ATTRIBUTE = {
+		"public" : "normal",
+		"private" : "hidden",
+		'readonly' : "readonly"
+	};
 
 	/**
 	 * Constructor
@@ -109,6 +114,15 @@ component accessors="true" {
 	}
 
 	/************************* PRIVATE METHODS *******************************/
+
+	/**
+	 * Normalize, cleanup and canonicalize file paths for consistency and security
+	 *
+	 * @path The path to clean
+	 */
+	private function normalizePath( path ){
+		return getCanonicalPath( replace( arguments.path, "\", "/", "all" ).reReplace( "\/$", "" ) );
+	}
 
 	/**
 	 * Check if is Windows

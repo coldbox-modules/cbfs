@@ -318,7 +318,7 @@ component
 	 * @path The file/directory path to verify
 	 */
 	boolean function exists( required string path ){
-		arguments.path = cleanupPath( arguments.path );
+		arguments.path = normalizePath( arguments.path );
 		for ( var existingPath in variables.files.keyArray() ) {
 			if ( find( arguments.path, existingPath ) == 1 ) {
 				return true;
@@ -511,7 +511,7 @@ component
 	 * @throws cbfs.FileNotFoundException
 	 */
 	boolean function isFile( required path ){
-		arguments.path = cleanupPath( arguments.path );
+		arguments.path = normalizePath( arguments.path );
 		return ensureRecordExists( arguments.path ).type == "File";
 	}
 
@@ -580,21 +580,12 @@ component
 	 * @throws cbfs.DirectoryNotFoundException - If the directory path is missing
 	 */
 	boolean function isDirectory( required path ){
-		arguments.path = cleanupPath( arguments.path );
+		arguments.path = normalizePath( arguments.path );
 		try {
 			return ensureRecordExists( arguments.path ).type == "Directory";
 		} catch ( "cbfs.FileNotFoundException" e ) {
 			throw( type = "cbfs.DirectoryNotFoundException", message = "Directory [#arguments.path#] not found." );
 		}
-	}
-
-	/**
-	 * Cleanup file paths for consistency
-	 *
-	 * @path The path to clean
-	 */
-	private function cleanupPath( path ){
-		return replace( arguments.path, "\", "/", "all" ).reReplace( "\/$", "" );
 	}
 
 	/**
@@ -614,7 +605,7 @@ component
 		boolean ignoreExists = true
 	){
 		// Cleanup directory name
-		arguments.directory = cleanupPath( arguments.directory );
+		arguments.directory = normalizePath( arguments.directory );
 
 		if ( this.exists( arguments.directory ) && !arguments.ignoreExists ) {
 			throw(
@@ -669,8 +660,8 @@ component
 		any filter,
 		boolean createPath = true
 	){
-		arguments.source      = cleanupPath( arguments.source );
-		arguments.destination = cleanupPath( arguments.destination );
+		arguments.source      = normalizePath( arguments.source );
+		arguments.destination = normalizePath( arguments.destination );
 		try {
 			var sourceRecord = ensureRecordExists( arguments.source );
 		} catch ( "cbfs.FileNotFoundException" e ) {
@@ -740,8 +731,8 @@ component
 		required newPath,
 		boolean createPath
 	){
-		arguments.oldPath = cleanupPath( arguments.oldPath );
-		arguments.newPath = cleanupPath( arguments.newPath );
+		arguments.oldPath = normalizePath( arguments.oldPath );
+		arguments.newPath = normalizePath( arguments.newPath );
 		try {
 			var oldRecord = ensureRecordExists( arguments.oldPath );
 		} catch ( "cbfs.FileNotFoundException" e ) {
@@ -811,7 +802,7 @@ component
 		boolean recurse        = true,
 		boolean throwOnMissing = false
 	){
-		arguments.directory = cleanupPath( arguments.directory );
+		arguments.directory = normalizePath( arguments.directory );
 		try {
 			var dirRecord = ensureRecordExists( arguments.directory );
 		} catch ( "cbfs.FileNotFoundException" e ) {
@@ -844,7 +835,7 @@ component
 	 * @return cbfs.models.IDisk
 	 */
 	function cleanDirectory( required directory ){
-		arguments.directory = cleanupPath( arguments.directory );
+		arguments.directory = normalizePath( arguments.directory );
 		try {
 			var dirRecord = ensureRecordExists( arguments.directory );
 		} catch ( "cbfs.FileNotFoundException" e ) {
@@ -889,7 +880,7 @@ component
 		type            = "all"
 	){
 		// Verify Directory
-		arguments.directory = cleanupPath( arguments.directory );
+		arguments.directory = normalizePath( arguments.directory );
 		try {
 			var dirRecord = ensureRecordExists( arguments.directory );
 		} catch ( "cbfs.FileNotFoundException" e ) {
@@ -1054,7 +1045,7 @@ component
 		boolean recurse = false
 	){
 		// Verify Directory
-		arguments.directory = cleanupPath( arguments.directory );
+		arguments.directory = normalizePath( arguments.directory );
 		try {
 			var dirRecord = ensureRecordExists( arguments.directory );
 		} catch ( "cbfs.FileNotFoundException" e ) {
@@ -1139,7 +1130,7 @@ component
 		boolean recurse = false
 	){
 		// Verify Directory
-		arguments.directory = cleanupPath( arguments.directory );
+		arguments.directory = normalizePath( arguments.directory );
 		try {
 			var dirRecord = ensureRecordExists( arguments.directory );
 		} catch ( "cbfs.FileNotFoundException" e ) {

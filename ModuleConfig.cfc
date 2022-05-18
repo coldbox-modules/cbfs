@@ -29,7 +29,7 @@ component {
 				// Your default application storage
 				"default" : {
 					provider   : "Local",
-					properties : { path : "#appMapping#/.cbfs", autoExpand : true }
+					properties : { path : "#controller.getAppRootPath()#.cbfs" }
 				},
 				// A disk that points to the CFML Engine's temp directory
 				"temp" : {

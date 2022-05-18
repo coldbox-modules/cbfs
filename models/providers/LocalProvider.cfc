@@ -15,6 +15,11 @@ component
 
 	// static lookups
 	variables.defaults = { path : "", autoExpand : false };
+	// Java Helpers
+	// @see https://docs.oracle.com/javase/8/docs/api/java/nio/file/Paths.html#get-java.lang.String-java.lang.String...-
+	// @see https://docs.oracle.com/javase/8/docs/api/java/nio/file/Files.html
+	variables.jPaths = createObject( "java", "java.nio.file.Paths" );
+	variables.jFiles = createObject( "java", "java.nio.file.Files" );
 
 	/**
 	 * Startup the local provider
@@ -45,10 +50,17 @@ component
 			);
 		}
 
+
 		// Do we need to expand the path
 		if ( variables.properties.autoExpand ) {
 			variables.properties.path = expandPath( variables.properties.path );
 		}
+
+		// Normalize Path
+		variables.properties.path = normalizePath( variables.properties.path );
+
+		// Create java nio path
+		variables.properties.jPath = variables.jPaths.get( arguments.properties.path, [] );
 
 		// Verify the disk storage exists, else create it
 		if ( !directoryExists( variables.properties.path ) ) {
@@ -60,42 +72,70 @@ component
 	}
 
 	/**
+	 * Called before the cbfs module is unloaded, or via reinits. This can be implemented
+	 * as you see fit to gracefully shutdown connections, sockets, etc.
+	 *
+	 * @return cbfs.models.IDisk
+	 */
+	any function shutdown(){
+		variables.started = false;
+		return this;
+	}
+
+	/**
 	 * Create a file in the disk
 	 *
 	 * @path       The file path to use for storage
 	 * @contents   The contents of the file to store
 	 * @visibility The storage visibility of the file, available options are `public, private, readonly` or a custom data type the implemented driver can interpret
 	 * @metadata   Struct of metadata to store with the file
-	 * @overwrite  If we should overwrite the files or not at the destination if they exist, defaults to true
+	 * @overwrite  Flag to overwrite the file at the destination, if it exists. Defaults to true.
+	 * @mode       Applies to *nix systems. If passed, it overrides the visbility argument and uses these octal values instead
 	 *
-	 * @return LocalProvider
+	 * @return cbfs.models.IDisk
+	 *
+	 * @throws cbfs.FileOverrideException - When a file exists and no override has been provided
 	 */
 	function create(
 		required path,
 		required contents,
-		visibility        = "",
+		string visibility = "public",
 		struct metadata   = {},
-		boolean overwrite = false
+		boolean overwrite = false,
+		string mode
 	){
+		// Verify the path
 		if ( !arguments.overwrite && this.exists( arguments.path ) ) {
 			throw(
 				type    = "cbfs.FileOverrideException",
 				message = "Cannot create file. File already exists [#arguments.path#]"
 			);
 		}
-		// filewrite throws error if directory not exists
-		ensureDirectoryExists( arguments.path );
-		try {
-			fileWrite( buildPath( arguments.path ), arguments.contents );
-		} catch ( any e ) {
-			throw(
-				type    = "cbfs.FileNotFoundException",
-				message = "Cannot create file. File already exists [#arguments.path#]"
-			);
+
+		// Default mode if not passed using visibility
+		if ( isNull( arguments.mode ) ) {
+			arguments.mode = variables.PERMISSIONS.file[ arguments.visibility ];
 		}
-		if ( len( arguments.visibility ) ) {
-			this.setVisibility( arguments.path, arguments.visibility );
+
+		// Normalize and build the path on disk
+		arguments.path = buildDiskPath( arguments.path );
+
+		// Make sure if we pass a nested file, that the sub-directories get created
+		var containerDirectory = getDirectoryFromPath( arguments.path );
+		if( containerDirectory != variables.properties.path ){
+			ensureDirectoryExists( containerDirectory );
 		}
+
+		// Write it
+		fileWrite( arguments.path, arguments.contents, "UTF-8" );
+
+		// Set visibility or mode
+		if( isWindows() ){
+			fileSetAttribute( arguments.path, variables.VISIBILITY_ATTRIBUTE[ arguments.visibility ] );
+		} else {
+			fileSetAccessMode( arguments.path, arguments.mode );
+		}
+
 		return this;
 	}
 
@@ -302,8 +342,7 @@ component
 	 * @throws cbfs.FileNotFoundException
 	 */
 	any function get( required path ){
-		ensureFileExists( arguments.path );
-		return fileRead( buildPath( arguments.path ) );
+		return fileRead( ensureFileExists( arguments.path ), "UTF-8" );
 	}
 
 	/**
@@ -316,8 +355,7 @@ component
 	 * @throws cbfs.FileNotFoundException
 	 */
 	any function getAsBinary( required path ){
-		ensureFileExists( arguments.path );
-		return fileReadBinary( buildPath( arguments.path ) );
+		return fileReadBinary( ensureFileExists( arguments.path ), "UTF-8" );
 	};
 
 	/**
@@ -326,38 +364,68 @@ component
 	 * @path The file/directory path to verify
 	 */
 	boolean function exists( required string path ){
+		arguments.path = buildDiskPath( arguments.path );
 		if ( isDirectory( arguments.path ) ) {
-			return directoryExists( buildPath( arguments.path ) );
+			return directoryExists( arguments.path );
 		}
-		try {
-			return fileExists( buildPath( arguments.path ) );
-		} catch ( any e ) {
-			throw( type = "cbfs.FileNotFoundException", message = "File [#arguments.path#] not found." );
-		}
+		return fileExists( arguments.path );
 	}
 
 	/**
-	 * Deletes a file
+	 * Delete a file or an array of file paths. If a file does not exist a `false` will be
+	 * shown for it's return.
 	 *
-	 * @path          
-	 * @throwOnMissing When true an error will be thrown if the file does not exist
+	 * @path           A single file path or an array of file paths
+	 * @throwOnMissing Boolean to throw an exception if the file is missing.
+	 *
+	 * @return boolean or struct report of deletion
+	 *
+	 * @throws cbfs.FileNotFoundException
 	 */
 	public boolean function delete( required any path, boolean throwOnMissing = false ){
-		if ( isSimpleValue( arguments.path ) ) arguments.path = listToArray( arguments.path );
-		for ( var file in arguments.path ) {
-			if ( !throwOnMissing ) {
-				if ( !this.exists( file ) ) {
-					return false;
-				}
+
+		if ( missing( arguments.path ) ) {
+			if ( arguments.throwOnMissing ) {
+				throw( type = "cbfs.FileNotFoundException", message = "File [#arguments.path#] not found." );
 			}
-			if ( isDirectory( file ) ) {
-				deleteDirectory( file, true );
-			} else {
-				fileDelete( buildPath( file ) );
-			}
+			return false;
 		}
+
+		fileDelete( buildDiskPath( arguments.path ) );
+
 		return true;
 	}
+
+	/**
+	 * Create a new empty file if it does not exist
+	 *
+	 * @path       The file path
+	 * @createPath if set to false, expects all parent directories to exist, true will generate necessary directories. Defaults to true.
+	 *
+	 * @return cbfs.models.IDisk
+	 *
+	 * @throws cbfs.PathNotFoundException
+	 */
+	function touch( required path, boolean createPath = true ){
+		// If it exists, just touch the timestamp
+		if ( exists( arguments.path ) ) {
+			fileSetLastModified( buildDiskPath( arguments.path ), now() );
+			return this;
+		}
+		// else touch it baby!
+		arguments.path = buildDiskPath( arguments.path );
+		if ( !arguments.createPath ) {
+			if ( !this.exists( getDirectoryFromPath( arguments.path ) ) ) {
+				throw(
+					type    = "cbfs.PathNotFoundException",
+					message = "Directory does not already exist and the `createPath` flag is set to false"
+				);
+			}
+		}
+		return create( arguments.path, "" );
+	}
+
+	/**************************************** UTILITY METHODS ****************************************/
 
 	/**
 	 * Retrieve the file's last modified timestamp
@@ -729,15 +797,18 @@ component
 	}
 
 	/************************* PRIVATE METHODS ****************************/
+
 	/**
-	 * Determines whether a provided path is a directory or not
+	 * This function builds the path on the provided disk from it's root + incoming path
+	 * with normalization, cleanup and canonicalization.
 	 *
-	 * @path The path to be checked
+	 * @path The path on the disk to build
+	 *
+	 * @return The canonical path on the disk
 	 */
-	private function buildPath( required string path ){
-		// remove all relative dots
-		arguments.path = reReplace( arguments.path, "\.\.\/+", "", "ALL" );
-		return expandPath( getProperties().path & "/" & arguments.path );
+	private function buildDiskPath( required string path ){
+		var pathTarget = normalizePath( arguments.path );
+		return pathTarget.startsWith( variables.properties.path ) ? pathTarget : variables.properties.path & "/#pathTarget#";
 	}
 
 	/**
@@ -802,17 +873,18 @@ component
 
 
 	/**
-	 * Ensures a directory exists - will create the directory if it does not exist
+	 * Creates a directory by creating all nonexistent parent directories first.
+	 * An exception is not thrown if the directory could not be created because it already exists.
 	 *
-	 * @path The path to be checked for existence
+	 * @path The full disk path, no normalization is done here.
+	 *
+	 * @return The java Path representing the directory
 	 */
 	private function ensureDirectoryExists( required path ){
-		var p             = buildPath( arguments.path );
-		var directoryPath = replaceNoCase( p, getFileFromPath( p ), "" );
-
-		if ( !directoryExists( directoryPath ) ) {
-			directoryCreate( directoryPath );
-		}
+		// Create directories and if they exist, ignore it
+		return variables.jFiles.createDirectories(
+			arguments.path, javaCast( "null", "" )
+		);
 	}
 
 	/**
@@ -835,9 +907,11 @@ component
 	 * @throws cbfs.FileNotFoundException Throws if the file does not exist
 	 */
 	private function ensureFileExists( required path ){
-		if ( !this.exists( arguments.path ) ) {
+		arguments.path = buildDiskPath( arguments.path );
+		if ( fileExists( arguments.path ) ) {
 			throw( type = "cbfs.FileNotFoundException", message = "File [#arguments.path#] not found." );
 		}
+		return arguments.path;
 	}
 
 }
