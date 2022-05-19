@@ -18,8 +18,8 @@ component
 	// Java Helpers
 	// @see https://docs.oracle.com/javase/8/docs/api/java/nio/file/Paths.html#get-java.lang.String-java.lang.String...-
 	// @see https://docs.oracle.com/javase/8/docs/api/java/nio/file/Files.html
-	variables.jPaths = createObject( "java", "java.nio.file.Paths" );
-	variables.jFiles = createObject( "java", "java.nio.file.Files" );
+	variables.jPaths   = createObject( "java", "java.nio.file.Paths" );
+	variables.jFiles   = createObject( "java", "java.nio.file.Files" );
 
 	/**
 	 * Startup the local provider
@@ -60,7 +60,7 @@ component
 		variables.properties.path = normalizePath( variables.properties.path );
 
 		// Create java nio path
-		variables.properties.jPath = variables.jPaths.get( arguments.properties.path, [] );
+		variables.properties.jPath = getJavaPath( arguments.properties.path );
 
 		// Verify the disk storage exists, else create it
 		if ( !directoryExists( variables.properties.path ) ) {
@@ -69,6 +69,18 @@ component
 
 		variables.started = true;
 		return this;
+	}
+
+	/**
+	 * Get a Java Path of the passed in string path
+	 *
+	 * @see  https://docs.oracle.com/javase/8/docs/api/java/nio/file/Path.html#toAbsolutePath--
+	 * @path The string path to convert into a Java Path
+	 *
+	 * @return java.nio.file.Path
+	 */
+	private function getJavaPath( required path ){
+		return variables.jPaths.get( arguments.path, [] );
 	}
 
 	/**
@@ -105,7 +117,7 @@ component
 		string mode
 	){
 		// Verify the path
-		if ( !arguments.overwrite && this.exists( arguments.path ) ) {
+		if ( !arguments.overwrite && exists( arguments.path ) ) {
 			throw(
 				type    = "cbfs.FileOverrideException",
 				message = "Cannot create file. File already exists [#arguments.path#]"
@@ -122,7 +134,7 @@ component
 
 		// Make sure if we pass a nested file, that the sub-directories get created
 		var containerDirectory = getDirectoryFromPath( arguments.path );
-		if( containerDirectory != variables.properties.path ){
+		if ( containerDirectory != variables.properties.path ) {
 			ensureDirectoryExists( containerDirectory );
 		}
 
@@ -130,31 +142,13 @@ component
 		fileWrite( arguments.path, arguments.contents, "UTF-8" );
 
 		// Set visibility or mode
-		if( isWindows() ){
+		if ( isWindows() ) {
 			fileSetAttribute( arguments.path, variables.VISIBILITY_ATTRIBUTE[ arguments.visibility ] );
 		} else {
 			fileSetAccessMode( arguments.path, arguments.mode );
 		}
 
 		return this;
-	}
-
-	/**
-	 * Rename a file from one destination to another. Shortcut to the `move()` command
-	 *
-	 * @source      The source file path
-	 * @destination The end destination path
-	 *
-	 * @return cbfs.models.IDisk
-	 *
-	 * @throws cbfs.FileNotFoundException
-	 */
-	function rename(
-		required source,
-		required destination,
-		boolean overwrite = false
-	){
-		return this.move( argumentCollection = arguments );
 	}
 
 	/**
@@ -166,37 +160,16 @@ component
 	 * @return LocalProvider
 	 */
 	function setVisibility( required string path, required string visibility ){
+		// Windows vs Others
 		if ( isWindows() ) {
-			switch ( arguments.visibility ) {
-				case "private": {
-					var mode = "system";
-					break;
-				}
-				case "readonly": {
-					var mode = arguments.visibility;
-					break;
-				}
-				default: {
-					var mode = "normal";
-				}
-			}
-			fileSetAttribute( buildPath( arguments.path ), mode );
+			fileSetAttribute(
+				buildDiskPath( arguments.path ),
+				variables.VISIBILITY_ATTRIBUTE[ arguments.visibility ]
+			);
 			return this;
 		}
-		switch ( arguments.visibility ) {
-			case "private": {
-				var mode = variables.permissions.file.private;
-				break;
-			}
-			case "readonly": {
-				var mode = variables.permissions.file.readonly;
-				break;
-			}
-			default: {
-				var mode = variables.permissions.file.public;
-			}
-		}
-		fileSetAccessMode( buildPath( arguments.path ), mode );
+		// Others
+		fileSetAccessMode( buildDiskPath( arguments.path ), variables.PERMISSIONS.file[ arguments.visibility ] );
 		return this;
 	};
 
@@ -206,14 +179,20 @@ component
 	 * @path The target file
 	 */
 	public string function visibility( required string path ){
-		var file = getFileInfo( arguments.path );
-		if ( !file.canRead ) {
-			return "private";
-		}
-		if ( file.canWrite ) {
+		// Public
+		if ( isWritable( arguments.path ) && isReadable( arguments.path ) ) {
 			return "public";
 		}
-		return "public";
+		// Hidden
+		if ( isHidden( arguments.path ) ) {
+			return "private";
+		}
+		// Private
+		if ( !isReadable( arguments.path ) ) {
+			return "private";
+		}
+		// Read only then
+		return "readonly";
 	};
 
 	/**
@@ -287,6 +266,24 @@ component
 	}
 
 	/**
+	 * Rename a file from one destination to another. Shortcut to the `move()` command
+	 *
+	 * @source      The source file path
+	 * @destination The end destination path
+	 *
+	 * @return cbfs.models.IDisk
+	 *
+	 * @throws cbfs.FileNotFoundException
+	 */
+	function rename(
+		required source,
+		required destination,
+		boolean overwrite = false
+	){
+		return this.move( argumentCollection = arguments );
+	}
+
+	/**
 	 * Copy a file from one destination to another
 	 *
 	 * @source      The source file path
@@ -324,7 +321,7 @@ component
 		required destination,
 		boolean overwrite = true
 	){
-		if( arguments.overwrite || missing( arguments.destination ) ){
+		if ( arguments.overwrite || missing( arguments.destination ) ) {
 			fileMove( buildDiskPath( arguments.source ), buildDiskPath( arguments.destination ) );
 		}
 	}
@@ -379,11 +376,7 @@ component
 	 * @path The file/directory path to verify
 	 */
 	boolean function exists( required string path ){
-		arguments.path = buildDiskPath( arguments.path );
-		if ( isDirectory( arguments.path ) ) {
-			return directoryExists( arguments.path );
-		}
-		return fileExists( arguments.path );
+		return variables.jFiles.exists( getJavaPath( buildDiskPath( arguments.path ) ), javacast( "null", "" ) );
 	}
 
 	/**
@@ -398,7 +391,6 @@ component
 	 * @throws cbfs.FileNotFoundException
 	 */
 	public boolean function delete( required any path, boolean throwOnMissing = false ){
-
 		if ( missing( arguments.path ) ) {
 			if ( arguments.throwOnMissing ) {
 				throw( type = "cbfs.FileNotFoundException", message = "File [#arguments.path#] not found." );
@@ -454,19 +446,22 @@ component
 		return getFileInfo( buildPath( arguments.path ) ).lastModified;
 	}
 
+	/**************************************** VERIFICATION METHODS ****************************************/
+
 	/**
 	 * Is the path a file or not
 	 *
 	 * @path The file path
 	 *
+	 * @return true if the file is a regular file; false if the file does not exist, is not a regular file, or it cannot be determined if the file is a regular file or not.
+	 *
 	 * @throws cbfs.FileNotFoundException
 	 */
 	boolean function isFile( required path ){
-		if ( isDirectory( arguments.path ) ) {
-			return false;
-		}
-		ensureFileExists( arguments.path );
-		return getFileInfo( buildPath( arguments.path ) ).type EQ "file";
+		return variables.jFiles.isRegularFile(
+			getJavaPath( buildDiskPath( arguments.path ) ),
+			javacast( "null", "" )
+		);
 	}
 
 	/**
@@ -475,7 +470,7 @@ component
 	 * @path The file path
 	 */
 	boolean function isWritable( required path ){
-		return getFileInfo( buildPath( arguments.path ) ).canWrite;
+		return variables.jFiles.isWritable( getJavaPath( buildDiskPath( arguments.path ) ) );
 	}
 
 	/**
@@ -484,20 +479,56 @@ component
 	 * @path The file path
 	 */
 	boolean function isReadable( required path ){
-		return getFileInfo( buildPath( arguments.path ) ).canRead;
+		return variables.jFiles.isReadable( getJavaPath( buildDiskPath( arguments.path ) ) );
 	}
+
+	/**
+	 * Is the file executable or not
+	 *
+	 * @path The file path
+	 *
+	 * @throws cbfs.FileNotFoundException - If the filepath is missing
+	 */
+	boolean function isExecutable( required path ){
+		return variables.jFiles.isExecutable( getJavaPath( buildDiskPath( arguments.path ) ) );
+	}
+
+	/**
+	 * Is the file is hidden or not
+	 *
+	 * @path The file path
+	 *
+	 * @throws cbfs.FileNotFoundException - If the filepath is missing
+	 */
+	boolean function isHidden( required path ){
+		return variables.jFiles.isHidden( getJavaPath( buildDiskPath( arguments.path ) ) );
+	}
+
+	/**
+	 * Is the file is a symbolic link
+	 *
+	 * @path The file path
+	 *
+	 * @throws cbfs.FileNotFoundException - If the filepath is missing
+	 */
+	boolean function isSymbolicLink( required path ){
+		return variables.jFiles.isSymbolicLink( getJavaPath( buildDiskPath( arguments.path ) ) );
+	}
+
+	/**************************************** DIRECTORY METHODS ****************************************/
 
 	/**
 	 * Is the path a directory or not
 	 *
 	 * @path The directory path
+	 *
+	 * @return true if the file is a directory; false if the file does not exist, is not a directory, or it cannot be determined if the file is a directory or not.
 	 */
 	boolean function isDirectory( required path ){
-		try {
-			return getFileInfo( buildPath( arguments.path ) ).type == "directory";
-		} catch ( any e ) {
-			return isDirectoryPath( arguments.path );
-		}
+		return variables.jFiles.isDirectory(
+			getJavaPath( buildDiskPath( arguments.path ) ),
+			javacast( "null", "" )
+		);
 	};
 
 	/**
@@ -897,9 +928,7 @@ component
 	 */
 	private function ensureDirectoryExists( required path ){
 		// Create directories and if they exist, ignore it
-		return variables.jFiles.createDirectories(
-			arguments.path, javaCast( "null", "" )
-		);
+		return variables.jFiles.createDirectories( arguments.path, javacast( "null", "" ) );
 	}
 
 	/**
