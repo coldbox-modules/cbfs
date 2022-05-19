@@ -197,7 +197,7 @@ component
 	};
 
 	/**
-	 * Prepend contents to the beginning of a file
+	 * Prepend contents to the beginning of a file. This is a very expensive operation for local disk storage.
 	 *
 	 * @path           The file path to use for storage
 	 * @contents       The contents of the file to prepend
@@ -214,7 +214,7 @@ component
 		struct metadata        = {},
 		boolean throwOnMissing = false
 	){
-		if ( !this.exists( arguments.path ) ) {
+		if ( missing( arguments.path ) ) {
 			if ( arguments.throwOnMissing ) {
 				throw( type = "cbfs.FileNotFoundException", message = "File [#arguments.path#] not found." );
 			}
@@ -249,21 +249,23 @@ component
 		struct metadata        = {},
 		boolean throwOnMissing = false
 	){
-		if ( !this.exists( arguments.path ) ) {
+		if ( missing( arguments.path ) ) {
 			if ( arguments.throwOnMissing ) {
 				throw( type = "cbfs.FileNotFoundException", message = "File [#arguments.path#] not found." );
 			}
-			return this.create(
+			return create(
 				path     = arguments.path,
 				contents = arguments.contents,
 				metadata = arguments.metadata
 			);
 		}
-		return this.create(
-			path      = arguments.path,
-			contents  = this.get( arguments.path ) & arguments.contents,
-			overwrite = true
+		fileAppend(
+			buildDiskPath( arguments.path ),
+			arguments.contents,
+			"UTF-8"
 		);
+
+		return this;
 	}
 
 	/**

@@ -39,7 +39,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 			} );
 
 			story( "The disk can create files", function(){
-				fgiven( "a new file content", function(){
+				given( "a new file content", function(){
 					then( "it should create the file", function(){
 						var path = "test.txt";
 						disk.create(
