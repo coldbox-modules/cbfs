@@ -49,9 +49,9 @@ component accessors="true" {
 		"dir"  : { "public" : "666", "private" : "600", "readonly" : "644" }
 	};
 	variables.VISIBILITY_ATTRIBUTE = {
-		"public" : "normal",
-		"private" : "hidden",
-		'readonly' : "readonly"
+		"public"   : "normal",
+		"private"  : "hidden",
+		"readonly" : "readonly"
 	};
 
 	/**
@@ -116,12 +116,12 @@ component accessors="true" {
 	/************************* PRIVATE METHODS *******************************/
 
 	/**
-	 * Normalize, cleanup and canonicalize file paths for consistency and security
+	 * Normalize and cleanup file paths for consistency
 	 *
 	 * @path The path to clean
 	 */
 	private function normalizePath( path ){
-		return getCanonicalPath( replace( arguments.path, "\", "/", "all" ).reReplace( "\/$", "" ) );
+		return replace( arguments.path, "\", "/", "all" ).reReplace( "\/$", "" );
 	}
 
 	/**

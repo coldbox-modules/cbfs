@@ -14,12 +14,13 @@ component
 {
 
 	// static lookups
-	variables.defaults = { path : "", autoExpand : false };
+	variables.defaults    = { path : "", autoExpand : false };
 	// Java Helpers
 	// @see https://docs.oracle.com/javase/8/docs/api/java/nio/file/Paths.html#get-java.lang.String-java.lang.String...-
 	// @see https://docs.oracle.com/javase/8/docs/api/java/nio/file/Files.html
-	variables.jPaths   = createObject( "java", "java.nio.file.Paths" );
-	variables.jFiles   = createObject( "java", "java.nio.file.Files" );
+	variables.jPaths      = createObject( "java", "java.nio.file.Paths" );
+	variables.jFiles      = createObject( "java", "java.nio.file.Files" );
+	variables.jLinkOption = createObject( "java", "java.nio.file.LinkOption" );
 
 	/**
 	 * Startup the local provider
@@ -266,24 +267,6 @@ component
 	}
 
 	/**
-	 * Rename a file from one destination to another. Shortcut to the `move()` command
-	 *
-	 * @source      The source file path
-	 * @destination The end destination path
-	 *
-	 * @return cbfs.models.IDisk
-	 *
-	 * @throws cbfs.FileNotFoundException
-	 */
-	function rename(
-		required source,
-		required destination,
-		boolean overwrite = false
-	){
-		return this.move( argumentCollection = arguments );
-	}
-
-	/**
 	 * Copy a file from one destination to another
 	 *
 	 * @source      The source file path
@@ -367,7 +350,7 @@ component
 	 * @throws cbfs.FileNotFoundException
 	 */
 	any function getAsBinary( required path ){
-		return fileReadBinary( ensureFileExists( arguments.path ), "UTF-8" );
+		return fileReadBinary( ensureFileExists( arguments.path ) );
 	};
 
 	/**
@@ -376,12 +359,11 @@ component
 	 * @path The file/directory path to verify
 	 */
 	boolean function exists( required string path ){
-		return variables.jFiles.exists( getJavaPath( buildDiskPath( arguments.path ) ), javacast( "null", "" ) );
+		return variables.jFiles.exists( getJavaPath( buildDiskPath( arguments.path ) ), [] );
 	}
 
 	/**
-	 * Delete a file or an array of file paths. If a file does not exist a `false` will be
-	 * shown for it's return.
+	 * Delete a file or an array of file paths. If a file does not exist a `false` will be shown for it's return.
 	 *
 	 * @path           A single file path or an array of file paths
 	 * @throwOnMissing Boolean to throw an exception if the file is missing.
@@ -854,7 +836,9 @@ component
 	 */
 	private function buildDiskPath( required string path ){
 		var pathTarget = normalizePath( arguments.path );
-		return pathTarget.startsWith( variables.properties.path ) ? pathTarget : variables.properties.path & "/#pathTarget#";
+		return pathTarget.startsWith( variables.properties.path ) ? pathTarget : getCanonicalPath(
+			variables.properties.path & "/#pathTarget#"
+		);
 	}
 
 	/**
@@ -928,7 +912,7 @@ component
 	 */
 	private function ensureDirectoryExists( required path ){
 		// Create directories and if they exist, ignore it
-		return variables.jFiles.createDirectories( arguments.path, javacast( "null", "" ) );
+		return variables.jFiles.createDirectories( getJavaPath( arguments.path ), [] );
 	}
 
 	/**
@@ -952,7 +936,7 @@ component
 	 */
 	private function ensureFileExists( required path ){
 		arguments.path = buildDiskPath( arguments.path );
-		if ( fileExists( arguments.path ) ) {
+		if ( !exists( arguments.path ) ) {
 			throw( type = "cbfs.FileNotFoundException", message = "File [#arguments.path#] not found." );
 		}
 		return arguments.path;
