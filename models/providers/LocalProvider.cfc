@@ -140,29 +140,6 @@ component
 	}
 
 	/**
-	 * Copy a file from one destination to another
-	 *
-	 * @source      The source file path
-	 * @destination The end destination path
-	 * @overwrite   Flag to overwrite the file at the destination, if it exists. Defaults to true.
-	 *
-	 * @return cbfs.models.IDisk
-	 *
-	 * @throws cbfs.FileNotFoundException
-	 */
-	function copy(
-		required source,
-		required destination,
-		boolean overwrite = false
-	){
-		return this.create(
-			path      = arguments.destination,
-			contents  = this.get( arguments.source ),
-			overwrite = arguments.overwrite
-		);
-	}
-
-	/**
 	 * Rename a file from one destination to another. Shortcut to the `move()` command
 	 *
 	 * @source      The source file path
@@ -178,29 +155,6 @@ component
 		boolean overwrite = false
 	){
 		return this.move( argumentCollection = arguments );
-	}
-
-	/**
-	 * Move a file from one destination to another
-	 *
-	 * @source      The source file path
-	 * @destination The end destination path
-	 *
-	 * @return cbfs.models.IDisk
-	 *
-	 * @throws cbfs.FileNotFoundException
-	 */
-	function move(
-		required source,
-		required destination,
-		boolean overwrite = false
-	){
-		this.create(
-			path      = arguments.destination,
-			contents  = this.get( arguments.source ),
-			overwrite = arguments.overwrite
-		);
-		return this.delete( arguments.source );
 	}
 
 	/**
@@ -333,6 +287,67 @@ component
 	}
 
 	/**
+	 * Copy a file from one destination to another
+	 *
+	 * @source      The source file path
+	 * @destination The end destination path
+	 * @overwrite   Flag to overwrite the file at the destination, if it exists. Defaults to true.
+	 *
+	 * @return cbfs.models.IDisk
+	 *
+	 * @throws cbfs.FileNotFoundException
+	 */
+	function copy(
+		required source,
+		required destination,
+		boolean overwrite = false
+	){
+		return this.create(
+			path      = arguments.destination,
+			contents  = this.get( arguments.source ),
+			overwrite = arguments.overwrite
+		);
+	}
+
+	/**
+	 * Move a file from one destination to another
+	 *
+	 * @source      The source file path
+	 * @destination The end destination path
+	 *
+	 * @return cbfs.models.IDisk
+	 *
+	 * @throws cbfs.FileNotFoundException
+	 */
+	function move(
+		required source,
+		required destination,
+		boolean overwrite = true
+	){
+		if( arguments.overwrite || missing( arguments.destination ) ){
+			fileMove( buildDiskPath( arguments.source ), buildDiskPath( arguments.destination ) );
+		}
+	}
+
+	/**
+	 * Rename a file from one destination to another. Shortcut to the `move()` command
+	 *
+	 * @source      The source file path
+	 * @destination The end destination path
+	 *
+	 * @return cbfs.models.IDisk
+	 *
+	 * @throws cbfs.FileNotFoundException
+	 */
+	function rename(
+		required source,
+		required destination,
+		boolean overwrite = false
+	){
+		return move( argumentCollection = arguments );
+	}
+
+	/**
 	 * Get the contents of a file
 	 *
 	 * @path The file path to retrieve
@@ -415,7 +430,7 @@ component
 		// else touch it baby!
 		arguments.path = buildDiskPath( arguments.path );
 		if ( !arguments.createPath ) {
-			if ( !this.exists( getDirectoryFromPath( arguments.path ) ) ) {
+			if ( missing( getDirectoryFromPath( arguments.path ) ) ) {
 				throw(
 					type    = "cbfs.PathNotFoundException",
 					message = "Directory does not already exist and the `createPath` flag is set to false"
