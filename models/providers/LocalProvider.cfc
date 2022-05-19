@@ -282,13 +282,11 @@ component
 	function copy(
 		required source,
 		required destination,
-		boolean overwrite = false
+		boolean overwrite = true
 	){
-		return this.create(
-			path      = arguments.destination,
-			contents  = this.get( arguments.source ),
-			overwrite = arguments.overwrite
-		);
+		if ( arguments.overwrite || missing( arguments.destination ) ) {
+			fileCopy( buildDiskPath( arguments.source ), buildDiskPath( arguments.destination ) );
+		}
 	}
 
 	/**
