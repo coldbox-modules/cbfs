@@ -66,7 +66,7 @@ component
 		required contents,
 		string visibility = "public",
 		struct metadata   = {},
-		boolean overwrite = false,
+		boolean overwrite = true,
 		string mode
 	){
 		// Normalize slashes

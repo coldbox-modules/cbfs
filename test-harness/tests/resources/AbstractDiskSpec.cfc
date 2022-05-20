@@ -61,10 +61,18 @@ component extends="coldbox.system.testing.BaseTestCase" {
 						expect( disk.exists( path ) ).toBeFalse( "#path# should not exist" );
 
 						// Create it
-						disk.create( path, "my contents" );
+						disk.create(
+							path      = path,
+							contents  = "my contents",
+							overwrite = true
+						);
 						// Test the scenario
 						expect( function(){
-							disk.create( path, "does not matter" );
+							disk.create(
+								path      = path,
+								contents  = "whatever dude!",
+								overwrite = false
+							);
 						} ).toThrow( "cbfs.FileOverrideException" );
 					} );
 				} );
@@ -203,8 +211,6 @@ component extends="coldbox.system.testing.BaseTestCase" {
 							expect( disk.get( destination ) ).toBe( disk.get( sourcePath ) );
 						} );
 					} );
-				} );
-				given( "An existing source and a existing destination", function(){
 					when( "overwrite is false", function(){
 						then( "it should throw an FileOverrideException", function(){
 							disk.create(
@@ -390,6 +396,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 						disk.create( path, "hello" );
 						var before = disk.lastModified( path );
 						sleep( 1000 );
+
 						var after = disk.touch( path ).lastModified( path );
 						expect( disk.exists( path ) ).toBeTrue( "[#path#] should exist" );
 						expect( disk.get( path ) ).toBe( "hello" );

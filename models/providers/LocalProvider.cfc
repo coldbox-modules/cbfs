@@ -21,6 +21,8 @@ component
 	variables.jPaths      = createObject( "java", "java.nio.file.Paths" );
 	variables.jFiles      = createObject( "java", "java.nio.file.Files" );
 	variables.jLinkOption = createObject( "java", "java.nio.file.LinkOption" );
+	variables.jCopyOption = createObject( "java", "java.nio.file.StandardCopyOption" );
+	variables.jOpenOption = createObject( "java", "java.nio.file.StandardOpenOption" );
 
 	/**
 	 * Startup the local provider
@@ -50,7 +52,6 @@ component
 				type    = "InvalidPropertyException"
 			);
 		}
-
 
 		// Do we need to expand the path
 		if ( variables.properties.autoExpand ) {
@@ -114,7 +115,7 @@ component
 		required contents,
 		string visibility = "public",
 		struct metadata   = {},
-		boolean overwrite = false,
+		boolean overwrite = true,
 		string mode
 	){
 		// Verify the path
@@ -140,7 +141,11 @@ component
 		}
 
 		// Write it
-		fileWrite( arguments.path, arguments.contents, "UTF-8" );
+		variables.jFiles.write(
+			getJavaPath( buildDiskPath( arguments.path ) ),
+			arguments.contents.getBytes(),
+			[]
+		);
 
 		// Set visibility or mode
 		if ( isWindows() ) {
@@ -259,10 +264,11 @@ component
 				metadata = arguments.metadata
 			);
 		}
-		fileAppend(
-			buildDiskPath( arguments.path ),
-			arguments.contents,
-			"UTF-8"
+
+		variables.jFiles.write(
+			getJavaPath( buildDiskPath( arguments.path ) ),
+			arguments.contents.getBytes(),
+			[ variables.jOpenOption.APPEND ]
 		);
 
 		return this;
@@ -277,16 +283,41 @@ component
 	 *
 	 * @return cbfs.models.IDisk
 	 *
-	 * @throws cbfs.FileNotFoundException
+	 * @throws cbfs.FileNotFoundException - When the source doesn't exist
+	 * @throws cbfs.FileOverrideException - When the destination exists and no override has been provided
 	 */
 	function copy(
 		required source,
 		required destination,
 		boolean overwrite = true
 	){
-		if ( arguments.overwrite || missing( arguments.destination ) ) {
-			fileCopy( buildDiskPath( arguments.source ), buildDiskPath( arguments.destination ) );
+		// If source is missing, blow up!
+		if ( missing( arguments.source ) ) {
+			throw(
+				type    = "cbfs.FileNotFoundException",
+				message = "Cannot copy file. Source file doesn't exist [#arguments.source#]"
+			);
 		}
+
+		// Overwrite checks for destination
+		if ( !arguments.overwrite && exists( arguments.destination ) ) {
+			throw(
+				type    = "cbfs.FileOverrideException",
+				message = "Cannot copy file. Destination already exists [#arguments.destination#] and overwrite is false"
+			);
+		}
+
+		// Copy files
+		variables.jFiles.copy(
+			getJavaPath( buildDiskPath( arguments.source ) ),
+			getJavaPath( buildDiskPath( arguments.destination ) ),
+			[
+				variables.jCopyOption.REPLACE_EXISTING,
+				variables.jCopyOption.COPY_ATTRIBUTES
+			]
+		);
+
+		return this;
 	}
 
 	/**
@@ -297,16 +328,39 @@ component
 	 *
 	 * @return cbfs.models.IDisk
 	 *
-	 * @throws cbfs.FileNotFoundException
+	 * @throws cbfs.FileNotFoundException - When the source doesn't exist
+	 * @throws cbfs.FileOverrideException - When the destination exists and no override has been provided
 	 */
 	function move(
 		required source,
 		required destination,
 		boolean overwrite = true
 	){
-		if ( arguments.overwrite || missing( arguments.destination ) ) {
-			fileMove( buildDiskPath( arguments.source ), buildDiskPath( arguments.destination ) );
+		// If source is missing, blow up!
+		if ( missing( arguments.source ) ) {
+			throw(
+				type    = "cbfs.FileNotFoundException",
+				message = "Cannot move file. Source file doesn't exist [#arguments.source#]"
+			);
 		}
+
+		// Overwrite checks for destination
+		if ( !arguments.overwrite && exists( arguments.destination ) ) {
+			throw(
+				type    = "cbfs.FileOverrideException",
+				message = "Cannot move file. Destination already exists [#arguments.destination#] and overwrite is false"
+			);
+		}
+
+		// Move files
+		variables.jFiles.move(
+			getJavaPath( buildDiskPath( arguments.source ) ),
+			getJavaPath( buildDiskPath( arguments.destination ) ),
+			[
+				variables.jCopyOption.REPLACE_EXISTING,
+				variables.jCopyOption.ATOMIC_MOVE
+			]
+		);
 	}
 
 	/**
@@ -337,7 +391,7 @@ component
 	 * @throws cbfs.FileNotFoundException
 	 */
 	any function get( required path ){
-		return fileRead( ensureFileExists( arguments.path ), "UTF-8" );
+		return variables.jFiles.readString( getJavaPath( ensureFileExists( arguments.path ) ) );
 	}
 
 	/**
@@ -350,7 +404,7 @@ component
 	 * @throws cbfs.FileNotFoundException
 	 */
 	any function getAsBinary( required path ){
-		return fileReadBinary( ensureFileExists( arguments.path ) );
+		return variables.jFiles.readAllBytes( getJavaPath( ensureFileExists( arguments.path ) ) );
 	};
 
 	/**
@@ -379,8 +433,7 @@ component
 			}
 			return false;
 		}
-
-		fileDelete( buildDiskPath( arguments.path ) );
+		variables.jFiles.delete( getJavaPath( buildDiskPath( arguments.path ) ) );
 
 		return true;
 	}
@@ -401,6 +454,7 @@ component
 			fileSetLastModified( buildDiskPath( arguments.path ), now() );
 			return this;
 		}
+
 		// else touch it baby!
 		arguments.path = buildDiskPath( arguments.path );
 		if ( !arguments.createPath ) {
@@ -411,6 +465,7 @@ component
 				);
 			}
 		}
+
 		return create( arguments.path, "" );
 	}
 
@@ -424,8 +479,17 @@ component
 	 * @throws cbfs.FileNotFoundException
 	 */
 	function lastModified( required path ){
-		ensureFileExists( arguments.path );
-		return getFileInfo( buildPath( arguments.path ) ).lastModified;
+		var inMillis = variables.jFiles
+			.getLastModifiedTime( getJavaPath( ensureFileExists( arguments.path ) ), [] )
+			.toMillis();
+		// Calculate adjustments fot timezone and daylightsavindtime
+		var offset = ( ( getTimezoneInfo().utcHourOffset ) + 1 ) * -3600;
+		// Date is returned as number of seconds since 1-1-1970
+		return dateAdd(
+			"s",
+			( round( inMillis / 1000 ) ) + offset,
+			createDateTime( 1970, 1, 1, 0, 0, 0 )
+		);
 	}
 
 	/**************************************** VERIFICATION METHODS ****************************************/

@@ -65,7 +65,7 @@ interface {
 		required contents,
 		string visibility,
 		struct metadata,
-		boolean overwrite,
+		boolean overwrite = true,
 		string mode
 	);
 
