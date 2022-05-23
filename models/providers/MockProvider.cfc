@@ -512,7 +512,7 @@ component
 	 */
 	boolean function isFile( required path ){
 		arguments.path = normalizePath( arguments.path );
-		return ensureRecordExists( arguments.path ).type == "File";
+		return missing( arguments.path ) ? false : variables.files[ arguments.path ].type == "File";
 	}
 
 	/**
@@ -581,11 +581,7 @@ component
 	 */
 	boolean function isDirectory( required path ){
 		arguments.path = normalizePath( arguments.path );
-		try {
-			return ensureRecordExists( arguments.path ).type == "Directory";
-		} catch ( "cbfs.FileNotFoundException" e ) {
-			throw( type = "cbfs.DirectoryNotFoundException", message = "Directory [#arguments.path#] not found." );
-		}
+		return missing( arguments.path ) ? false : variables.files[ arguments.path ].type == "Directory";
 	}
 
 	/**

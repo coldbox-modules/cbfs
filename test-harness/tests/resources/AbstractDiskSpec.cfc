@@ -618,9 +618,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 						var path = "does_not_exist.txt";
 						disk.delete( path );
 						expect( disk.exists( path ) ).toBeFalse( "File should not exist" );
-						expect( function(){
-							disk.isFile( path );
-						} ).toThrow( "cbfs.FileNotFoundException" );
+						expect( disk.isFile( path ) ).toBeFalse();
 					} );
 				} );
 			} );

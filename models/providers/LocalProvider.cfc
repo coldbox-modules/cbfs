@@ -630,7 +630,7 @@ component
 	 * @throws cbfs.FileNotFoundException
 	 */
 	boolean function isFile( required path ){
-		return variables.jFiles.isRegularFile( buildJavaDiskPath( arguments.path ), javacast( "null", "" ) );
+		return variables.jFiles.isRegularFile( buildJavaDiskPath( arguments.path ), [] );
 	}
 
 	/**
