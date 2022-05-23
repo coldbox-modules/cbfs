@@ -626,8 +626,6 @@ component
 	 * @path The file path
 	 *
 	 * @return true if the file is a regular file; false if the file does not exist, is not a regular file, or it cannot be determined if the file is a regular file or not.
-	 *
-	 * @throws cbfs.FileNotFoundException
 	 */
 	boolean function isFile( required path ){
 		return variables.jFiles.isRegularFile( buildJavaDiskPath( arguments.path ), [] );
@@ -694,29 +692,34 @@ component
 	 * @return true if the file is a directory; false if the file does not exist, is not a directory, or it cannot be determined if the file is a directory or not.
 	 */
 	boolean function isDirectory( required path ){
-		return variables.jFiles.isDirectory( buildJavaDiskPath( arguments.path ), javacast( "null", "" ) );
+		return variables.jFiles.isDirectory( buildJavaDiskPath( arguments.path ), [] );
 	};
 
 	/**
 	 * Create a new directory
 	 *
-	 * @directory    The directory path
-	 * @createPath   Create parent directory paths when they do not exist
+	 * @directory    The directory path to be created
+	 * @createPath   Create parent directory paths when they do not exist. The default is true
 	 * @ignoreExists If false, it will throw an error if the directory already exists, else it ignores it if it exists. This should default to true.
 	 *
-	 * @return LocalProvider
+	 * @return cbfs.models.IDisk
+	 *
+	 * @throws cbfs.DirectoryExistsException - If the directory you are trying to create already exists and <code>ignoreExists</code> is false
 	 */
 	function createDirectory(
 		required directory,
-		boolean createPath,
-		boolean ignoreExists = false
+		boolean createPath   = true,
+		boolean ignoreExists = true
 	){
-		if ( !arguments.ignoreExists AND directoryExists( buildPath( arguments.directory ) ) ) {
-			throw( "Directory Exists" );
+		// If not ignoring and directory exists, then throw exception
+		if ( !arguments.ignoreExists AND directoryExists( arguments.directory ) ) {
+			throw(
+				type    = "cbfs.DirectoryExistsException",
+				message = "Cannot create directory. The directory already exists [#arguments.directory#]"
+			);
 		}
-		if ( !directoryExists( buildPath( arguments.directory ) ) ) {
-			directoryCreate( buildPath( arguments.directory ) );
-		}
+		ensureDirectoryExists( buildJavaDiskPath( arguments.directory ) );
+		return this;
 	};
 
 	/**
@@ -743,27 +746,30 @@ component
 	 * @throwOnMissing Throws an exception if the directory does not exist
 	 *
 	 * @return A boolean value or a struct of booleans determining if the directory paths got deleted or not.
+	 *
+	 * @throws cbfs.DirectoryNotFoundException
 	 */
 	public boolean function deleteDirectory(
 		required string directory,
 		boolean recurse        = true,
 		boolean throwOnMissing = false
 	){
-		if ( isSimpleValue( directory ) ) {
-			if ( !throwOnMissing && !this.exists( arguments.directory ) ) {
-				return false;
+		// If missing throw or ignore
+		if ( missing( arguments.directory ) ) {
+			if ( arguments.throwOnMissing ) {
+				throw(
+					type    = "cbfs.DirectoryNotFoundException",
+					message = "Directory [#arguments.directory#] not found."
+				);
 			}
-			directoryDelete( buildPath( arguments.directory ), arguments.recurse );
-			return true;
+			return false;
 		}
 
-		return arguments.directory.every( function( dir ){
-			return this.deleteDirectory(
-				dir,
-				arguments.recurse,
-				arguments.throwOnMissing
-			);
-		} );
+		// Wipe it out baby!
+		// TODO: Build a Java FileVisitor and use the walkTree(), or walk() methods.
+		directoryDelete( buildDiskPath( arguments.directory ), arguments.recurse );
+
+		return true;
 	};
 
 	/**

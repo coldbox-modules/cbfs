@@ -507,8 +507,6 @@ component
 	 * Verifies if the passed path is an existent file
 	 *
 	 * @path The file path
-	 *
-	 * @throws cbfs.FileNotFoundException
 	 */
 	boolean function isFile( required path ){
 		arguments.path = normalizePath( arguments.path );
@@ -576,8 +574,6 @@ component
 	 * Is the path a directory or not
 	 *
 	 * @path The directory path
-	 *
-	 * @throws cbfs.DirectoryNotFoundException - If the directory path is missing
 	 */
 	boolean function isDirectory( required path ){
 		arguments.path = normalizePath( arguments.path );
