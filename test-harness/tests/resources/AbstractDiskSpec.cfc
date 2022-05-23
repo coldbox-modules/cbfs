@@ -690,47 +690,53 @@ component extends="coldbox.system.testing.BaseTestCase" {
 				} );
 			} );
 
-			story( "The disk can verify if a file is hidden", function(){
-				given( "a public file", function(){
-					it( "should returns false as hidden", function(){
-						var path = "/one/two/readable.txt";
-						disk.delete( path );
-						disk.create(
-							path       = path,
-							contents   = "my contents",
-							visibility = "public",
-							overwrite  = true
-						);
-						expect( disk.isHidden( path ) ).toBeFalse( "Path should be hidden." );
+			story(
+				story = "The disk can verify if a file is hidden",
+				skip  = isWindows(),
+				body  = function(){
+					given( "a public file", function(){
+						it( "should returns false as hidden", function(){
+							var path = "/one/two/readable.txt";
+							disk.delete( path );
+							disk.create(
+								path       = path,
+								contents   = "my contents",
+								visibility = "public",
+								overwrite  = true
+							);
+							expect( disk.isHidden( path ) ).toBeFalse( "Path should be hidden." );
+						} );
 					} );
-				} );
-				given( "a readonly file", function(){
-					it( "should return false as hidden", function(){
-						var path = "/one/two/readable.txt";
-						disk.delete( path );
-						disk.create(
-							path       = path,
-							contents   = "my contents",
-							visibility = "readonly",
-							overwrite  = true
-						);
-						expect( disk.isHidden( path ) ).toBeFalse( "Path should be hidden." );
+					given( "a readonly file", function(){
+						it( "should return false as hidden", function(){
+							var path = "/one/two/readable.txt";
+							disk.delete( path );
+							disk.create(
+								path       = path,
+								contents   = "my contents",
+								visibility = "readonly",
+								overwrite  = true
+							);
+							expect( disk.isHidden( path ) ).toBeFalse( "Path should be hidden." );
+						} );
 					} );
-				} );
-				given( "a private file", function(){
-					it( "should return true as true", function(){
-						var path = "/one/two/non-writeable.txt";
-						disk.delete( path );
-						disk.create(
-							path       = path,
-							contents   = "my contents",
-							visibility = "private",
-							overwrite  = true
-						);
-						expect( disk.isHidden( path ) ).toBeTrue( "Path should be hidden." );
+					// There is no unified way to make files hidden using Java. Hidden has different meanings for different operating systems.
+					given( "a private file", function(){
+						it( "should return true as hidden", function(){
+							// Simply renaming the files to have a dot (“.”) as a first character of the file name will make the file hidden in Unix systems.
+							var path = "/one/two/.iam-hidden.txt";
+							disk.delete( path );
+							disk.create(
+								path       = path,
+								contents   = "my contents",
+								visibility = "private",
+								overwrite  = true
+							);
+							expect( disk.isHidden( path ) ).toBeTrue( "Path should be hidden." );
+						} );
 					} );
-				} );
-			} );
+				}
+			);
 
 			/********************************************************/
 			/** Directory Methods **/
@@ -1235,6 +1241,27 @@ component extends="coldbox.system.testing.BaseTestCase" {
 
 	private boolean function hasFeature( required feature ){
 		return variables.testFeatures[ arguments.feature ];
+	}
+
+	/**
+	 * Check if is Windows
+	 */
+	function isWindows(){
+		return reFindNoCase( "Windows", createObject( "java", "java.lang.System" ).getProperties()[ "os.name" ] );
+	}
+
+	/**
+	 * Check if is Linux
+	 */
+	function isLinux(){
+		return reFindNoCase( "Linux", createObject( "java", "java.lang.System" ).getProperties()[ "os.name" ] );
+	}
+
+	/**
+	 * Check if is Mac
+	 */
+	function isMac(){
+		return reFindNoCase( "Mac", createObject( "java", "java.lang.System" ).getProperties()[ "os.name" ] );
 	}
 
 }

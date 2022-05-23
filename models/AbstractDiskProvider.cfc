@@ -113,42 +113,42 @@ component accessors="true" {
 		return !this.exists( arguments.path );
 	}
 
-	/************************* PRIVATE METHODS *******************************/
+	/************************* UTILITY METHODS *******************************/
 
 	/**
 	 * Normalize and cleanup file paths for consistency
 	 *
 	 * @path The path to clean
 	 */
-	private function normalizePath( path ){
+	function normalizePath( path ){
 		return replace( arguments.path, "\", "/", "all" ).reReplace( "\/$", "" );
 	}
 
 	/**
 	 * Check if is Windows
 	 */
-	private function isWindows(){
+	function isWindows(){
 		return reFindNoCase( "Windows", variables.javaSystem.getProperties()[ "os.name" ] );
 	}
 
 	/**
 	 * Check if is Linux
 	 */
-	private function isLinux(){
+	function isLinux(){
 		return reFindNoCase( "Linux", variables.javaSystem.getProperties()[ "os.name" ] );
 	}
 
 	/**
 	 * Check if is Mac
 	 */
-	private function isMac(){
+	function isMac(){
 		return reFindNoCase( "Mac", variables.javaSystem.getProperties()[ "os.name" ] );
 	}
 
 	/**
 	 * Find out the mime type of a path
 	 */
-	private function getMimeType( required path ){
+	function getMimeType( required path ){
 		return variables.javaUrlConnection.guessContentTypeFromName( arguments.path );
 	}
 
