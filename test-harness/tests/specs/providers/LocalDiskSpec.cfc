@@ -4,7 +4,7 @@ component extends="tests.resources.AbstractDiskSpec" {
 	variables.providerName = "Local";
 	variables.TEST_PATH    = expandPath( "/tests/storage" );
 	// Which features does this disk support for testing
-	variables.testFeatures = { symbolicLink : false };
+	variables.testFeatures = { symbolicLink : true };
 
 	function beforeAll(){
 		if ( directoryExists( variables.TEST_PATH ) ) {

@@ -576,7 +576,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 							contents  = "I love symbolic links",
 							overwrite = true
 						);
-						disk.createSymbolicLink( "link_file.txt", path );
+						var test = disk.createSymbolicLink( "link_file.txt", path );
 						expect( disk.isSymbolicLink( "link_file.txt" ) ).toBeTrue();
 					} );
 				}

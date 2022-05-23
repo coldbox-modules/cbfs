@@ -74,18 +74,6 @@ component
 	}
 
 	/**
-	 * Get a Java Path of the passed in string path
-	 *
-	 * @see  https://docs.oracle.com/javase/8/docs/api/java/nio/file/Path.html#toAbsolutePath--
-	 * @path The string path to convert into a Java Path
-	 *
-	 * @return java.nio.file.Path
-	 */
-	private function getJavaPath( required path ){
-		return variables.jPaths.get( arguments.path, [] );
-	}
-
-	/**
 	 * Called before the cbfs module is unloaded, or via reinits. This can be implemented
 	 * as you see fit to gracefully shutdown connections, sockets, etc.
 	 *
@@ -142,7 +130,7 @@ component
 
 		// Write it
 		variables.jFiles.write(
-			getJavaPath( buildDiskPath( arguments.path ) ),
+			buildJavaDiskPath( arguments.path ),
 			arguments.contents.getBytes(),
 			[]
 		);
@@ -266,7 +254,7 @@ component
 		}
 
 		variables.jFiles.write(
-			getJavaPath( buildDiskPath( arguments.path ) ),
+			buildJavaDiskPath( arguments.path ),
 			arguments.contents.getBytes(),
 			[ variables.jOpenOption.APPEND ]
 		);
@@ -309,8 +297,8 @@ component
 
 		// Copy files
 		variables.jFiles.copy(
-			getJavaPath( buildDiskPath( arguments.source ) ),
-			getJavaPath( buildDiskPath( arguments.destination ) ),
+			buildJavaDiskPath( arguments.source ),
+			buildJavaDiskPath( arguments.destination ),
 			[
 				variables.jCopyOption.REPLACE_EXISTING,
 				variables.jCopyOption.COPY_ATTRIBUTES
@@ -354,8 +342,8 @@ component
 
 		// Move files
 		variables.jFiles.move(
-			getJavaPath( buildDiskPath( arguments.source ) ),
-			getJavaPath( buildDiskPath( arguments.destination ) ),
+			buildJavaDiskPath( arguments.source ),
+			buildJavaDiskPath( arguments.destination ),
 			[
 				variables.jCopyOption.REPLACE_EXISTING,
 				variables.jCopyOption.ATOMIC_MOVE
@@ -413,7 +401,7 @@ component
 	 * @path The file/directory path to verify
 	 */
 	boolean function exists( required string path ){
-		return variables.jFiles.exists( getJavaPath( buildDiskPath( arguments.path ) ), [] );
+		return variables.jFiles.exists( buildJavaDiskPath( arguments.path ), [] );
 	}
 
 	/**
@@ -433,7 +421,7 @@ component
 			}
 			return false;
 		}
-		variables.jFiles.delete( getJavaPath( buildDiskPath( arguments.path ) ) );
+		variables.jFiles.delete( buildJavaDiskPath( arguments.path ) );
 
 		return true;
 	}
@@ -466,10 +454,44 @@ component
 			}
 		}
 
-		return create( arguments.path, "" );
+		return create( path = arguments.path, contents = "" );
 	}
 
 	/**************************************** UTILITY METHODS ****************************************/
+
+	/**
+	 * Get the uri for the given file
+	 *
+	 * @path The file path to build the uri for
+	 *
+	 * @throws cbfs.FileNotFoundException
+	 */
+	string function uri( required string path ){
+		return buildDiskPath( arguments.path );
+	}
+
+	/**
+	 * Get a temporary uri for the given file
+	 *
+	 * @path       The file path to build the uri for
+	 * @expiration The number of minutes this uri should be valid for.
+	 *
+	 * @throws cbfs.FileNotFoundException
+	 */
+	string function temporaryUri( required path, numeric expiration ){
+		return this.uri( arguments.path ) & "?expiration=#arguments.expiration#";
+	}
+
+	/**
+	 * Returns the size of a file (in bytes). The size may differ from the actual size on the file system due to compression, support for sparse files, or other reasons.
+	 *
+	 * @path The file path location
+	 *
+	 * @throws cbfs.FileNotFoundException
+	 */
+	numeric function size( required path ){
+		return variables.jFiles( buildJavaDiskPath( arguments.path ) );
+	}
 
 	/**
 	 * Retrieve the file's last modified timestamp
@@ -492,6 +514,84 @@ component
 		);
 	}
 
+	/**
+	 * Retrieve the file's mimetype
+	 *
+	 * @path The file path location
+	 *
+	 * @throws cbfs.FileNotFoundException
+	 */
+	function mimeType( required path ){
+		return getMimeType( buildDiskPath( arguments.path ) );
+	}
+
+	/**
+	 * Return information about the file.  Will contain keys such as lastModified, size, path, name, type, canWrite, canRead, isHidden and more
+	 * depending on the provider used
+	 *
+	 * @path The file path
+	 *
+	 * @return A struct of file metadata according to provider
+	 *
+	 * @throws cbfs.FileNotFoundException
+	 */
+	struct function info( required path ){
+		return getFileInfo( buildDiskPath( arguments.path ) );
+	}
+
+	/**
+	 * Generate checksum for a file in different hashing algorithms
+	 *
+	 * @path      The file path
+	 * @algorithm Default is MD5, but SHA-1, SHA-256, and SHA-512 can also be used.
+	 *
+	 * @throws cbfs.FileNotFoundException
+	 */
+	string function checksum( required path, algorithm = "MD5" ){
+		return hash( getAsBinary( arguments.path ), arguments.algorithm );
+	}
+
+	/**
+	 * Extract the extension from the file path
+	 *
+	 * @path The file path
+	 */
+	string function extension( required path ){
+		return listLast( this.name( arguments.path ), "." );
+	}
+
+	/**
+	 * Sets the access attributes of the file on Unix based disks
+	 *
+	 * @path The file path
+	 * @mode Access mode, the same attributes you use for the Linux command `chmod`
+	 */
+	function chmod( required string path, required string mode ){
+		fileSetAccessMode( buildDiskPath( arguments.path ), arguments.mode );
+		return this;
+	}
+
+	/**
+	 * Create a symbolic link in the system if it supports it.
+	 *
+	 * The target parameter is the target of the link. It may be an absolute or relative path and may not exist. When the target is a relative path then file system operations on the resulting link are relative to the path of the link.
+	 *
+	 * @link   The path of the symbolic link to create
+	 * @target The target of the symbolic link
+	 *
+	 * @return cbfs.models.IDisk
+	 *
+	 * @throws cbfs.FileNotFoundException    - if the target does not exist
+	 * @throws UnsupportedOperationException - if the implementation does not support symbolic links
+	 */
+	function createSymbolicLink( required link, required target ){
+		return variables.jFiles.createSymbolicLink(
+			buildJavaDiskPath( arguments.link ),
+			buildJavaDiskPath( arguments.target ),
+			[]
+		);
+	}
+
 	/**************************************** VERIFICATION METHODS ****************************************/
 
 	/**
@@ -504,10 +604,7 @@ component
 	 * @throws cbfs.FileNotFoundException
 	 */
 	boolean function isFile( required path ){
-		return variables.jFiles.isRegularFile(
-			getJavaPath( buildDiskPath( arguments.path ) ),
-			javacast( "null", "" )
-		);
+		return variables.jFiles.isRegularFile( buildJavaDiskPath( arguments.path ), javacast( "null", "" ) );
 	}
 
 	/**
@@ -516,7 +613,7 @@ component
 	 * @path The file path
 	 */
 	boolean function isWritable( required path ){
-		return variables.jFiles.isWritable( getJavaPath( buildDiskPath( arguments.path ) ) );
+		return variables.jFiles.isWritable( buildJavaDiskPath( arguments.path ) );
 	}
 
 	/**
@@ -525,7 +622,7 @@ component
 	 * @path The file path
 	 */
 	boolean function isReadable( required path ){
-		return variables.jFiles.isReadable( getJavaPath( buildDiskPath( arguments.path ) ) );
+		return variables.jFiles.isReadable( buildJavaDiskPath( arguments.path ) );
 	}
 
 	/**
@@ -536,7 +633,7 @@ component
 	 * @throws cbfs.FileNotFoundException - If the filepath is missing
 	 */
 	boolean function isExecutable( required path ){
-		return variables.jFiles.isExecutable( getJavaPath( buildDiskPath( arguments.path ) ) );
+		return variables.jFiles.isExecutable( buildJavaDiskPath( arguments.path ) );
 	}
 
 	/**
@@ -547,7 +644,7 @@ component
 	 * @throws cbfs.FileNotFoundException - If the filepath is missing
 	 */
 	boolean function isHidden( required path ){
-		return variables.jFiles.isHidden( getJavaPath( buildDiskPath( arguments.path ) ) );
+		return variables.jFiles.isHidden( buildJavaDiskPath( arguments.path ) );
 	}
 
 	/**
@@ -558,7 +655,7 @@ component
 	 * @throws cbfs.FileNotFoundException - If the filepath is missing
 	 */
 	boolean function isSymbolicLink( required path ){
-		return variables.jFiles.isSymbolicLink( getJavaPath( buildDiskPath( arguments.path ) ) );
+		return variables.jFiles.isSymbolicLink( buildJavaDiskPath( arguments.path ) );
 	}
 
 	/**************************************** DIRECTORY METHODS ****************************************/
@@ -571,10 +668,7 @@ component
 	 * @return true if the file is a directory; false if the file does not exist, is not a directory, or it cannot be determined if the file is a directory or not.
 	 */
 	boolean function isDirectory( required path ){
-		return variables.jFiles.isDirectory(
-			getJavaPath( buildDiskPath( arguments.path ) ),
-			javacast( "null", "" )
-		);
+		return variables.jFiles.isDirectory( buildJavaDiskPath( arguments.path ), javacast( "null", "" ) );
 	};
 
 	/**
@@ -878,19 +972,6 @@ component
 	};
 
 	/**
-	 * Sets the access attributes of the file on Unix based disks
-	 *
-	 * @path The file path
-	 * @mode Access mode, the same attributes you use for the Linux command `chmod`
-	 */
-	function chmod( required string path, required string mode ){
-		fileSetAccessMode( buildPath( path ), arguments.mode );
-		return this;
-	}
-
-	/************************* PRIVATE METHODS ****************************/
-
-	/**
 	 * This function builds the path on the provided disk from it's root + incoming path
 	 * with normalization, cleanup and canonicalization.
 	 *
@@ -898,12 +979,38 @@ component
 	 *
 	 * @return The canonical path on the disk
 	 */
-	private function buildDiskPath( required string path ){
+	function buildDiskPath( required string path ){
 		var pathTarget = normalizePath( arguments.path );
 		return pathTarget.startsWith( variables.properties.path ) ? pathTarget : getCanonicalPath(
 			variables.properties.path & "/#pathTarget#"
 		);
 	}
+
+	/**
+	 * Build a Java Path object from the built disk path. It's like calling getJavaPath( buildDiskPath () )
+	 *
+	 * @see  https://docs.oracle.com/javase/8/docs/api/java/nio/file/Path.html#toAbsolutePath--
+	 * @path The path on the disk to build
+	 *
+	 * @return java.nio.file.Path
+	 */
+	function buildJavaDiskPath( required string path ){
+		return getJavaPath( buildDiskPath( arguments.path ) );
+	}
+
+	/**
+	 * Get a Java Path of the passed in stringed path. It does not calculate a full disk path.
+	 *
+	 * @see  https://docs.oracle.com/javase/8/docs/api/java/nio/file/Path.html#toAbsolutePath--
+	 * @path The string path to convert into a Java Path
+	 *
+	 * @return java.nio.file.Path
+	 */
+	function getJavaPath( required path ){
+		return variables.jPaths.get( arguments.path, [] );
+	}
+
+	/************************* PRIVATE METHODS ****************************/
 
 	/**
 	 * Gets the relative path from a path object
