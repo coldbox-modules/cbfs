@@ -22,7 +22,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 	}
 
 	function run(){
-		describe( "#variables.providerName# spec", function(){
+		describe( "#variables.providerName# Abstract Specs", function(){
 			beforeEach( function( currentSpec ){
 				disk = getDisk();
 			} );
@@ -561,7 +561,8 @@ component extends="coldbox.system.testing.BaseTestCase" {
 						contents  = "Hello",
 						overwrite = true
 					);
-					expect( disk.chmod( path, "777" ).info( path ).mode ).toBe( "777" );
+					disk.chmod( path, "777" );
+					expect( disk.isWritable( path ) ).toBeTrue();
 				} );
 			} );
 

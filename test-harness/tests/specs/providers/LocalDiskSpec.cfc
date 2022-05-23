@@ -13,6 +13,34 @@ component extends="tests.resources.AbstractDiskSpec" {
 		super.beforeAll();
 	}
 
+	function run(){
+		super.run();
+
+		// Localized Suites
+
+		describe( "Local Provider Extended Specs", function(){
+			beforeEach( function( currentSpec ){
+				disk = getDisk();
+			} );
+
+			story( "I want to read the posix attributes of a path", function(){
+				given( "a valid path", function(){
+					then( "it should read all the posix attributes", function(){
+						var path = "localFile.txt";
+						disk.create(
+							path      = path,
+							contents  = "my contents",
+							overwrite = true
+						);
+						var test = disk.extendedInfo( path );
+						// writeDump( var = test, top = 5 );
+						expect( test ).toHaveKey( "creationTime,owner,permissions,size" );
+					} );
+				} );
+			} );
+		} );
+	}
+
 	/**
 	 * ------------------------------------------------------------
 	 * Concrete Expectations that can be implemented by each provider
@@ -20,7 +48,7 @@ component extends="tests.resources.AbstractDiskSpec" {
 	 */
 	function validateInfoStruct( required info, required disk ){
 		expect( info ).toHaveKey(
-			"path,contents,checksum,visibility,lastModified,size,name,mimetype,type,write,read,execute,hidden,metadata,mode,symbolicLink"
+			"path,lastModified,size,name,type,canWrite,canRead,isHidden,isSystem"
 		);
 	}
 

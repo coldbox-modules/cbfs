@@ -540,6 +540,32 @@ component
 	}
 
 	/**
+	 * This returns the extended info from a file by reading it's posix attributes
+	 *
+	 * @path The file path
+	 *
+	 * @return The struct of extended information about a file
+	 */
+	struct function extendedInfo( required path ){
+		var infoMap = variables.jFiles.readAttributes(
+			buildJavaDiskPath( arguments.path ),
+			"posix:*",
+			[]
+		);
+		return structMap( infoMap, function( key, value ){
+			switch ( arguments.key ) {
+				case "permissions": {
+					return createObject( "java", "java.nio.file.attribute.PosixFilePermissions" ).toString(
+						arguments.value
+					);
+				}
+				default:
+					return arguments.value.toString();
+			}
+		} );
+	}
+
+	/**
 	 * Generate checksum for a file in different hashing algorithms
 	 *
 	 * @path      The file path
