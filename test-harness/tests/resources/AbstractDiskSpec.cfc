@@ -778,10 +778,10 @@ component extends="coldbox.system.testing.BaseTestCase" {
 						);
 
 						expect( disk.deleteDirectory( path ) ).toBeTrue();
-						expect( disk.exists( path ) ).toBeFalse();
-						expect( disk.exists( path & "/test.txt" ) ).toBeFalse();
-						expect( disk.exists( path & "/embedded" ) ).toBeFalse();
-						expect( disk.exists( path & "/embedded/test.txt" ) ).toBeFalse();
+						expect( disk.exists( path ) ).toBeFalse( "#path# should not exist" );
+						expect( disk.exists( path & "/test.txt" ) ).toBeFalse( "test.txt should not exist" );
+						expect( disk.exists( path & "/embedded" ) ).toBeFalse( "embedded directory should not exist" );
+						expect( disk.exists( path & "/embedded/test.txt" ) ).toBeFalse( "embedded test.txt should not exist" );
 					} );
 				} );
 				given( "a valid directory and recurse = false", function(){
@@ -955,7 +955,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 				} );
 			} );
 
-			fstory( "The disk can clean directories", function(){
+			story( "The disk can clean directories", function(){
 				given( "a valid directory", function(){
 					then( "it will clean the directory", function(){
 						var dirPath = "bddtests";

@@ -10,6 +10,9 @@
  */
 component accessors="true" {
 
+	// DI
+	property name="log" inject="logbox:logger:{this}";
+
 	/**
 	 * The result ENUM
 	 * - CONTINUE
@@ -81,6 +84,7 @@ component accessors="true" {
 	 * @throws IOException - if an I/O error occurs
 	 */
 	function visitFileFailed( file, exception ){
+		variables.log.error( "Error visiting file: #arguments.file.toString()#", arguments.exception.tostring() );
 		return variables.jFileVisitResult.CONTINUE;
 	}
 

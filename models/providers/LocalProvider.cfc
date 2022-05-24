@@ -818,8 +818,26 @@ component
 		}
 
 		// Wipe it out baby!
-		// TODO: Build a Java FileVisitor and use the walkTree(), or walk() methods.
-		directoryDelete( buildDiskPath( arguments.directory ), arguments.recurse );
+		if ( arguments.recurse ) {
+			variables.jFiles.walkFileTree(
+				buildJavaDiskPath( arguments.directory ), // start path
+				createDynamicProxy(
+					wirebox.getInstance( "DeleteAllVisitor@cbfs" ),
+					[ "java.nio.file.FileVisitor" ]
+				) // visitor
+			);
+		} else {
+			// Proxy it and delete like an egyptian!
+			variables.jFiles.walkFileTree(
+				buildJavaDiskPath( arguments.directory ), // start path
+				createObject( "java", "java.util.HashSet" ), // options
+				javacast( "int", 1 ), // maxDepth
+				createDynamicProxy(
+					wirebox.getInstance( "DeleteFileVisitor@cbfs" ),
+					[ "java.nio.file.FileVisitor" ]
+				) // visitor
+			);
+		}
 
 		return true;
 	};
@@ -846,10 +864,15 @@ component
 			return false;
 		}
 
-		// Proxy it and walk like an egyptian!
+		// Proxy it and delete like an egyptian!
 		variables.jFiles.walkFileTree(
 			buildJavaDiskPath( arguments.directory ),
-			createDynamicProxy( wirebox.getInstance( "DeleteFileVisitor@cbfs" ), [ "java.nio.file.FileVisitor" ] )
+			createDynamicProxy(
+				wirebox
+					.getInstance( "DeleteAllVisitor@cbfs" )
+					.setExcludeRoot( buildDiskPath( arguments.directory ) ),
+				[ "java.nio.file.FileVisitor" ]
+			)
 		);
 
 		return this;
@@ -1098,7 +1121,7 @@ component
 		var pathTarget = normalizePath( arguments.path );
 		return pathTarget.startsWith( variables.properties.path ) ? pathTarget : getCanonicalPath(
 			variables.properties.path & "/#pathTarget#"
-		);
+		).reReplace( "\/$", "" );
 	}
 
 	/**
