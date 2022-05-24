@@ -308,23 +308,6 @@ component extends="coldbox.system.testing.BaseTestCase" {
 				} );
 			} );
 
-			story( "The disk can rename files", function(){
-				it( "can rename a file", function(){
-					var oldPath = "test_file.txt";
-					var newPath = "test_file_two.txt";
-					disk.delete( oldPath );
-					disk.delete( newPath );
-					disk.create(
-						path      = oldPath,
-						contents  = "my contents",
-						overwrite = true
-					);
-					disk.rename( oldPath, newPath );
-					expect( disk.get( newPath ) ).toBe( "my contents" );
-					expect( disk.exists( oldPath ) ).toBeFalse( "Source path [#oldPath#] should no longer exist." );
-				} );
-			} );
-
 			story( "The disk can check for existence", function(){
 				given( "a file that exists", function(){
 					it( "it can verify it", function(){
@@ -972,7 +955,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 				} );
 			} );
 
-			story( "The disk can clean directories", function(){
+			fstory( "The disk can clean directories", function(){
 				given( "a valid directory", function(){
 					then( "it will clean the directory", function(){
 						var dirPath = "bddtests";
@@ -992,7 +975,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 					then( "it should throw a cbfs.DirectoryNotFoundException", function(){
 						var dirPath = "boguspath";
 						expect( function(){
-							disk.cleanDirectory( dirPath );
+							disk.cleanDirectory( directory = dirPath, throwOnMissing = true );
 						} ).toThrow( "cbfs.DirectoryNotFoundException" );
 					} );
 				} );

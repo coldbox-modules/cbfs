@@ -167,23 +167,6 @@ interface {
 	);
 
 	/**
-	 * Rename a file from one destination to another. Shortcut to the `move()` command
-	 *
-	 * @source      The source file path
-	 * @destination The end destination path
-	 * @override    Flag to overwrite the file at the destination, if it exists. Defaults to true.
-	 *
-	 * @return cbfs.models.IDisk
-	 *
-	 * @throws cbfs.FileNotFoundException
-	 */
-	any function rename(
-		required source,
-		required destination,
-		boolean overwrite
-	);
-
-	/**
 	 * Get the contents of a file
 	 *
 	 * @path The file path to retrieve
@@ -492,35 +475,18 @@ interface {
 	/**
 	 * Move a directory
 	 *
-	 * @oldPath    The source directory
-	 * @newPath    The destination directory
-	 * @createPath If false, expects all parent directories to exist, true will generate all necessary directories. Default is true.
+	 * @source      The source directory
+	 * @destination The destination directory
+	 * @createPath  If false, expects all parent directories to exist, true will generate all necessary directories. Default is true.
 	 *
 	 * @return cbfs.models.IDisk
 	 *
 	 * @throws cbfs.DirectoryNotFoundException - When the old path does not exist
 	 */
 	function moveDirectory(
-		required oldPath,
-		required newPath,
-		boolean createPath
-	);
-
-	/**
-	 * Rename a directory, facade to `moveDirectory()`
-	 *
-	 * @oldPath    The source directory
-	 * @newPath    The destination directory
-	 * @createPath If false, expects all parent directories to exist, true will generate all necessary directories. Default is true.
-	 *
-	 * @return cbfs.models.IDisk
-	 *
-	 * @throws cbfs.DirectoryNotFoundException - When the old path does not exist
-	 */
-	function renameDirectory(
-		required oldPath,
-		required newPath,
-		boolean createPath
+		required source,
+		required destination,
+		boolean createPath = true
 	);
 
 	/**
@@ -528,7 +494,7 @@ interface {
 	 *
 	 * @directory      The directory or an array of directories
 	 * @recurse        Recurse the deletion or not, defaults to true
-	 * @throwOnMissing Throws an exception if the directory does not exist
+	 * @throwOnMissing Throws an exception if the directory does not exist, defaults to false
 	 *
 	 * @return A boolean value or a struct of booleans determining if the directory paths got deleted or not.
 	 *
@@ -543,13 +509,14 @@ interface {
 	/**
 	 * Empty the specified directory of all files and folders.
 	 *
-	 * @directory The directory
+	 * @directory      The directory
+	 * @throwOnMissing Throws an exception if the directory does not exist, defaults to false
 	 *
 	 * @return cbfs.models.IDisk
 	 *
 	 * @throws cbfs.DirectoryNotFoundException
 	 */
-	function cleanDirectory( required directory );
+	function cleanDirectory( required directory, boolean throwOnMissing );
 
 	/**
 	 * Get an array listing of all files and directories in a directory.

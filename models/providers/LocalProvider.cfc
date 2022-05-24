@@ -13,6 +13,9 @@ component
 	singleton
 {
 
+	// DI
+	property name="wirebox" inject="wirebox";
+
 	// static lookups
 	variables.defaults    = { path : "", autoExpand : false };
 	// Java Helpers
@@ -349,24 +352,6 @@ component
 				variables.jCopyOption.ATOMIC_MOVE
 			]
 		);
-	}
-
-	/**
-	 * Rename a file from one destination to another. Shortcut to the `move()` command
-	 *
-	 * @source      The source file path
-	 * @destination The end destination path
-	 *
-	 * @return cbfs.models.IDisk
-	 *
-	 * @throws cbfs.FileNotFoundException
-	 */
-	function rename(
-		required source,
-		required destination,
-		boolean overwrite = false
-	){
-		return move( argumentCollection = arguments );
 	}
 
 	/**
@@ -723,18 +708,85 @@ component
 	};
 
 	/**
-	 * Renames a directory path
+	 * Copies a directory to a destination
 	 *
-	 * @oldPath    The source directory
-	 * @newPath    The destination directory
-	 * @createPath If false, expects all parent directories to exist, true will generate all necessary directories. Default is true.
+	 * The `filter` argument can be a closure and lambda with the following format
+	 * <pre>
+	 * boolean:function( path )
+	 * </pre>
+	 *
+	 * @source      The source directory
+	 * @destination The destination directory
+	 * @recurse     If true, copies all subdirectories, otherwise only files in the source directory. Default is false.
+	 * @filter      A string file extension filter to apply like *.jpg or server-*.json or a lambda/closure that receives the file path and should return true to copy it.
+	 * @createPath  If false, expects all parent directories to exist, true will generate all necessary directories. Default is true.
+	 *
+	 * @return cbfs.models.IDisk
+	 *
+	 * @throws cbfs.DirectoryNotFoundException - When the source directory does not exist
 	 */
-	function renameDirectory(
-		required oldPath,
-		required newPath,
-		boolean createPath
+	function copyDirectory(
+		required source,
+		required destination,
+		boolean recurse = false,
+		any filter,
+		boolean createPath = true
 	){
-		directoryRename( buildPath( arguments.oldPath ), buildPath( arguments.newPath ) );
+		// If source is missing, blow up!
+		if ( missing( arguments.source ) ) {
+			throw(
+				type    = "cbfs.DirectoryNotFoundException",
+				message = "Cannot move directory. Source directory doesn't exist [#arguments.source#]"
+			);
+		}
+
+		// TODO: MOve to a walkFileTree implementation later.
+		directoryCopy(
+			buildDiskPath( arguments.source ),
+			buildDiskPath( arguments.destination ),
+			arguments.recurse,
+			arguments.filter,
+			arguments.createPath
+		);
+
+		return this;
+	}
+
+	/**
+	 * Move or rename a directory
+	 *
+	 * @source      The source directory
+	 * @destination The destination directory
+	 * @createPath  If false, expects all parent directories to exist, true will generate all necessary directories. Default is true.
+	 *
+	 * @return cbfs.models.IDisk
+	 *
+	 * @throws cbfs.DirectoryNotFoundException          - When the source does not exist
+	 * @throws java.nio.file.DirectoryNotEmptyException - When the destination exists and is not empty
+	 */
+	function moveDirectory(
+		required source,
+		required destination,
+		boolean createPath = true
+	){
+		// If source is missing, blow up!
+		if ( missing( arguments.source ) ) {
+			throw(
+				type    = "cbfs.DirectoryNotFoundException",
+				message = "Cannot move directory. Source directory doesn't exist [#arguments.source#]"
+			);
+		}
+
+		// Move directory
+		variables.jFiles.move(
+			buildJavaDiskPath( arguments.source ),
+			buildJavaDiskPath( arguments.destination ),
+			[
+				variables.jCopyOption.REPLACE_EXISTING,
+				variables.jCopyOption.ATOMIC_MOVE
+			]
+		);
+
 		return this;
 	};
 
@@ -743,7 +795,7 @@ component
 	 *
 	 * @directory      The directory or an array of directories
 	 * @recurse        Recurse the deletion or not, defaults to true
-	 * @throwOnMissing Throws an exception if the directory does not exist
+	 * @throwOnMissing Throws an exception if the directory does not exist, defaults to false
 	 *
 	 * @return A boolean value or a struct of booleans determining if the directory paths got deleted or not.
 	 *
@@ -771,6 +823,37 @@ component
 
 		return true;
 	};
+
+	/**
+	 * Empty the specified directory of all files and folders.
+	 *
+	 * @directory      The directory
+	 * @throwOnMissing Throws an exception if the directory does not exist, defaults to false
+	 *
+	 * @return cbfs.models.IDisk
+	 *
+	 * @throws cbfs.DirectoryNotFoundException
+	 */
+	function cleanDirectory( required directory, boolean throwOnMissing = false ){
+		// If missing throw or ignore
+		if ( missing( arguments.directory ) ) {
+			if ( arguments.throwOnMissing ) {
+				throw(
+					type    = "cbfs.DirectoryNotFoundException",
+					message = "Directory [#arguments.directory#] not found."
+				);
+			}
+			return false;
+		}
+
+		// Proxy it and walk like an egyptian!
+		variables.jFiles.walkFileTree(
+			buildJavaDiskPath( arguments.directory ),
+			createDynamicProxy( wirebox.getInstance( "DeleteFileVisitor@cbfs" ), [ "java.nio.file.FileVisitor" ] )
+		);
+
+		return this;
+	}
 
 	/**
 	 * Get an array listing of all files and directories in a directory.

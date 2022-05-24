@@ -269,24 +269,6 @@ component
 	}
 
 	/**
-	 * Rename a file from one destination to another. Shortcut to the `move()` command
-	 *
-	 * @source      The source file path
-	 * @destination The end destination path
-	 *
-	 * @return cbfs.models.IDisk
-	 *
-	 * @throws cbfs.FileNotFoundException
-	 */
-	function rename(
-		required source,
-		required destination,
-		boolean overwrite = false
-	){
-		return move( argumentCollection = arguments );
-	}
-
-	/**
 	 * Get the contents of a file
 	 *
 	 * @path The file path to retrieve
@@ -710,46 +692,46 @@ component
 	/**
 	 * Move a directory
 	 *
-	 * @oldPath    The source directory
-	 * @newPath    The destination directory
-	 * @createPath If false, expects all parent directories to exist, true will generate all necessary directories. Default is true.
+	 * @source      The source directory
+	 * @destination The destination directory
+	 * @createPath  If false, expects all parent directories to exist, true will generate all necessary directories. Default is true.
 	 *
 	 * @return cbfs.models.IDisk
 	 *
 	 * @throws cbfs.DirectoryNotFoundException - When the old path does not exist
 	 */
 	function moveDirectory(
-		required oldPath,
-		required newPath,
-		boolean createPath
+		required source,
+		required destination,
+		boolean createPath = true
 	){
-		arguments.oldPath = normalizePath( arguments.oldPath );
-		arguments.newPath = normalizePath( arguments.newPath );
+		arguments.source      = normalizePath( arguments.source );
+		arguments.destination = normalizePath( arguments.destination );
 		try {
-			var oldRecord = ensureRecordExists( arguments.oldPath );
+			var oldRecord = ensureRecordExists( arguments.source );
 		} catch ( "cbfs.FileNotFoundException" e ) {
 			throw(
 				type    = "cbfs.DirectoryNotFoundException",
-				message = "Directory [#arguments.oldPath#] not found."
+				message = "Directory [#arguments.source#] not found."
 			);
 		}
 
 		// Store new record with the previous data and new name/path
-		oldRecord.path                       = arguments.newPath;
-		oldRecord.name                       = listLast( arguments.newPath, "/\" );
-		variables.files[ arguments.newPath ] = duplicate( oldRecord );
+		oldRecord.path                           = arguments.destination;
+		oldRecord.name                           = listLast( arguments.destination, "/\" );
+		variables.files[ arguments.destination ] = duplicate( oldRecord );
 		// wipe out the old one
-		variables.files.delete( arguments.oldPath );
+		variables.files.delete( arguments.source );
 		// Now move all the records from the previous old path to the new path
 		variables.files
 			// Get all directory contents
 			.keyArray()
 			.filter( function( item ){
-				return item.lcase().startsWith( oldPath );
+				return item.lcase().startsWith( source );
 			} )
 			// Move old to new location
 			.each( function( oldItemPath ){
-				var newKey                = arguments.oldItemPath.replaceNoCase( oldPath, newPath );
+				var newKey                = arguments.oldItemPath.replaceNoCase( source, destination );
 				variables.files[ newKey ] = duplicate( variables.files[ oldItemPath ] );
 				// Update pointers
 				variables.files[ newKey ].path = newKey;
@@ -760,30 +742,11 @@ component
 	}
 
 	/**
-	 * Rename a directory, facade to `moveDirectory()`
-	 *
-	 * @oldPath    The source directory
-	 * @newPath    The destination directory
-	 * @createPath If false, expects all parent directories to exist, true will generate all necessary directories. Default is true.
-	 *
-	 * @return cbfs.models.IDisk
-	 *
-	 * @throws cbfs.DirectoryNotFoundException - When the old path does not exist
-	 */
-	function renameDirectory(
-		required oldPath,
-		required newPath,
-		boolean createPath
-	){
-		return this.moveDirectory( argumentCollection = arguments );
-	}
-
-	/**
 	 * Delete 1 or more directory locations
 	 *
 	 * @directory      The directory or an array of directories
 	 * @recurse        Recurse the deletion or not, defaults to true
-	 * @throwOnMissing Throws an exception if the directory does not exist
+	 * @throwOnMissing Throws an exception if the directory does not exist, defaults to false
 	 *
 	 * @return A boolean value or a struct of booleans determining if the directory paths got deleted or not.
 	 *
@@ -822,19 +785,24 @@ component
 	/**
 	 * Empty the specified directory of all files and folders.
 	 *
-	 * @directory The directory
+	 * @directory      The directory
+	 * @throwOnMissing Throws an exception if the directory does not exist, defaults to false
 	 *
 	 * @return cbfs.models.IDisk
+	 *
+	 * @throws cbfs.DirectoryNotFoundException
 	 */
-	function cleanDirectory( required directory ){
+	function cleanDirectory( required directory, boolean throwOnMissing = false ){
 		arguments.directory = normalizePath( arguments.directory );
 		try {
 			var dirRecord = ensureRecordExists( arguments.directory );
 		} catch ( "cbfs.FileNotFoundException" e ) {
-			throw(
-				type    = "cbfs.DirectoryNotFoundException",
-				message = "Directory [#arguments.directory#] not found."
-			);
+			if ( arguments.throwOnMissing ) {
+				throw(
+					type    = "cbfs.DirectoryNotFoundException",
+					message = "Directory [#arguments.directory#] not found."
+				);
+			}
 			return false;
 		}
 
@@ -850,7 +818,7 @@ component
 			} )
 			.each( function( filePath ){
 				variables.files.delete( arguments.filepath );
-			} )
+			} );
 	}
 
 	/**
