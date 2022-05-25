@@ -28,7 +28,7 @@ box install cbfs
 The available storage providers are:
 
 -   `LocalProvider@cbfs` - A local file system storage provider
--   `MockProvider@cbfs` - A mock storage provider that just logs operations to a LogBox logger object
+-   `RamProvider@cbfs` - An in-memory storage provider that stores a file system in memory
 -   COMING SOON: `S3Provider@cbfs` - An Amazon S3, Rackspace, Digital Ocean or Google Cloud Storage provider.
 
 ## Configuration

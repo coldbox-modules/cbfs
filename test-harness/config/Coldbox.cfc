@@ -35,7 +35,7 @@
 						"provider"   : "Local",
 						"properties" : { "path" : expandPath( "/root/tests/storage" ) }
 					},
-					"mock" : { provider : "Mock" }
+					"ram" : { provider : "Ram" }
 				}
 			}
 		};

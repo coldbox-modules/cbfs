@@ -30,7 +30,7 @@
 			it( "can register the app disks", function(){
 				var diskService = getInstance( dsl = "cbfs" );
 				expect( diskService.get( "local" ) ).toBeComponent();
-				expect( diskService.get( "mock" ) ).toBeComponent();
+				expect( diskService.get( "ram" ) ).toBeComponent();
 				expect( diskService.get( "default" ) ).toBeComponent();
 				expect( diskService.get( "temp" ) ).toBeComponent();
 			} );
@@ -44,7 +44,7 @@
 				// Global Ones
 				expect( diskService.get( "nasa" ) ).toBeComponent();
 				expect( diskService.get( "local" ) ).toBeComponent();
-				expect( diskService.get( "mock" ) ).toBeComponent();
+				expect( diskService.get( "ram" ) ).toBeComponent();
 				expect( diskService.get( "default" ) ).toBeComponent();
 				expect( diskService.get( "temp" ) ).toBeComponent();
 			} );
@@ -56,21 +56,21 @@
 
 			it( "can inject the disks struct using the cbfs dsl", function(){
 				var diskService = getInstance( dsl = "cbfs" );
-				diskService.register( name: "Mock", provider: "Mock" );
+				diskService.register( name: "Ram", provider: "Ram" );
 
 				var disks = getInstance( dsl = "cbfs:disks" );
-				expect( disks ).toHaveKey( "Mock" );
-				expect( disks.mock.provider ).toBe( "Mock" );
+				expect( disks ).toHaveKey( "Ram" );
+				expect( disks.ram.provider ).toBe( "Ram" );
 			} );
 
 			it( "can inject using a disk using the cbfs dsl", function(){
 				var diskService = getInstance( dsl = "cbfs" );
-				diskService.register( name: "Mock", provider: "Mock" );
+				diskService.register( name: "Ram", provider: "Ram" );
 
-				var localDisk = getInstance( dsl = "cbfs:disks:Mock" );
+				var localDisk = getInstance( dsl = "cbfs:disks:Ram" );
 
-				expect( localDisk ).toBeInstanceOf( "MockProvider" );
-				expect( localDisk.getName() ).toBe( "Mock" );
+				expect( localDisk ).toBeInstanceOf( "RamProvider" );
+				expect( localDisk.getName() ).toBe( "Ram" );
 			} );
 		} );
 	}

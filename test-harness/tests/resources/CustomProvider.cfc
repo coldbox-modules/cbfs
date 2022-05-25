@@ -1,4 +1,4 @@
-component extends="cbfs.models.providers.MockProvider" {
+component extends="cbfs.models.providers.RamProvider" {
 
 
 }
