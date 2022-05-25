@@ -445,6 +445,30 @@ component
 	/**************************************** UTILITY METHODS ****************************************/
 
 	/**
+	 * Build a Java Path object from the built disk path. It's like calling getJavaPath( buildDiskPath () )
+	 *
+	 * @see  https://docs.oracle.com/javase/8/docs/api/java/nio/file/Path.html#toAbsolutePath--
+	 * @path The path on the disk to build
+	 *
+	 * @return java.nio.file.Path
+	 */
+	function buildJavaDiskPath( required string path ){
+		return getJavaPath( buildDiskPath( arguments.path ) );
+	}
+
+	/**
+	 * Get a Java Path of the passed in stringed path. It does not calculate a full disk path.
+	 *
+	 * @see  https://docs.oracle.com/javase/8/docs/api/java/nio/file/Path.html#toAbsolutePath--
+	 * @path The string path to convert into a Java Path
+	 *
+	 * @return java.nio.file.Path
+	 */
+	function getJavaPath( required path ){
+		return variables.jPaths.get( arguments.path, [] );
+	}
+
+	/**
 	 * Get the uri for the given file
 	 *
 	 * @path The file path to build the uri for
@@ -475,7 +499,7 @@ component
 	 * @throws cbfs.FileNotFoundException
 	 */
 	numeric function size( required path ){
-		return variables.jFiles( buildJavaDiskPath( arguments.path ) );
+		return variables.jFiles.size( buildJavaDiskPath( arguments.path ) );
 	}
 
 	/**
@@ -521,7 +545,9 @@ component
 	 * @throws cbfs.FileNotFoundException
 	 */
 	struct function info( required path ){
-		return getFileInfo( buildDiskPath( arguments.path ) );
+		var fileInfo           = getFileInfo( buildDiskPath( arguments.path ) );
+		fileInfo[ "diskPath" ] = arguments.path;
+		return fileInfo;
 	}
 
 	/**
@@ -537,6 +563,7 @@ component
 			"posix:*",
 			[]
 		);
+		infoMap[ "diskPath" ] = arguments.path;
 		return structMap( infoMap, function( key, value ){
 			switch ( arguments.key ) {
 				case "permissions": {
@@ -885,31 +912,60 @@ component
 	 * @filter    A string wildcard or a lambda/closure that receives the file path and should return true to include it in the returned array or not.
 	 * @sort      Columns by which to sort. e.g. Directory, Size DESC, DateLastModified.
 	 * @recurse   Recurse into subdirectories, default is false
+	 * @type      Filter the result to only include files, directories, or both. ('file|files', 'dir|directory', 'all'). Default is 'all'
+	 * @absolute  Local provider only: We return relative disk paths by default. If true, we return absolute paths
+	 *
+	 * @throws cbfs.DirectoryNotFoundException
 	 */
 	array function contents(
 		required directory,
 		any filter,
 		sort,
-		boolean recurse = false
+		boolean recurse  = false,
+		type             = "all",
+		boolean absolute = false
 	){
-		var result     = [];
-		arguments.type = structKeyExists( arguments, "type" ) ? arguments.type : javacast( "null", "" );
-		var qDir       = directoryList(
-			buildPath( arguments.directory ),
-			arguments.recurse,
-			"query",
-			arguments.filter,
-			arguments.sort,
-			arguments.type
-		);
-		if ( isNull( arguments.map ) ) {
-			return valueArray( qDir, "name" );
+		// If missing throw or ignore
+		if ( missing( arguments.directory ) ) {
+			throw(
+				type    = "cbfs.DirectoryNotFoundException",
+				message = "Directory [#arguments.directory#] not found."
+			);
 		}
-		for ( v in qDir ) {
-			v[ "path" ] = getRelativePath( v );
-			arrayAppend( result, v );
-		}
-		return result;
+
+		// Move to nio later
+		return directoryList(
+			buildDiskPath( arguments.directory ), // path
+			arguments.recurse, // recurse
+			"path", // listinfo
+			arguments.filter, // filter
+			arguments.sort, // sort
+			arguments.type // type
+		).map( function( item ){
+			return absolute ? arguments.item : arguments.item.replace( variables.properties.path, "" );
+		} );
+	}
+
+	/**
+	 * Get an array listing of all files and directories in a directory using recursion
+	 *
+	 * @directory The directory
+	 * @filter    A string wildcard or a lambda/closure that receives the file path and should return true to include it in the returned array or not.
+	 * @sort      Columns by which to sort. e.g. Directory, Size DESC, DateLastModified.
+	 * @type      Filter the result to only include files, directories, or both. ('file|files', 'dir|directory', 'all'). Default is 'all'
+	 * @absolute  Local provider only: We return relative disk paths by default. If true, we return absolute paths
+	 *
+	 * @throws cbfs.DirectoryNotFoundException
+	 */
+	array function allContents(
+		required directory,
+		any filter,
+		sort,
+		type             = "all",
+		boolean absolute = false
+	){
+		arguments.recurse = true;
+		return contents( argumentCollection = arguments );
 	}
 
 	/**
@@ -919,16 +975,19 @@ component
 	 * @filter    A string wildcard or a lambda/closure that receives the file path and should return true to include it in the returned array or not.
 	 * @sort      Columns by which to sort. e.g. Directory, Size DESC, DateLastModified.
 	 * @recurse   Recurse into subdirectories, default is false
+	 * @absolute  Local provider only: We return relative disk paths by default. If true, we return absolute paths
+	 *
+	 * @throws cbfs.DirectoryNotFoundException
 	 */
 	array function files(
 		required directory,
 		any filter,
 		sort,
-		boolean recurse
+		boolean recurse  = false,
+		boolean absolute = false
 	){
 		arguments.type = "file";
-		arguments.map  = false;
-		return this.contents( argumentCollection = arguments );
+		return contents( argumentCollection = arguments );
 	};
 
 	/**
@@ -938,16 +997,19 @@ component
 	 * @filter    A string wildcard or a lambda/closure that receives the file path and should return true to include it in the returned array or not.
 	 * @sort      Columns by which to sort. e.g. Directory, Size DESC, DateLastModified.
 	 * @recurse   Recurse into subdirectories, default is false
+	 * @absolute  Local provider only: We return relative disk paths by default. If true, we return absolute paths
+	 *
+	 * @throws cbfs.DirectoryNotFoundException
 	 */
 	array function directories(
 		required directory,
 		any filter,
 		sort,
-		boolean recurse
+		boolean recurse  = false,
+		boolean absolute = false
 	){
-		arguments.type = "directory";
-		arguments.map  = false;
-		return this.contents( argumentCollection = arguments );
+		arguments.type = "Dir";
+		return contents( argumentCollection = arguments );
 	};
 
 	/**
@@ -956,11 +1018,19 @@ component
 	 * @directory The directory
 	 * @filter    A string wildcard or a lambda/closure that receives the file path and should return true to include it in the returned array or not.
 	 * @sort      Columns by which to sort. e.g. Directory, Size DESC, DateLastModified.
+	 * @absolute  Local provider only: We return relative disk paths by default. If true, we return absolute paths
+	 *
+	 * @throws cbfs.DirectoryNotFoundException
 	 */
-	array function allFiles( required directory, any filter, sort ){
+	array function allFiles(
+		required directory,
+		any filter,
+		sort,
+		boolean absolute = false
+	){
+		arguments.type    = "File";
 		arguments.recurse = true;
-		arguments.map     = false;
-		this.files( argumentCollection = arguments );
+		return contents( argumentCollection = arguments );
 	};
 
 	/**
@@ -969,12 +1039,20 @@ component
 	 * @directory The directory
 	 * @filter    A string wildcard or a lambda/closure that receives the file path and should return true to include it in the returned array or not.
 	 * @sort      Columns by which to sort. e.g. Directory, Size DESC, DateLastModified.
+	 * @absolute  Local provider only: We return relative disk paths by default. If true, we return absolute paths
+	 *
+	 * @throws cbfs.DirectoryNotFoundException
 	 */
-	array function allDirectories( required directory, any filter, sort ){
+	array function allDirectories(
+		required directory,
+		any filter,
+		sort,
+		boolean absolute = false
+	){
+		arguments.type    = "Dir";
 		arguments.recurse = true;
-		arguments.map     = false;
-		this.directories( argumentCollection = arguments );
-	};
+		return contents( argumentCollection = arguments );
+	}
 
 	/**
 	 * Get an array of structs of all files in a directory and their appropriate information map:
@@ -982,131 +1060,94 @@ component
 	 * - DateLastModified
 	 * - Directory
 	 * - Link
-	 * - Mode
 	 * - Name
 	 * - Size
+	 * - etc
 	 *
 	 * @directory The directory
 	 * @filter    A string wildcard or a lambda/closure that receives the file path and should return true to include it in the returned array or not.
 	 * @sort      Columns by which to sort. e.g. Directory, Size DESC, DateLastModified.
 	 * @recurse   Recurse into subdirectories, default is false
+	 * @extended  Default of false produces basic file info, true, produces posix extended info.
+	 *
+	 * @throws cbfs.DirectoryNotFoundException
 	 */
 	array function filesMap(
 		required directory,
 		any filter,
 		sort,
-		boolean recurse
+		boolean recurse  = false,
+		boolean extended = false
 	){
-		arguments.map = true;
-		this.files( argumentCollection = arguments );
+		return files( argumentCollection = arguments ).map( function( item ){
+			return extended ? extendedInfo( arguments.item ) : info( arguments.item );
+		} );
 	};
 
 	/**
-	 * Get an array of structs of all files in a directory with recursion and their appropriate information map:
+	 * Get an array of structs of all recursive files in a directory and their appropriate information map:
 	 * - Attributes
 	 * - DateLastModified
 	 * - Directory
 	 * - Link
-	 * - Mode
 	 * - Name
 	 * - Size
+	 * - etc
 	 *
 	 * @directory The directory
 	 * @filter    A string wildcard or a lambda/closure that receives the file path and should return true to include it in the returned array or not.
 	 * @sort      Columns by which to sort. e.g. Directory, Size DESC, DateLastModified.
-	 */
-	array function allFilesMap( required directory, any filter, sort ){
-		arguments.map     = true;
-		arguments.recurse = true;
-		this.filesMap( argumentCollection = arguments );
-	};
-
-	/**
-	 * Get an array of structs of all directories in a directory and their appropriate information map:
-	 * - Attributes
-	 * - DateLastModified
-	 * - Directory
-	 * - Link
-	 * - Mode
-	 * - Name
-	 * - Size
+	 * @extended  Default of false produces basic file info, true, produces posix extended info.
 	 *
-	 * @directory The directory
-	 * @filter    A string wildcard or a lambda/closure that receives the file path and should return true to include it in the returned array or not.
-	 * @sort      Columns by which to sort. e.g. Directory, Size DESC, DateLastModified.
-	 * @recurse   Recurse into subdirectories, default is false
+	 * @throws cbfs.DirectoryNotFoundException
 	 */
-	array function directoriesMap(
+	array function allFilesMap(
 		required directory,
 		any filter,
 		sort,
-		boolean recurse
+		boolean extended = false
 	){
-		arguments.map = true;
-		this.directories( argumentCollection = arguments );
+		arguments.recurse = true;
+		return filesMap( argumentCollection = arguments );
 	};
 
 	/**
-	 * Get an array of structs of all directories in a directory with recursion and their appropriate information map:
-	 * - Attributes
-	 * - DateLastModified
-	 * - Directory
-	 * - Link
-	 * - Mode
-	 * - Name
-	 * - Size
-	 *
-	 * @directory The directory
-	 * @filter    A string wildcard or a lambda/closure that receives the file path and should return true to include it in the returned array or not.
-	 * @sort      Columns by which to sort. e.g. Directory, Size DESC, DateLastModified.
-	 */
-	array function allDirectoriesMap( required directory, any filter, sort ){
-		arguments.recurse = false;
-		this.directoriesMap( argumentCollection = arguments );
-	};
-
-	/**
-	 * Get an array of structs of all files and directories in a directory and their appropriate information map:
-	 * - Attributes
-	 * - DateLastModified
-	 * - Directory
-	 * - Link
-	 * - Mode
-	 * - Name
-	 * - Size
+	 * Get an array of content from all the files from a specific directory
 	 *
 	 * @directory The directory
 	 * @filter    A string wildcard or a lambda/closure that receives the file path and should return true to include it in the returned array or not.
 	 * @sort      Columns by which to sort. e.g. Directory, Size DESC, DateLastModified.
 	 * @recurse   Recurse into subdirectories, default is false
+	 *
+	 * @throws cbfs.DirectoryNotFoundException
 	 */
 	array function contentsMap(
 		required directory,
 		any filter,
 		sort,
-		boolean recurse
+		boolean recurse = false
 	){
-		arguments.map = true;
-		this.contents( argumentCollection = arguments );
+		return files( argumentCollection = arguments ).map( function( item ){
+			return {
+				"path"     : arguments.item,
+				"contents" : get( arguments.item ),
+				"size"     : size( arguments.item )
+			};
+		} );
 	};
 
 	/**
-	 * Get an array of structs of all files in a directory with recursion and their appropriate information map:
-	 * - Attributes
-	 * - DateLastModified
-	 * - Directory
-	 * - Link
-	 * - Mode
-	 * - Name
-	 * - Size
+	 * Get an array of content from all the files from a specific directory with recursion
 	 *
 	 * @directory The directory
 	 * @filter    A string wildcard or a lambda/closure that receives the file path and should return true to include it in the returned array or not.
 	 * @sort      Columns by which to sort. e.g. Directory, Size DESC, DateLastModified.
+	 *
+	 * @throws cbfs.DirectoryNotFoundException
 	 */
 	array function allContentsMap( required directory, any filter, sort ){
 		arguments.recurse = true;
-		this.contentsMap( argumentCollection = arguments );
+		return contentsMap( argumentCollection = arguments );
 	};
 
 	/**
@@ -1124,70 +1165,21 @@ component
 		).reReplace( "\/$", "" );
 	}
 
-	/**
-	 * Build a Java Path object from the built disk path. It's like calling getJavaPath( buildDiskPath () )
-	 *
-	 * @see  https://docs.oracle.com/javase/8/docs/api/java/nio/file/Path.html#toAbsolutePath--
-	 * @path The path on the disk to build
-	 *
-	 * @return java.nio.file.Path
-	 */
-	function buildJavaDiskPath( required string path ){
-		return getJavaPath( buildDiskPath( arguments.path ) );
-	}
-
-	/**
-	 * Get a Java Path of the passed in stringed path. It does not calculate a full disk path.
-	 *
-	 * @see  https://docs.oracle.com/javase/8/docs/api/java/nio/file/Path.html#toAbsolutePath--
-	 * @path The string path to convert into a Java Path
-	 *
-	 * @return java.nio.file.Path
-	 */
-	function getJavaPath( required path ){
-		return variables.jPaths.get( arguments.path, [] );
-	}
-
-	/************************* PRIVATE METHODS ****************************/
-
-	/**
-	 * Gets the relative path from a path object
-	 *
-	 * @obj the path object
-	 */
-	private function getRelativePath( required obj ){
-		var path = replace( obj.directory, getProperties().path, "" ) & "/" & obj.name;
-		path     = replace( path, "\", "/", "ALL" );
-		path     = ( left( path, 1 ) EQ "/" ) ? removeChars( path, 1, 1 ) : path;
-		return path;
-	}
-
-	/**
-	 * Get an array listing of all files and directories in a directory using recursion
-	 *
-	 * @directory The directory
-	 * @filter    A string wildcard or a lambda/closure that receives the file path and should return true to include it in the returned array or not.
-	 * @sort      Columns by which to sort. e.g. Directory, Size DESC, DateLastModified.
-	 * @recurse   Recurse into subdirectories, default is false
-	 */
-	array function allContents( required directory, any filter, sort ){
-		arguments.recurse = true;
-		arguments.map     = false;
-		return this.contents( argumentCollection = arguments );
-	}
-
 	/**************************************** STREAM METHODS ****************************************/
 
 	/**
 	 * Return a Java stream of the file using non-blocking IO classes. The stream will represent every line in the file so you can navigate through it.
 	 * This method leverages the `cbstreams` library used accordingly by implementations (https://www.forgebox.io/view/cbstreams)
 	 *
-	 * @path
+	 * @path The path to read all the files with
 	 *
 	 * @return Stream object: See https://apidocs.ortussolutions.com/coldbox-modules/cbstreams/1.1.0/index.html
 	 */
 	function stream( required path ){
-		return streamBuilder.new().ofFile( buildPath( arguments.path ) );
+		return wirebox
+			.getInstance( "StreamBuilder@cbstreams" )
+			.new()
+			.ofFile( buildDiskPath( arguments.path ) );
 	};
 
 	/**
@@ -1207,9 +1199,20 @@ component
 	 * @return Stream object: See https://apidocs.ortussolutions.com/coldbox-modules/cbstreams/1.1.0/index.html
 	 */
 	function streamOf( required array target ){
-		throw( "Implement in a subclass" );
+		throw( "Not Implemented Yet" );
 	}
 
+	/**
+	 * Find path names matching a given globbing pattern
+	 *
+	 * @pattern The globbing pattern to match
+	 */
+	array function glob( required pattern ){
+		// Look at find() in the nio package
+		throw( "Not Implemented Yet" );
+	}
+
+	/**************************************** PRIVATE HELPER METHODS ****************************************/
 
 	/**
 	 * Creates a directory by creating all nonexistent parent directories first.

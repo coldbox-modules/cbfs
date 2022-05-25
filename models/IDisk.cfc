@@ -525,7 +525,7 @@ interface {
 	 * @filter    A string wildcard or a lambda/closure that receives the file path and should return true to include it in the returned array or not.
 	 * @sort      Columns by which to sort. e.g. Directory, Size DESC, DateLastModified.
 	 * @recurse   Recurse into subdirectories, default is false
-	 * @type      Filter the result to only include files, directories, or both. ('file', 'dir', 'all')
+	 * @type      Filter the result to only include files, directories, or both. ('file|files', 'dir|directory', 'all'). Default is 'all'
 	 *
 	 * @throws cbfs.DirectoryNotFoundException
 	 */
@@ -543,7 +543,7 @@ interface {
 	 * @directory The directory
 	 * @filter    A string wildcard or a lambda/closure that receives the file path and should return true to include it in the returned array or not.
 	 * @sort      Columns by which to sort. e.g. Directory, Size DESC, DateLastModified.
-	 * @type      Filter the result to only include files, directories, or both. ('file', 'dir', 'all')
+	 * @type      Filter the result to only include files, directories, or both. ('file|files', 'dir|directory', 'all'). Default is 'all'
 	 *
 	 * @throws cbfs.DirectoryNotFoundException
 	 */

@@ -1006,7 +1006,8 @@ component extends="coldbox.system.testing.BaseTestCase" {
 						disk.create( dirPath & "/embedded/luis.txt", "hello mi amigo" );
 
 						var results = disk.contents( directory = dirPath, recurse = true );
-						expect( results ).toInclude( "bddtests/embedded/luis.txt" );
+						writeDump( var = results, top = 5 );
+						expect( results ).toInclude( "/bddtests/embedded/luis.txt" );
 					} );
 				} );
 				given( "a valid directory using allContents()", function(){
@@ -1018,7 +1019,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 						disk.create( dirPath & "/embedded/luis.txt", "hello mi amigo" );
 
 						var results = disk.allContents( dirPath );
-						expect( results ).toInclude( "bddtests/embedded/luis.txt" );
+						expect( results ).toInclude( "/bddtests/embedded/luis.txt" );
 					} );
 				} );
 				given( "a valid directory with type of 'file'", function(){
@@ -1126,7 +1127,6 @@ component extends="coldbox.system.testing.BaseTestCase" {
 
 						var results = disk.contentsMap( dirPath );
 						expect( results.len() ).toBe( 2 );
-						debug( results );
 						expect( results[ 1 ].contents ).notToBeEmpty();
 						expect( results[ 1 ].path ).notToBeEmpty();
 						expect( results[ 1 ].size ).notToBeEmpty();
