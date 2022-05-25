@@ -486,11 +486,11 @@ component
 	 * Get a temporary uri for the given file
 	 *
 	 * @path       The file path to build the uri for
-	 * @expiration The number of minutes this uri should be valid for.
+	 * @expiration The number of minutes this uri should be valid for. Defaults to 60 minutes
 	 *
 	 * @throws cbfs.FileNotFoundException
 	 */
-	string function temporaryUri( required path, numeric expiration ){
+	string function temporaryUri( required path, numeric expiration = 60 ){
 		return this.uri( arguments.path ) & "?expiration=#arguments.expiration#";
 	}
 
