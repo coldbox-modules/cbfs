@@ -920,29 +920,33 @@ component extends="coldbox.system.testing.BaseTestCase" {
 					} );
 				} );
 
-				given( "a valid source and destination with recurse and a closure filter", function(){
-					then( "it should copy the directory with the closure filter", function(){
-						disk.createDirectory( sourcePath );
-						disk.create( sourcePath & "/luis.cfc", "component{}" );
-						disk.create( sourcePath & "/embedded/luis.txt", "hola" );
+				given(
+					given = "a valid source and destination with recurse and a closure filter on Lucee ONLY",
+					skip  = !server.keyExists( "lucee" ),
+					body  = function(){
+						then( "it should copy the directory with the closure filter", function(){
+							disk.createDirectory( sourcePath );
+							disk.create( sourcePath & "/luis.cfc", "component{}" );
+							disk.create( sourcePath & "/embedded/luis.txt", "hola" );
 
-						expect( disk.exists( destinationPath ) ).toBeFalse( "#destinationPath# should not exist" );
-						expect( disk.exists( sourcePath ) ).toBeTrue( "#sourcePath# should exist" );
-						disk.copyDirectory(
-							source      = sourcePath,
-							destination = destinationPath,
-							recurse     = true,
-							filter      = function( path ){
-								return findNoCase( "luis.cfc", path );
-							}
-						);
+							expect( disk.exists( destinationPath ) ).toBeFalse( "#destinationPath# should not exist" );
+							expect( disk.exists( sourcePath ) ).toBeTrue( "#sourcePath# should exist" );
+							disk.copyDirectory(
+								source      = sourcePath,
+								destination = destinationPath,
+								recurse     = true,
+								filter      = function( path ){
+									return findNoCase( "luis.cfc", arguments.path ) > 1 ? true : 0;
+								}
+							);
 
-						expect( disk.exists( sourcePath ) ).toBeTrue( "#sourcePath# should still exist" );
-						expect( disk.exists( destinationPath ) ).toBeTrue( "#destinationPath# should exist" );
-						expect( disk.exists( "#destinationPath#/luis.cfc" ) ).toBeTrue( "non-filtered file should exist" );
-						expect( disk.exists( "#destinationPath#/embedded/luis.txt" ) ).toBeFalse( "filtered file should NOT exist" );
-					} );
-				} );
+							expect( disk.exists( sourcePath ) ).toBeTrue( "#sourcePath# should still exist" );
+							expect( disk.exists( destinationPath ) ).toBeTrue( "#destinationPath# should exist" );
+							expect( disk.exists( "#destinationPath#/luis.cfc" ) ).toBeTrue( "non-filtered file should exist" );
+							expect( disk.exists( "#destinationPath#/embedded/luis.txt" ) ).toBeFalse( "filtered file should NOT exist" );
+						} );
+					}
+				);
 
 				given( "an invalid source", function(){
 					then( "it should throw a cbfs.DirectoryNotFoundException", function(){
@@ -1006,7 +1010,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 						disk.create( dirPath & "/embedded/luis.txt", "hello mi amigo" );
 
 						var results = disk.contents( directory = dirPath, recurse = true );
-						expect( results.toList()  ).toInclude( "bddtests/embedded/luis.txt" );
+						expect( results.toList() ).toInclude( "bddtests/embedded/luis.txt" );
 					} );
 				} );
 				given( "a valid directory using allContents()", function(){
@@ -1018,7 +1022,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 						disk.create( dirPath & "/embedded/luis.txt", "hello mi amigo" );
 
 						var results = disk.allContents( dirPath );
-						expect( results.toList()  ).toInclude( "bddtests/embedded/luis.txt" );
+						expect( results.toList() ).toInclude( "bddtests/embedded/luis.txt" );
 					} );
 				} );
 				given( "a valid directory with type of 'file'", function(){

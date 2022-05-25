@@ -465,7 +465,7 @@ component
 	 * @return java.nio.file.Path
 	 */
 	function getJavaPath( required path ){
-		return variables.jPaths.get( arguments.path, [] );
+		return variables.jPaths.get( javacast( "String", arguments.path ), javacast( "java.lang.String[]", [] ) );
 	}
 
 	/**
@@ -799,7 +799,7 @@ component
 			buildDiskPath( arguments.source ),
 			buildDiskPath( arguments.destination ),
 			arguments.recurse,
-			arguments.filter
+			isNull( arguments.filter ) ? "" : arguments.filter
 		);
 
 		return this;
