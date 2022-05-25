@@ -4,7 +4,7 @@
 
 <img src="https://forgebox.io/api/v1/entry/cbfs/badges/version" />
 
-The `cbfs` module will enable you to abstract ANY filesystem within your ColdBox applications. You can configure as many disks which represent file systems in your application. Each disk is backed by a storage provider and configurable within your ColdBox application.
+The `cbfs` module will enable you to abstract ANY filesystem within your ColdBox applications. You can configure as many disks as you wish which represent file systems in your application. Each disk is backed by a storage provider and configurable within your ColdBox application.
 
 ## License
 
@@ -15,7 +15,7 @@ Apache License, Version 2.0.
 -   Lucee 5+
 -   Adobe ColdFusion 2016+
 
-## Instructions
+## Installation
 
 Use CommandBox CLI to install:
 
@@ -27,27 +27,43 @@ box install cbfs
 
 The available storage providers are:
 
--   `LocalProvider@cbfs` - A local file system storage provider
--   `MockProvider@cbfs` - A mock storage provider that just logs operations to a LogBox logger object
--   COMING SOON: `S3Provider@cbfs` - An Amazon S3, Rackspace, Digital Ocean or Google Cloud Storage provider.
+-   `LocalProvider@cbfs` - A local file system storage provider.
+-   `MockProvider@cbfs` - A mock storage provider that just logs operations to a LogBox logger object.
+-   `S3Provider@cbfs` - An Amazon S3, Rackspace, Digital Ocean or Google Cloud Storage provider.
 
 ## Configuration
 
 In your `config/ColdBox.cfc` create a `cbfs` structure within the `moduleSettings` key. Here you will define your storage disks and global settings for the `cbfs` storage services.
 
-> **Note**: Please note that each provider has its own configuration properties. So please check out the docs for each provider.
+> **Note**: Each provider has its own configuration properties. Please review this README for additional information on each provider.
 
 ```js
 moduleSettings = {
-	"cbfs": {
-		"defaultDisk" : "default",
-		"disks": {
-			"default": {
-				"provider": "LocalProvider@cbfs"
+	cbfs: {
+		disks: {
+			default: {
+				provider: "LocalProvider@cbfs",
 			},
-		}
-	}
-}
+		},
+	},
+};
+```
+
+## Default Disk
+
+You can specify a default disk for your application with the `defaultDisk` key in your `config/ColdBox.cfc`.
+
+```js
+moduleSettings = {
+	cbfs: {
+		defaultDisk: "default",
+		disks: {
+			default: {
+				provider: "LocalProvider@cbfs",
+			},
+		},
+	},
+};
 ```
 
 ## Module Disks
