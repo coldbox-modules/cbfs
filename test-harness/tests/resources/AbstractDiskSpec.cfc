@@ -467,7 +467,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 				} );
 			} );
 
-			fstory( "The disk can get the lastModified property of a file", function(){
+			story( "The disk can get the lastModified property of a file", function(){
 				it( "can retrieve the last modified date of a file", function(){
 					var path = "test_file.txt";
 					disk.create(
