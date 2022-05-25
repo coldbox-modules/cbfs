@@ -4,7 +4,7 @@
 
 <img src="https://forgebox.io/api/v1/entry/cbfs/badges/version" />
 
-The `cbfs` module will enable you to abstract ANY filesystem within your ColdBox applications. You can configure as many disks which represent file systems in your application. Each disk is backed by a storage provider and configurable within your ColdBox application.
+The `cbfs` module will enable you to abstract ANY filesystem within your ColdBox applications. You can configure as many disks as you wish which represent file systems in your application. Each disk is backed by a storage provider and configurable within your ColdBox application.
 
 ## License
 
@@ -15,7 +15,7 @@ Apache License, Version 2.0.
 -   Lucee 5+
 -   Adobe ColdFusion 2016+
 
-## Instructions
+## Installation
 
 Use CommandBox CLI to install:
 
@@ -27,28 +27,85 @@ box install cbfs
 
 The available storage providers are:
 
--   `LocalProvider@cbfs` - A local file system storage provider
--   `RamProvider@cbfs` - An in-memory storage provider that stores a file system in memory
--   COMING SOON: `S3Provider@cbfs` - An Amazon S3, Rackspace, Digital Ocean or Google Cloud Storage provider.
+-   `LocalProvider@cbfs` - A local file system storage provider.
+-   `MockProvider@cbfs` - A mock storage provider that just logs operations to a LogBox logger object.
+-   `S3Provider@cbfs` - An Amazon S3, Rackspace, Digital Ocean or Google Cloud Storage provider.
 
 ## Configuration
 
 In your `config/ColdBox.cfc` create a `cbfs` structure within the `moduleSettings` key. Here you will define your storage disks and global settings for the `cbfs` storage services.
 
-> **Note**: Please note that each provider has its own configuration properties. So please check out the docs for each provider.
+> **Note**: Each provider has its own configuration properties. Please review this README for additional information on each provider.
 
 ```js
 moduleSettings = {
-	"cbfs": {
-		"defaultDisk" : "default",
-		"disks": {
-			"default": {
-				"provider": "LocalProvider@cbfs"
+	cbfs: {
+		defaultDisk: "default",
+		disks: {
+			default: {
+				provider: "LocalProvider@cbfs",
 			},
-		}
-	}
-}
+		},
+	},
+};
 ```
+
+You can specify a default disk for your application with the `defaultDisk` key in your `config/ColdBox.cfc`.
+
+## Disk Service
+
+cbfs includes a Disk Service object you can use to register and interact with your disks.
+
+```js
+// Via getInstance()
+var diskService = getInstance( "DiskService@cbfs" );
+// Via cfproperty
+property name="diskService" inject="DiskService@cbfs";
+```
+
+The full API for the Disk Service can be found in the [API Docs](https://apidocs.ortussolutions.com/#/coldbox-modules/cbfs/).
+
+### Core methods:
+
+#### get( name )
+
+Returns requested disk instance. Throws 'InvalidDiskException' if disk not registered.
+
+#### has( name )
+
+Returns true if disk has been registered with provided name.
+
+#### register( name, provider, properties, override )
+
+Registers a new disk. If a disk has already been configured with the same name, then it will not be updated unless you specify override=true.
+
+#### unregister( name )
+
+Unregisters a disk. Throws 'InvalidDiskException' if disk not registered.
+
+#### shutdown()
+
+Unregisters and shuts down all disks managed by the DiskService.
+
+#### getDiskRecord( name )
+
+Returns struct of details for a disk.
+
+#### names()
+
+Returns an array of registered disk names.
+
+#### count()
+
+Returns the count of registered disks.
+
+#### defaultDisk()
+
+Returns the default disk.
+
+#### tempDisk()
+
+Returns the temporary disk.
 
 ## Module Disks
 
@@ -70,30 +127,6 @@ settings = {
 		},
 	},
 };
-```
-
-## Disk Service
-
-cbfs includes a Disk Service object you can use to interact with your disks.
-
-```bash
-var diskService = getInstance( "DiskService@cbfs" );
-```
-
-The full API for the Disk Service can be found in the [API Docs](https://apidocs.ortussolutions.com/#/coldbox-modules/cbfs/).
-
-Core service methods:
-
-```
-get( providerName ) - Returns a disk instance.
-register( name, provider, properties, override) - Register a new disk.
-unregister( name ) - Unregister a disk.
-shutdown() - Unregister and shutdown all disks.
-names() - List of all disk names.
-count() - Number of disks.
-defaultDisk() - Gets default disk instance.
-tempDisk() - Get temp disk instance.
-
 ```
 
 ---
