@@ -93,17 +93,23 @@ The full API for the Disk Service can be found in the [API Docs](https://apidocs
 
 Returns requested disk instance. Throws 'InvalidDiskException' if disk not registered.
 
+#### has( name )
+
+Returns true if disk has been registered with provided name.
+
 #### register( name, provider, properties, override )
 
-Registers a new disk.
+Registers a new disk. If a disk has already been configured with the same name, then it will not be updated unless you specify override=true.
 
 #### unregister( name )
 
-Unregisters a disk.
+Unregisters a disk. Throws 'InvalidDiskException' if disk not registered.
 
 #### shutdown()
 
 Unregisters and shuts down all disks managed by the DiskService.
+
+#### getDiskRecord( name )
 
 #### names()
 
