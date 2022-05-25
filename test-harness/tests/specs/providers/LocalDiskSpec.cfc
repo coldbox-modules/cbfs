@@ -48,7 +48,7 @@ component extends="tests.resources.AbstractDiskSpec" {
 	 */
 	function validateInfoStruct( required info, required disk ){
 		expect( info ).toHaveKey(
-			"path,lastModified,size,name,type,canWrite,canRead,isHidden,isSystem"
+			"path,size,name,type,canWrite,canRead,isHidden"
 		);
 	}
 
