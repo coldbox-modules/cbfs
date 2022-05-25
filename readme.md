@@ -52,28 +52,6 @@ moduleSettings = {
 
 You can specify a default disk for your application with the `defaultDisk` key in your `config/ColdBox.cfc`.
 
-## Module Disks
-
-If you want custom modules to register cbfs disks, they can! Just add a `cbfs` key into your module's `ModuleConfig.cfc` `settings` struct. You will have the option to register disks that are namespaced to the module and global disks that are NOT namespaced.
-
-```js
-settings = {
-	cbfs: {
-		// Disks that will be namespaced with the module name @{moduleName}
-		disks: {
-			temp: { provider: "Ram" },
-			nasa: { provider: "Ram" },
-		},
-		// No namespace in global spacing
-		globalDisks: {
-			// Should be ignored, you can't override global disks
-			temp: { provider: "Ram" },
-			nasa: { provider: "Ram" },
-		},
-	},
-};
-```
-
 ## Disk Service
 
 cbfs includes a Disk Service object you can use to register and interact with your disks.
@@ -128,6 +106,28 @@ Returns the default disk.
 #### tempDisk()
 
 Returns the temporary disk.
+
+## Module Disks
+
+If you want custom modules to register cbfs disks, they can! Just add a `cbfs` key into your module's `ModuleConfig.cfc` `settings` struct. You will have the option to register disks that are namespaced to the module and global disks that are NOT namespaced.
+
+```js
+settings = {
+	cbfs: {
+		// Disks that will be namespaced with the module name @{moduleName}
+		disks: {
+			temp: { provider: "Ram" },
+			nasa: { provider: "Ram" },
+		},
+		// No namespace in global spacing
+		globalDisks: {
+			// Should be ignored, you can't override global disks
+			temp: { provider: "Ram" },
+			nasa: { provider: "Ram" },
+		},
+	},
+};
+```
 
 ---
 
