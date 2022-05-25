@@ -965,7 +965,7 @@ component
 			arguments.recurse, // recurse
 			"path", // listinfo
 			isNull( arguments.filter ) ? "" : arguments.filter, // filter
-			arguments.sort, // sort
+			isNull( arguments.sort ) ? "" : arguments.sort, // sort
 			arguments.type // type
 		).map( function( item ){
 			return absolute ? arguments.item : arguments.item.replace( variables.properties.path, "" );
