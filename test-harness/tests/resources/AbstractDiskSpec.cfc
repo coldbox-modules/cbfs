@@ -467,17 +467,18 @@ component extends="coldbox.system.testing.BaseTestCase" {
 				} );
 			} );
 
-			story( "The disk can get the lastModified property of a file", function(){
+			fstory( "The disk can get the lastModified property of a file", function(){
 				it( "can retrieve the last modified date of a file", function(){
-					var path   = "test_file.txt";
-					var before = getEpochTimeFromLocal();
-					sleep( 500 );
+					var path = "test_file.txt";
 					disk.create(
 						path      = path,
 						contents  = "hola amigo",
 						overwrite = true
 					);
-					expect( disk.lastModified( path ) ).toBeDate();
+					var before = disk.lastModified( path );
+					expect( before ).toBeDate();
+					sleep( 500 );
+					disk.touch( path );
 					expect( getEpochTimeFromLocal( disk.lastModified( path ) ) ).toBeGTE( before );
 				} );
 			} );
