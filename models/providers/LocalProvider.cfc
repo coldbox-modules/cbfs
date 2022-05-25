@@ -751,7 +751,7 @@ component
 		boolean ignoreExists = true
 	){
 		// If not ignoring and directory exists, then throw exception
-		if ( !arguments.ignoreExists AND directoryExists( arguments.directory ) ) {
+		if ( !arguments.ignoreExists AND exists( arguments.directory ) ) {
 			throw(
 				type    = "cbfs.DirectoryExistsException",
 				message = "Cannot create directory. The directory already exists [#arguments.directory#]"
