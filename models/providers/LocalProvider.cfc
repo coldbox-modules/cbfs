@@ -964,7 +964,7 @@ component
 			buildDiskPath( arguments.directory ), // path
 			arguments.recurse, // recurse
 			"path", // listinfo
-			arguments.filter, // filter
+			isNull( arguments.filter ) ? "" : arguments.filter, // filter
 			arguments.sort, // sort
 			arguments.type // type
 		).map( function( item ){
