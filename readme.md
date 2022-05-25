@@ -111,6 +111,8 @@ Unregisters and shuts down all disks managed by the DiskService.
 
 #### getDiskRecord( name )
 
+Returns struct of details for a disk.
+
 #### names()
 
 Returns an array of registered disk names.
