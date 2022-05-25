@@ -1006,7 +1006,6 @@ component extends="coldbox.system.testing.BaseTestCase" {
 						disk.create( dirPath & "/embedded/luis.txt", "hello mi amigo" );
 
 						var results = disk.contents( directory = dirPath, recurse = true );
-						writeDump( var = results, top = 5 );
 						expect( results ).toInclude( "/bddtests/embedded/luis.txt" );
 					} );
 				} );
@@ -1171,7 +1170,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 	 * @disk The disk used
 	 */
 	function validateUri( required string path, required any disk ){
-		expect( disk.uri( arguments.path ) ).toBe( arguments.path );
+		expect( disk.uri( arguments.path ) ).toInclude( arguments.path );
 	}
 
 	/**

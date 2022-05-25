@@ -476,6 +476,9 @@ component
 	 * @throws cbfs.FileNotFoundException
 	 */
 	string function uri( required string path ){
+		if ( missing( arguments.path ) ) {
+			throw( type = "cbfs.FileNotFoundException", message = "File [#arguments.path#] not found." );
+		}
 		return buildDiskPath( arguments.path );
 	}
 
@@ -499,6 +502,9 @@ component
 	 * @throws cbfs.FileNotFoundException
 	 */
 	numeric function size( required path ){
+		if ( missing( arguments.path ) ) {
+			throw( type = "cbfs.FileNotFoundException", message = "File [#arguments.path#] not found." );
+		}
 		return variables.jFiles.size( buildJavaDiskPath( arguments.path ) );
 	}
 
@@ -510,6 +516,9 @@ component
 	 * @throws cbfs.FileNotFoundException
 	 */
 	function lastModified( required path ){
+		if ( missing( arguments.path ) ) {
+			throw( type = "cbfs.FileNotFoundException", message = "File [#arguments.path#] not found." );
+		}
 		var inMillis = variables.jFiles
 			.getLastModifiedTime( getJavaPath( ensureFileExists( arguments.path ) ), [] )
 			.toMillis();
@@ -531,6 +540,9 @@ component
 	 * @throws cbfs.FileNotFoundException
 	 */
 	function mimeType( required path ){
+		if ( missing( arguments.path ) ) {
+			throw( type = "cbfs.FileNotFoundException", message = "File [#arguments.path#] not found." );
+		}
 		return getMimeType( buildDiskPath( arguments.path ) );
 	}
 
@@ -545,6 +557,9 @@ component
 	 * @throws cbfs.FileNotFoundException
 	 */
 	struct function info( required path ){
+		if ( missing( arguments.path ) ) {
+			throw( type = "cbfs.FileNotFoundException", message = "File [#arguments.path#] not found." );
+		}
 		var fileInfo           = getFileInfo( buildDiskPath( arguments.path ) );
 		fileInfo[ "diskPath" ] = arguments.path;
 		return fileInfo;
@@ -558,13 +573,17 @@ component
 	 * @return The struct of extended information about a file
 	 */
 	struct function extendedInfo( required path ){
+		if ( missing( arguments.path ) ) {
+			throw( type = "cbfs.FileNotFoundException", message = "File [#arguments.path#] not found." );
+		}
+
 		var infoMap = variables.jFiles.readAttributes(
 			buildJavaDiskPath( arguments.path ),
 			"posix:*",
 			[]
 		);
-		infoMap[ "diskPath" ] = arguments.path;
-		return structMap( infoMap, function( key, value ){
+
+		infoMap = structMap( infoMap, function( key, value ){
 			switch ( arguments.key ) {
 				case "permissions": {
 					return createObject( "java", "java.nio.file.attribute.PosixFilePermissions" ).toString(
@@ -575,6 +594,8 @@ component
 					return arguments.value.toString();
 			}
 		} );
+		infoMap[ "diskPath" ] = arguments.path;
+		return infoMap;
 	}
 
 	/**
@@ -586,6 +607,9 @@ component
 	 * @throws cbfs.FileNotFoundException
 	 */
 	string function checksum( required path, algorithm = "MD5" ){
+		if ( missing( arguments.path ) ) {
+			throw( type = "cbfs.FileNotFoundException", message = "File [#arguments.path#] not found." );
+		}
 		return hash( getAsBinary( arguments.path ), arguments.algorithm );
 	}
 
@@ -605,6 +629,9 @@ component
 	 * @mode Access mode, the same attributes you use for the Linux command `chmod`
 	 */
 	function chmod( required string path, required string mode ){
+		if ( missing( arguments.path ) ) {
+			throw( type = "cbfs.FileNotFoundException", message = "File [#arguments.path#] not found." );
+		}
 		fileSetAccessMode( buildDiskPath( arguments.path ), arguments.mode );
 		return this;
 	}
