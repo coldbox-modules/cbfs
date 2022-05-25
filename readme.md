@@ -121,14 +121,6 @@ Returns the default disk.
 
 Returns the temporary disk.
 
-```
-names() - List of all disk names.
-count() - Number of disks.
-defaultDisk() - Gets default disk instance.
-tempDisk() - Get temp disk instance.
-
-```
-
 ---
 
 Copyright Since 2005 ColdBox Framework by Luis Majano and Ortus Solutions, Corp
