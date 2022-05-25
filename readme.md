@@ -40,22 +40,6 @@ In your `config/ColdBox.cfc` create a `cbfs` structure within the `moduleSetting
 ```js
 moduleSettings = {
 	cbfs: {
-		disks: {
-			default: {
-				provider: "LocalProvider@cbfs",
-			},
-		},
-	},
-};
-```
-
-## Default Disk
-
-You can specify a default disk for your application with the `defaultDisk` key in your `config/ColdBox.cfc`.
-
-```js
-moduleSettings = {
-	cbfs: {
 		defaultDisk: "default",
 		disks: {
 			default: {
@@ -65,6 +49,8 @@ moduleSettings = {
 	},
 };
 ```
+
+You can specify a default disk for your application with the `defaultDisk` key in your `config/ColdBox.cfc`.
 
 ## Module Disks
 
@@ -90,21 +76,52 @@ settings = {
 
 ## Disk Service
 
-cbfs includes a Disk Service object you can use to interact with your disks.
+cbfs includes a Disk Service object you can use to register and interact with your disks.
 
-```bash
+```js
+// Via getInstance()
 var diskService = getInstance( "DiskService@cbfs" );
+// Via cfproperty
+property name="diskService" inject="DiskService@cbfs";
 ```
 
 The full API for the Disk Service can be found in the [API Docs](https://apidocs.ortussolutions.com/#/coldbox-modules/cbfs/).
 
-Core service methods:
+### Core methods:
+
+#### get( name )
+
+Returns requested disk instance. Throws 'InvalidDiskException' if disk not registered.
+
+#### register( name, provider, properties, override )
+
+Registers a new disk.
+
+#### unregister( name )
+
+Unregisters a disk.
+
+#### shutdown()
+
+Unregisters and shuts down all disks managed by the DiskService.
+
+#### names()
+
+Returns an array of registered disk names.
+
+#### count()
+
+Returns the count of registered disks.
+
+#### defaultDisk()
+
+Returns the default disk.
+
+#### tempDisk()
+
+Returns the temporary disk.
 
 ```
-get( providerName ) - Returns a disk instance.
-register( name, provider, properties, override) - Register a new disk.
-unregister( name ) - Unregister a disk.
-shutdown() - Unregister and shutdown all disks.
 names() - List of all disk names.
 count() - Number of disks.
 defaultDisk() - Gets default disk instance.
