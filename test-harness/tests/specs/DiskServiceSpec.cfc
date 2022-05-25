@@ -92,43 +92,43 @@ component extends="coldbox.system.testing.BaseTestCase" {
 
 			story( "I want to be able to register disk blueprints", function(){
 				given( "valid disk properties", function(){
-					when( "override is false and no disk with the name MockProvider exists", function(){
+					when( "override is false and no disk with the name RamProvider exists", function(){
 						then( "the disk should be registered", function(){
-							expect( service.has( "mockProvider" ) ).toBeFalse();
-							service.register( name: "MockProvider", provider: "Mock" );
-							expect( service.has( "mockProvider" ) ).toBeTrue();
+							expect( service.has( "RamProvider" ) ).toBeFalse();
+							service.register( name: "RamProvider", provider: "Ram" );
+							expect( service.has( "RamProvider" ) ).toBeTrue();
 						} );
 					} );
 				} );
 				given( "valid disk properties", function(){
-					when( "override is false and a disk with the name MockProvider is already registered", function(){
+					when( "override is false and a disk with the name RamProvider is already registered", function(){
 						then( "the service will ignore the registration", function(){
-							expect( service.has( "mockProvider" ) ).toBeFalse();
-							service.register( name: "MockProvider", provider: "Mock" );
-							expect( service.has( "mockProvider" ) ).toBeTrue();
+							expect( service.has( "RamProvider" ) ).toBeFalse();
+							service.register( name: "RamProvider", provider: "Ram" );
+							expect( service.has( "RamProvider" ) ).toBeTrue();
 
 							// Try to register it again with a different provider
-							service.register( name: "MockProvider", provider: "Local" );
-							expect( service.has( "mockProvider" ) ).toBeTrue();
-							expect( service.getDiskRecord( "MockProvider" ).provider ).toBe( "Mock" );
+							service.register( name: "RamProvider", provider: "Local" );
+							expect( service.has( "RamProvider" ) ).toBeTrue();
+							expect( service.getDiskRecord( "RamProvider" ).provider ).toBe( "Ram" );
 						} );
 					} );
 				} );
 				given( "valid disk properties", function(){
-					when( "override is true and a disk with the name MockProvider is already registered", function(){
+					when( "override is true and a disk with the name RamProvider is already registered", function(){
 						then( "the service will re-register the disk", function(){
-							expect( service.has( "mockProvider" ) ).toBeFalse();
-							service.register( name: "MockProvider", provider: "Mock" );
-							expect( service.has( "mockProvider" ) ).toBeTrue();
+							expect( service.has( "RamProvider" ) ).toBeFalse();
+							service.register( name: "RamProvider", provider: "Ram" );
+							expect( service.has( "RamProvider" ) ).toBeTrue();
 
 							// Register it again
 							service.register(
-								name    : "MockProvider",
+								name    : "RamProvider",
 								provider: "Local",
 								override: true
 							);
-							expect( service.has( "mockProvider" ) ).toBeTrue();
-							expect( service.getDiskRecord( "MockProvider" ).provider ).toBe( "Local" );
+							expect( service.has( "RamProvider" ) ).toBeTrue();
+							expect( service.getDiskRecord( "RamProvider" ).provider ).toBe( "Local" );
 						} );
 					} );
 				} );
@@ -137,25 +137,25 @@ component extends="coldbox.system.testing.BaseTestCase" {
 			story( "I want to be able to unregister disks", function(){
 				given( "a valid disk name and the disk has been built", function(){
 					then( "the disk should be shutdown and unregistered", function(){
-						var mockProvider = createStub().$( "shutdown" );
+						var RamProvider = createStub().$( "shutdown" );
 						service
 							.getDisks()
 							.append( {
 								"local" : {
 									provider   : "Local",
 									properties : {},
-									disk       : mockProvider
+									disk       : RamProvider
 								}
 							} );
 
 						service.unregister( "local" );
-						expect( mockProvider.$callLog().shutdown ).toHaveLength( 1 );
+						expect( RamProvider.$callLog().shutdown ).toHaveLength( 1 );
 						expect( service.has( "local" ) ).toBeFalse();
 					} );
 				} );
 				given( "a valid disk name and the disk has NOT been built", function(){
 					then( "the disk will be unregistered", function(){
-						service.register( name: "local", provider: "Mock" );
+						service.register( name: "local", provider: "Ram" );
 						service.unregister( "local" );
 						expect( service.has( "local" ) ).toBeFalse();
 					} );
@@ -172,7 +172,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 			story( "I want to check if a disk has been registered or not", function(){
 				given( "a valid disk name", function(){
 					then( "then it will validate that the disk has been regsitered", function(){
-						service.register( name: "local", provider: "Mock" );
+						service.register( name: "local", provider: "Ram" );
 						expect( service.has( "local" ) ).toBeTrue();
 					} );
 				} );
@@ -191,7 +191,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 				} );
 				given( "a few registered disks", function(){
 					then( "then the names will not be empty", function(){
-						service.register( name: "local", provider: "Mock" );
+						service.register( name: "local", provider: "Ram" );
 						expect( service.names() ).notToBeEmpty();
 					} );
 				} );
@@ -205,7 +205,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 				} );
 				given( "a few registered disks", function(){
 					then( "then the count will be > zero", function(){
-						service.register( name: "local", provider: "Mock" );
+						service.register( name: "local", provider: "Ram" );
 						expect( service.count() ).toBeGT( 0 );
 					} );
 				} );
@@ -214,13 +214,13 @@ component extends="coldbox.system.testing.BaseTestCase" {
 
 			story( "I want to retrieve the temp disk via the shortcut method: tempDisk()", function(){
 				it( "can retrieve the temp disk", function(){
-					service.register( name: "temp", provider: "Mock" );
+					service.register( name: "temp", provider: "Ram" );
 					expect( service.tempDisk().getName() ).toBe( "temp" );
 				} );
 			} );
 			story( "I want to retrieve the default disk via the shortcut method: defaultDisk()", function(){
 				it( "can retrieve the default disk", function(){
-					service.register( name: "default", provider: "Mock" );
+					service.register( name: "default", provider: "Ram" );
 					expect( service.defaultDisk().getName() ).toBe( "default" );
 				} );
 			} );

@@ -2,7 +2,9 @@
  * Copyright Since 2005 ColdBox Framework by Luis Majano and Ortus Solutions, Corp
  * www.ortussolutions.com
  * ---
- * This provider is useful for mocking purposes. They all go into a memory array
+ * This provider is an in-memory provider that stores the file system in memory
+ *
+ * TODO: Move to concurrent hash maps
  *
  * @author Luis Majano <lmajano@ortussolutions.com>, Grant Copley <gcopley@ortussolutions.com>
  */
@@ -13,7 +15,7 @@ component
 {
 
 	/**
-	 * Mocking container
+	 * Ram container
 	 */
 	property name="files" type="struct";
 
@@ -771,15 +773,16 @@ component
 		}
 
 		// Discover the directories in memory that start with this directory path and wipe them
-		return variables.files
+		var aDeleted = variables.files
 			.keyArray()
 			.filter( function( filePath ){
 				return arguments.filePath.startsWith( directory );
 			} )
 			.each( function( filePath ){
 				variables.files.delete( arguments.filepath );
-			} )
-			.len() > 0 ? true : false;
+			} );
+
+		return isNull( aDeleted ) ? true : aDeleted.len() > 0 ? true : false;
 	}
 
 	/**
@@ -1171,7 +1174,7 @@ component
 	 *
 	 * @path The path to check
 	 *
-	 * @return The mocked file structure
+	 * @return The file structure
 	 *
 	 * @throws cbfs.FileNotFoundException - If the filepath is missing
 	 */

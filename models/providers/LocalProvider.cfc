@@ -465,7 +465,7 @@ component
 	 * @return java.nio.file.Path
 	 */
 	function getJavaPath( required path ){
-		return variables.jPaths.get( arguments.path, [] );
+		return variables.jPaths.get( javacast( "String", arguments.path ), javacast( "java.lang.String[]", [] ) );
 	}
 
 	/**
@@ -476,6 +476,9 @@ component
 	 * @throws cbfs.FileNotFoundException
 	 */
 	string function uri( required string path ){
+		if ( missing( arguments.path ) ) {
+			throw( type = "cbfs.FileNotFoundException", message = "File [#arguments.path#] not found." );
+		}
 		return buildDiskPath( arguments.path );
 	}
 
@@ -483,11 +486,11 @@ component
 	 * Get a temporary uri for the given file
 	 *
 	 * @path       The file path to build the uri for
-	 * @expiration The number of minutes this uri should be valid for.
+	 * @expiration The number of minutes this uri should be valid for. Defaults to 60 minutes
 	 *
 	 * @throws cbfs.FileNotFoundException
 	 */
-	string function temporaryUri( required path, numeric expiration ){
+	string function temporaryUri( required path, numeric expiration = 60 ){
 		return this.uri( arguments.path ) & "?expiration=#arguments.expiration#";
 	}
 
@@ -499,6 +502,9 @@ component
 	 * @throws cbfs.FileNotFoundException
 	 */
 	numeric function size( required path ){
+		if ( missing( arguments.path ) ) {
+			throw( type = "cbfs.FileNotFoundException", message = "File [#arguments.path#] not found." );
+		}
 		return variables.jFiles.size( buildJavaDiskPath( arguments.path ) );
 	}
 
@@ -510,6 +516,9 @@ component
 	 * @throws cbfs.FileNotFoundException
 	 */
 	function lastModified( required path ){
+		if ( missing( arguments.path ) ) {
+			throw( type = "cbfs.FileNotFoundException", message = "File [#arguments.path#] not found." );
+		}
 		var inMillis = variables.jFiles
 			.getLastModifiedTime( getJavaPath( ensureFileExists( arguments.path ) ), [] )
 			.toMillis();
@@ -531,6 +540,9 @@ component
 	 * @throws cbfs.FileNotFoundException
 	 */
 	function mimeType( required path ){
+		if ( missing( arguments.path ) ) {
+			throw( type = "cbfs.FileNotFoundException", message = "File [#arguments.path#] not found." );
+		}
 		return getMimeType( buildDiskPath( arguments.path ) );
 	}
 
@@ -545,6 +557,9 @@ component
 	 * @throws cbfs.FileNotFoundException
 	 */
 	struct function info( required path ){
+		if ( missing( arguments.path ) ) {
+			throw( type = "cbfs.FileNotFoundException", message = "File [#arguments.path#] not found." );
+		}
 		var fileInfo           = getFileInfo( buildDiskPath( arguments.path ) );
 		fileInfo[ "diskPath" ] = arguments.path;
 		return fileInfo;
@@ -558,13 +573,17 @@ component
 	 * @return The struct of extended information about a file
 	 */
 	struct function extendedInfo( required path ){
+		if ( missing( arguments.path ) ) {
+			throw( type = "cbfs.FileNotFoundException", message = "File [#arguments.path#] not found." );
+		}
+
 		var infoMap = variables.jFiles.readAttributes(
 			buildJavaDiskPath( arguments.path ),
 			"posix:*",
 			[]
 		);
-		infoMap[ "diskPath" ] = arguments.path;
-		return structMap( infoMap, function( key, value ){
+
+		infoMap = structMap( infoMap, function( key, value ){
 			switch ( arguments.key ) {
 				case "permissions": {
 					return createObject( "java", "java.nio.file.attribute.PosixFilePermissions" ).toString(
@@ -575,6 +594,8 @@ component
 					return arguments.value.toString();
 			}
 		} );
+		infoMap[ "diskPath" ] = arguments.path;
+		return infoMap;
 	}
 
 	/**
@@ -586,6 +607,9 @@ component
 	 * @throws cbfs.FileNotFoundException
 	 */
 	string function checksum( required path, algorithm = "MD5" ){
+		if ( missing( arguments.path ) ) {
+			throw( type = "cbfs.FileNotFoundException", message = "File [#arguments.path#] not found." );
+		}
 		return hash( getAsBinary( arguments.path ), arguments.algorithm );
 	}
 
@@ -605,6 +629,9 @@ component
 	 * @mode Access mode, the same attributes you use for the Linux command `chmod`
 	 */
 	function chmod( required string path, required string mode ){
+		if ( missing( arguments.path ) ) {
+			throw( type = "cbfs.FileNotFoundException", message = "File [#arguments.path#] not found." );
+		}
 		fileSetAccessMode( buildDiskPath( arguments.path ), arguments.mode );
 		return this;
 	}
@@ -724,7 +751,7 @@ component
 		boolean ignoreExists = true
 	){
 		// If not ignoring and directory exists, then throw exception
-		if ( !arguments.ignoreExists AND directoryExists( arguments.directory ) ) {
+		if ( !arguments.ignoreExists AND exists( arguments.directory ) ) {
 			throw(
 				type    = "cbfs.DirectoryExistsException",
 				message = "Cannot create directory. The directory already exists [#arguments.directory#]"
@@ -772,8 +799,7 @@ component
 			buildDiskPath( arguments.source ),
 			buildDiskPath( arguments.destination ),
 			arguments.recurse,
-			arguments.filter,
-			arguments.createPath
+			isNull( arguments.filter ) ? "" : arguments.filter
 		);
 
 		return this;
@@ -938,8 +964,8 @@ component
 			buildDiskPath( arguments.directory ), // path
 			arguments.recurse, // recurse
 			"path", // listinfo
-			arguments.filter, // filter
-			arguments.sort, // sort
+			isNull( arguments.filter ) ? "" : arguments.filter, // filter
+			isNull( arguments.sort ) ? "" : arguments.sort, // sort
 			arguments.type // type
 		).map( function( item ){
 			return absolute ? arguments.item : arguments.item.replace( variables.properties.path, "" );

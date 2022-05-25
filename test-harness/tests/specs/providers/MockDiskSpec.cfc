@@ -1,7 +1,7 @@
 component extends="tests.resources.AbstractDiskSpec" {
 
 	// The name of the provider in the test-harness we want to test
-	variables.providerName = "Mock";
+	variables.providerName = "Ram";
 	// Which features does this disk support for testing
 	variables.testFeatures = { symbolicLink : true };
 
