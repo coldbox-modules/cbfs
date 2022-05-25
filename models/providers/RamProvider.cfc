@@ -773,15 +773,16 @@ component
 		}
 
 		// Discover the directories in memory that start with this directory path and wipe them
-		return variables.files
+		var aDeleted = variables.files
 			.keyArray()
 			.filter( function( filePath ){
 				return arguments.filePath.startsWith( directory );
 			} )
 			.each( function( filePath ){
 				variables.files.delete( arguments.filepath );
-			} )
-			.len() > 0 ? true : false;
+			} );
+
+		return isNull( aDeleted ) ? true : aDeleted.len() > 0 ? true : false;
 	}
 
 	/**
