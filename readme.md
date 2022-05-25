@@ -12,8 +12,9 @@ Apache License, Version 2.0.
 
 ## System Requirements
 
--   Lucee 5+
--   Adobe ColdFusion 2016+
+- Lucee 5+
+- Adobe ColdFusion 2016 (Deprecated)
+- Adobe ColdFusion 2018+
 
 ## Installation
 
@@ -27,9 +28,9 @@ box install cbfs
 
 The available storage providers are:
 
--   `LocalProvider@cbfs` - A local file system storage provider.
--   `MockProvider@cbfs` - A mock storage provider that just logs operations to a LogBox logger object.
--   `S3Provider@cbfs` - An Amazon S3, Rackspace, Digital Ocean or Google Cloud Storage provider.
+- `LocalProvider@cbfs` - A local file system storage provider.
+- `RamProvider@cbfs` - An in-memory file storage provider.
+- `S3Provider@cbfs` - An Amazon S3, Rackspace, Digital Ocean or Google Cloud Storage provider.
 
 ## Configuration
 
@@ -65,7 +66,7 @@ property name="diskService" inject="DiskService@cbfs";
 
 The full API for the Disk Service can be found in the [API Docs](https://apidocs.ortussolutions.com/#/coldbox-modules/cbfs/).
 
-### Core methods:
+### Core methods
 
 #### get( name )
 
