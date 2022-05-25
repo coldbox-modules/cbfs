@@ -799,8 +799,7 @@ component
 			buildDiskPath( arguments.source ),
 			buildDiskPath( arguments.destination ),
 			arguments.recurse,
-			arguments.filter,
-			arguments.createPath
+			arguments.filter
 		);
 
 		return this;

@@ -59,14 +59,14 @@ settings = {
 	cbfs: {
 		// Disks that will be namespaced with the module name @{moduleName}
 		disks: {
-			temp: { provider: "Mock" },
-			nasa: { provider: "mock" },
+			temp: { provider: "Ram" },
+			nasa: { provider: "Ram" },
 		},
 		// No namespace in global spacing
 		globalDisks: {
 			// Should be ignored, you can't override global disks
-			temp: { provider: "Mock" },
-			nasa: { provider: "mock" },
+			temp: { provider: "Ram" },
+			nasa: { provider: "Ram" },
 		},
 	},
 };
