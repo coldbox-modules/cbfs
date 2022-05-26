@@ -14,6 +14,9 @@ component
 	singleton
 {
 
+	// DI
+	property name="wirebox" inject="wirebox";
+
 	/**
 	 * Ram container
 	 */
@@ -1157,6 +1160,42 @@ component
 		return contentsMap( argumentCollection = arguments );
 	}
 
+	/**************************************** STREAM METHODS ****************************************/
+
+	/**
+	 * Return a Java stream of the file using non-blocking IO classes. The stream will represent every line in the file so you can navigate through it.
+	 * This method leverages the `cbstreams` library used accordingly by implementations (https://www.forgebox.io/view/cbstreams)
+	 *
+	 * @path The path to read all the files with
+	 *
+	 * @return Stream object: See https://apidocs.ortussolutions.com/coldbox-modules/cbstreams/1.1.0/index.html
+	 */
+	function stream( required path ){
+		return wirebox
+			.getInstance( "StreamBuilder@cbstreams" )
+			.new( get( arguments.path ).listToArray( "#chr( 13 )##chr( 10 )#" ) );
+	};
+
+	/**
+	 * Create a Java stream of the incoming array of files/directories usually called from this driver as well.
+	 * <pre>
+	 * disk.streamOf( disk.files( "my.path" ) )
+	 *  .filter( function( item ){
+	 *      return item.startsWith( "a" );
+	 *  } )
+	 *  .forEach( function( item ){
+	 *      writedump( item );
+	 *  } );
+	 * </pre>
+	 *
+	 * @target The target array of files/directories to generate a stream of
+	 *
+	 * @return Stream object: See https://apidocs.ortussolutions.com/coldbox-modules/cbstreams/1.1.0/index.html
+	 */
+	function streamOf( required array target ){
+		return wirebox.getInstance( "StreamBuilder@cbstreams" ).new( arguments.target );
+	}
+
 	/**
 	 * Find path names matching a given globbing pattern
 	 *
@@ -1164,6 +1203,7 @@ component
 	 */
 	array function glob( required pattern ){
 		// Not implemented yet. HELP!!
+		throw( "Not Implemented Yet" );
 	}
 
 

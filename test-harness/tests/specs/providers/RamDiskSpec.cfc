@@ -5,6 +5,33 @@ component extends="tests.resources.AbstractDiskSpec" {
 	// Which features does this disk support for testing
 	variables.testFeatures = { symbolicLink : true };
 
+	function run(){
+		super.run();
+
+		// Localized Suites
+
+		describe( "Ram Provider Extended Specs", function(){
+			beforeEach( function( currentSpec ){
+				disk = getDisk();
+			} );
+
+			story( "I want to produce a stream from the content's of a file", function(){
+				given( "a valid path", function(){
+					then( "it should return a stream of the file contents", function(){
+						var path = "localFile.cfc";
+						disk.create(
+							path      = path,
+							contents  = fileRead( expandPath( "/tests/resources/AbstractDiskSpec.cfc" ) ),
+							overwrite = true
+						);
+						var stream = disk.stream( path );
+						expect( stream ).toBeInstanceOf( "Stream" );
+					} );
+				} );
+			} );
+		} );
+	}
+
 	/**
 	 * ------------------------------------------------------------
 	 * Concrete Expectations that can be implemented by each provider

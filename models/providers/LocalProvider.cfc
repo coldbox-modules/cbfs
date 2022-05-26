@@ -1225,7 +1225,7 @@ component
 	 * @return Stream object: See https://apidocs.ortussolutions.com/coldbox-modules/cbstreams/1.1.0/index.html
 	 */
 	function streamOf( required array target ){
-		throw( "Not Implemented Yet" );
+		return wirebox.getInstance( "StreamBuilder@cbstreams" ).new( arguments.target );
 	}
 
 	/**

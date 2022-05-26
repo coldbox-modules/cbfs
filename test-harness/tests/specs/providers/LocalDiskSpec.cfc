@@ -38,6 +38,21 @@ component extends="tests.resources.AbstractDiskSpec" {
 					} );
 				} );
 			} );
+
+			story( "I want to produce a stream from the content's of a file", function(){
+				given( "a valid path", function(){
+					then( "it should return a stream of the file contents", function(){
+						var path = "localFile.cfc";
+						disk.create(
+							path      = path,
+							contents  = fileRead( expandPath( "/tests/resources/AbstractDiskSpec.cfc" ) ),
+							overwrite = true
+						);
+						var stream = disk.stream( path );
+						expect( stream ).toBeInstanceOf( "Stream" );
+					} );
+				} );
+			} );
 		} );
 	}
 
@@ -47,9 +62,7 @@ component extends="tests.resources.AbstractDiskSpec" {
 	 * ------------------------------------------------------------
 	 */
 	function validateInfoStruct( required info, required disk ){
-		expect( info ).toHaveKey(
-			"path,size,name,type,canWrite,canRead,isHidden"
-		);
+		expect( info ).toHaveKey( "path,size,name,type,canWrite,canRead,isHidden" );
 	}
 
 }
