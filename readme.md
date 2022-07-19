@@ -2,8 +2,6 @@
 
 [![cbfs CI](https://github.com/coldbox-modules/cbfs/actions/workflows/ci.yml/badge.svg)](https://github.com/coldbox-modules/cbfs/actions/workflows/ci.yml)
 
-<img src="https://forgebox.io/api/v1/entry/cbfs/badges/version" />
-
 The `cbfs` module enables you to abstract **ANY** filesystem within your ColdBox applications. You can configure as many disks as you wish which represent file systems in your application. Each disk is backed by a storage provider and configurable within your ColdBox application.
 
 ## Documentation
