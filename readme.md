@@ -10,7 +10,6 @@ The `cbfs` module enables you to abstract **ANY** filesystem within your ColdBox
 
 https://cbfs.ortusbooks.com/
 
-API Docs:
 https://apidocs.ortussolutions.com/#/coldbox-modules/cbfs/.
 
 ## License
