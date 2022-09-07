@@ -7,16 +7,18 @@
 component {
 
 	// Module Properties
-	this.title          = "CB FileSystem";
-	this.author         = "Ortus Solutions, Corp";
-	this.webURL         = "https://github.com/ortus-solutions/cbfs";
-	this.description    = "A powerful file system abstraction module for ColdBox applications";
-	this.version        = "@build.version@+@build.number@";
+	this.title             = "CB FileSystem";
+	this.author            = "Ortus Solutions, Corp";
+	this.webURL            = "https://github.com/ortus-solutions/cbfs";
+	this.description       = "A powerful file system abstraction module for ColdBox applications";
+	this.version           = "@build.version@+@build.number@";
 	// CF Mapping
-	this.cfmapping      = "cbfs";
-	this.modelNamespace = "cbfs";
+	this.cfmapping         = "cbfs";
+	this.modelNamespace    = "cbfs";
 	// Module Dependencies That Must Be Loaded First, use internal names or aliases
-	this.dependencies   = [ "cbstreams" ];
+	this.dependencies      = [ "cbstreams" ];
+	// Helpers
+	this.applicationHelper = [ "helpers/Mixins.cfm" ];
 
 	/**
 	 * Configure this module
@@ -40,7 +42,7 @@ component {
 			}
 		};
 		// Setup the defaults
-		settings = structCopy( defaults );
+		settings = structCopy( variables.DEFAULTS );
 		// Register custom DSL
 		wirebox.registerDSL( "cbfs", "#moduleMapping#.dsl.cbfsDSL" );
 	}
