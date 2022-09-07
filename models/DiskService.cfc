@@ -6,7 +6,7 @@
  *
  * @author Luis Majano <lmajano@ortussolutions.com>, Grant Copley <gcopley@ortussolutions.com>
  */
-component accessors="true" singleton {
+component accessors="true" singleton threadsafe {
 
 	/**
 	 * --------------------------------------------------------------------------
@@ -15,6 +15,7 @@ component accessors="true" singleton {
 	 */
 	property name="appModules"     inject="coldbox:setting:modules";
 	property name="moduleSettings" inject="coldbox:moduleSettings:cbfs";
+	property name="moduleConfig"   inject="coldbox:moduleConfig:cbfs";
 	property name="wirebox"        inject="wirebox";
 	property name="log"            inject="logbox:logger:{this}";
 
@@ -43,19 +44,19 @@ component accessors="true" singleton {
 	 * Called by the ModuleConfig to register all the ColdBox app disks defined
 	 */
 	DiskService function registerAppDisks(){
-		return registerDiskMap( variables.moduleSettings.disks );
+		return registerDiskMap( diskMap: variables.moduleSettings.disks );
 	}
 
 	/**
 	 * Registers all disks from the incoming struct according to our rules
 	 *
-	 * @disks     The disks to register
+	 * @diskMap   The disk metadata structure to register
 	 * @namespace The namespeace to use when registering
 	 */
-	private function registerDiskMap( required struct disks, string namespace = "" ){
-		arguments.disks.each( function( diskName, diskDefinition ){
+	private function registerDiskMap( required struct diskMap, string namespace = "" ){
+		arguments.diskMap.each( function( diskName, diskDefinition ){
 			param name="arguments.diskDefinition.properties" default="#structNew()#";
-			this.register(
+			register(
 				name      : arguments.diskName & namespace,
 				provider  : arguments.diskDefinition.provider,
 				properties: arguments.diskDefinition.properties
@@ -77,8 +78,8 @@ component accessors="true" singleton {
 			.each( function( module, config ){
 				param name="arguments.config.settings.cbfs.disks"       default="#structNew()#";
 				param name="arguments.config.settings.cbfs.globalDisks" default="#structNew()#";
-				registerDiskMap( disks: arguments.config.settings.cbfs.disks, namespace: "@#module#" );
-				registerDiskMap( disks: arguments.config.settings.cbfs.globalDisks );
+				registerDiskMap( diskMap: arguments.config.settings.cbfs.disks, namespace: "@#module#" );
+				registerDiskMap( diskMap: arguments.config.settings.cbfs.globalDisks );
 			} );
 		return this;
 	}
@@ -116,6 +117,7 @@ component accessors="true" singleton {
 						name      : arguments.name,
 						properties: diskRecord.properties
 					);
+					diskRecord.createdOn = now();
 				}
 			}
 		}
@@ -161,9 +163,12 @@ component accessors="true" singleton {
 		// If it doesn't exist or we are overriding, register it
 		if ( !variables.disks.keyExists( arguments.name ) || arguments.override ) {
 			variables.disks[ arguments.name ] = {
-				"provider"   : arguments.provider,
-				"properties" : arguments.properties,
-				"disk"       : javacast( "null", "" )
+				"name"         : arguments.name,
+				"provider"     : arguments.provider,
+				"properties"   : arguments.properties,
+				"disk"         : javacast( "null", "" ),
+				"registeredOn" : now(),
+				"createdOn"    : ""
 			};
 			log.info( "- Registered (#arguments.name#:#arguments.provider#) disk." );
 		} else {
@@ -266,7 +271,7 @@ component accessors="true" singleton {
 	private function getRegisteredCoreProviders(){
 		if ( isNull( variables.registeredCoreProviders ) ) {
 			// Providers Path
-			variables.providersPath           = getDirectoryFromPath( getMetadata( this ).path ) & "providers";
+			variables.providersPath           = variables.moduleConfig.modelsPhysicalPath & "/providers";
 			// Register core disk providers
 			variables.registeredCoreProviders = directoryList(
 				variables.providersPath,

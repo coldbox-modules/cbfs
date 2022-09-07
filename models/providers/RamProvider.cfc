@@ -8,11 +8,7 @@
  *
  * @author Luis Majano <lmajano@ortussolutions.com>, Grant Copley <gcopley@ortussolutions.com>
  */
-component
-	accessors="true"
-	extends  ="cbfs.models.AbstractDiskProvider"
-	singleton
-{
+component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 
 	// DI
 	property name="wirebox" inject="wirebox";

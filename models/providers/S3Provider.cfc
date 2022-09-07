@@ -347,7 +347,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		ensureFileExists( arguments.path );
 		// ACF will not allow us to read the file directly via URL
 		if (
-			server.coldfusion.productVersion.listFirst() == 2016 || server.coldfusion.productVersion.listFirst() == 2018
+			server.coldfusion.productVersion.listFirst() == 2018
 		) {
 			var tempFileName = createUUID() & "." & extension( arguments.path );
 
@@ -469,7 +469,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	/**
 	 * Deletes a file
 	 *
-	 * @path          
+	 * @path
 	 * @throwOnMissing When true an error will be thrown if the file does not exist
 	 */
 	public boolean function delete( required any path, boolean throwOnMissing = false ){

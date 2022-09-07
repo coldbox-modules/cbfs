@@ -1,6 +1,6 @@
 <cfoutput>
 <div class="alert alert-dark">
-	Here are the registered disks on cbfs
+	<h2>Disk Registry</h2>
 </div>
 <table class="table">
 	<thead>
@@ -20,7 +20,7 @@
 				<span class="badge bg-danger">#diskRecord.provider#</span>
 			</td>
 			<td>
-				<cfdump var="#diskRecord.properties#">
+				<cfdump var="#diskRecord.properties#" expand="false">
 			</td>
 		</tr>
 		</cfloop>
