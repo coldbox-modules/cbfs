@@ -70,7 +70,7 @@
 				var localDisk = getInstance( dsl = "cbfs:disks:Ram" );
 
 				expect( localDisk ).toBeInstanceOf( "RamProvider" );
-				expect( localDisk.getName() ).toBe( "nasa" );
+				expect( localDisk.getName() ).toBe( "Ram" );
 			} );
 		} );
 	}
