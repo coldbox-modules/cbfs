@@ -1,5 +1,7 @@
 component extends="tests.resources.AbstractDiskSpec" {
 
+	variables.providerName = "S3";
+
 	// this.loadColdbox            = true;
 	// variables.testDirectoryName = "tests/" & createUUID();
 

@@ -35,7 +35,23 @@
 						"provider"   : "Local",
 						"properties" : { "path" : expandPath( "/root/tests/storage" ) }
 					},
-					"ram" : { provider : "Ram" }
+					"ram" : { 
+						"provider" : "Ram" 
+					},
+					"S3" : {
+						"provider": "S3",
+						"properties": {
+							"visibility": "public", // can be 'public' or 'private'
+							"path": "",
+							"accessKey": "DO00UHCCGATUKJTRWHFT",
+							"secretKey": "uHa5m61Uv0+wWRjlBSK3M95kn0oMmFzKroSekdRSx3o",
+							"awsDomain": "sfo3.digitaloceanspaces.com",
+							"awsRegion": "",
+							"defaultBucketName": "granttestspaces",
+							"signatureType": "v4"
+						}
+					}
+
 				}
 			}
 		};
