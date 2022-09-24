@@ -27,6 +27,21 @@ Use CommandBox CLI to install:
 box install cbfs
 ```
 
+## Contributing
+
+We welcome any contributions to this project, either by pull requests, documentation updates, or by becoming a [Patreon supporter](https://www.patreon.com/ortussolutions).
+
+## Test Suite
+
+You can run the included test suite with the following commands from the project root:
+
+```bash
+cd test-harness && box install
+cd ..
+box server start
+box testbox run
+```
+
 ---
 
 Copyright Since 2005 ColdBox Framework by Luis Majano and Ortus Solutions, Corp
