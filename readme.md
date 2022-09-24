@@ -17,7 +17,6 @@ Apache License, Version 2.0.
 ## System Requirements
 
 -   Lucee 5+
--   Adobe ColdFusion 2016 (Deprecated)
 -   Adobe ColdFusion 2018+
 
 ## Installation
@@ -26,6 +25,21 @@ Use CommandBox CLI to install:
 
 ```bash
 box install cbfs
+```
+
+## Contributing
+
+We welcome any contributions to this project, either by pull requests, documentation updates, or by becoming a [Patreon supporter](https://www.patreon.com/ortussolutions).
+
+## Test Suite
+
+You can run the included test suite with the following commands from the project root:
+
+```bash
+cd test-harness && box install
+cd ..
+box server start
+box testbox run
 ```
 
 ---
