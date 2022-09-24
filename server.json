@@ -1,8 +1,8 @@
 {
-    "name":"cbfs-adobe@2016",
+    "name":"cbfs-lucee@5",
     "app":{
-        "serverHomeDirectory":".engine/adobe2016",
-        "cfengine":"adobe@2016"
+        "serverHomeDirectory":".engine/lucee5",
+        "cfengine":"lucee@5"
     },
     "web":{
         "http":{
@@ -13,7 +13,7 @@
         },
         "webroot":"test-harness",
         "aliases":{
-            "/moduleroot/cbfs":"../"
+            "/moduleroot/cbfs":"./"
         }
     },
     "openBrowser":"false",
