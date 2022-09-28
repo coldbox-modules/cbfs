@@ -15,9 +15,9 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 *
 	 * @return S3Provider
 	 */
-	public IDisk function configure( required string name, struct properties = {} ){
+	public function startup( required string name, struct properties = {} ){
 		try {
-			variables.s3 = variables.wirebox.getInstance( "AmazonS3@s3sdk" );
+			variables.s3 = variables.wirebox.getInstance( name="AmazonS3@s3sdk", initArguments=properties );
 		} catch ( any e ) {
 			throw(
 				type    = "cbfs.ProviderConfigurationException",
@@ -30,7 +30,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		}
 
 		if ( !arguments.properties.keyExists( "visibility" ) ) {
-			arguments.properties.visiblity = "public";
+			arguments.properties.visibility = "public";
 		}
 
 		setName( arguments.name );
@@ -42,7 +42,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * Called before the cbfs module is unloaded, or via reinits. This can be implemented
 	 * as you see fit to gracefully shutdown connections, sockets, etc.
 	 */
-	public IDisk function shutdown(){
+	public function shutdown(){
 		return this;
 	}
 
@@ -60,7 +60,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	function create(
 		required path,
 		required contents,
-		visibility        = variables.properties.visiblity,
+		visibility        = variables.properties.visibility,
 		struct metadata   = {},
 		boolean overwrite = false
 	){
