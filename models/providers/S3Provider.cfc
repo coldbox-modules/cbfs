@@ -9,6 +9,15 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	property name="s3";
 
 	/**
+	 * Return if startup has occurred.
+	 *
+	 * @return Boolean
+	 */
+	public function hasStarted() {
+		return structKeyExists( variables, "s3" );
+	}
+
+	/**
 	 * Configure the provider. Usually called at startup.
 	 *
 	 * @properties A struct of configuration data for this provider, usually coming from the configuration file
@@ -263,6 +272,10 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 				);
 			}
 		}
+
+		if ( arguments.overwrite && this.exists( arguments.destination ) ) {
+			this.delete( arguments.destination );
+		}	
 
 		variables.s3.copyObject(
 			fromBucket = variables.properties.bucketName,
@@ -595,9 +608,13 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @throws cbfs.FileNotFoundException
 	 */
 	public boolean function isFile( required path ){
-		var ext = extension( arguments.path );
-		ensureFileExists( arguments.path );
-		return len( ext );
+		try {
+			var ext = extension( arguments.path );
+			ensureFileExists( arguments.path );
+			return len( ext );
+		} catch ( cbfs.FileNotFoundException e ) {
+			return false;
+		}
 	}
 
 	/**
@@ -643,7 +660,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @path The file path
 	 * @mode Access mode, the same attributes you use for the Linux command `chmod`
 	 */
-	public IDisk function chmod( required string path, required string mode ){
+	public function chmod( required string path, required string mode ){
 		switch ( right( mode, 1 ) ) {
 			case 7: {
 				var acl = variables.s3.ACL_PUBLIC_READ_WRITE;
@@ -843,6 +860,17 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		boolean recurse        = true,
 		boolean throwOnMissing = false
 	){
+
+		if ( !isDirectory( arguments.directory ) ) {
+			if ( arguments.throwOnMissing ) {
+				throw(
+					type    = "cbfs.DirectoryNotFoundException",
+					message = "Directory [#arguments.directory#] not found."
+				);
+			}
+			return false;
+		}
+
 		if (
 			!arguments.recurse
 			&&
@@ -861,7 +889,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 				message = "The destination directory [#buildPath( directory )#] contains files and the recurse argument is false.  It may  not be deleted."
 			);
 		} else {
-			return this.delete( arguments.directory, arguments.throwOnMissing );
+			return delete( arguments.directory, arguments.throwOnMissing );
 		}
 	}
 
@@ -873,6 +901,14 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @return S3Provider
 	 */
 	function cleanDirectory( required directory ){
+
+		if ( !isDirectory( arguments.directory ) ) {
+			throw(
+				type    = "cbfs.DirectoryNotFoundException",
+				message = "Directory [#arguments.directory#] does not exist."
+			);
+		}
+
 		this.deleteDirectory( arguments.directory, true );
 		this.createDirectory( arguments.directory );
 		return this;
@@ -887,15 +923,38 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @recurse   Recurse into subdirectories, default is false
 	 */
 	array function contents(
-		required directory = "",
+		required directory,
 		any filter,
 		sort,
-		boolean recurse
+		boolean recurse  = false,
+		type             = "all",
+		boolean absolute = false
 	){
+
+		if ( !isDirectory( arguments.directory ) ) {
+			throw(
+				type    = "cbfs.DirectoryNotFoundException",
+				message = "Directory [#arguments.directory#] does not exist."
+			);
+		}
+
 		var sourcePath = buildPath( arguments.directory ) & "/";
 
+		// writeDump( variables.s3.getBucket( bucketName = variables.properties.bucketName, prefix = sourcePath ) );
+		// abort;
 		var bucketContents = variables.s3
 			.getBucket( bucketName = variables.properties.bucketName, prefix = sourcePath )
+			.reduce( function( agg, item ) {
+				if ( item.isDirectory ) {
+					if ( type != "file" ) {
+						agg.append( item );
+					}
+					agg.append( this.contents( directory=item.key, filter=filter, sort=sort, recurse=recurse, type=type, absolute=absolute, map=true ), true )
+				} else if ( listLen( item.key, "." ) > 1 || val( item.size ) > 0 ) {
+					agg.append( item );
+				}
+				return agg;
+			}, [] )
 			.filter( function( item ){
 				if ( item.key == sourcePath ) {
 					return false;
@@ -907,12 +966,6 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 					return true;
 				}
 			} );
-
-		if ( !isNull( arguments.recurse ) && !arguments.recurse ) {
-			bucketContents = bucketContents.filter( function( item ){
-				return getDirectoryFromPath( item.key ) == sourcePath;
-			} );
-		}
 
 		if ( !isNull( arguments.sort ) ) {
 			bucketContents.sort( arguments.sort );
@@ -955,14 +1008,8 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		boolean recurse
 	){
 		arguments.map = true;
-		return this
-			.contents( argumentCollection = arguments )
-			.filter( function( item ){
-				return !item.isDirectory;
-			} )
-			.map( function( item ){
-				return replaceNoCase( item.key, getProperties().path, "" );
-			} );
+		arguments.type = "file";		
+		return this.contents( argumentCollection = arguments );
 	};
 
 	/**
@@ -1131,7 +1178,14 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		boolean recurse
 	){
 		arguments.map = true;
-		this.contents( argumentCollection = arguments );
+		return files( argumentCollection = arguments ).map( function( file ){
+			return {
+				"path"     : arguments.file.key,
+				"contents" : get( arguments.file.key ),
+				"size"     : arguments.file.size
+			};
+		} );
+		return this.contents( argumentCollection = arguments );
 	};
 
 	/**
@@ -1150,8 +1204,17 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 */
 	array function allContentsMap( required directory, any filter, sort ){
 		arguments.recurse = true;
-		this.contentsMap( argumentCollection = arguments );
+		return contentsMap( argumentCollection = arguments );
 	};
+
+	/**
+	 * Is the file is hidden or not. Here to adhere to interface.
+	 *
+	 * @path The file path
+	 */
+	boolean function isHidden( required path ){
+		return info( path ).isHidden;
+	}
 
 	/************************* PRIVATE METHODS *******************************/
 

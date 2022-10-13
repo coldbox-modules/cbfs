@@ -25,6 +25,9 @@ component extends="coldbox.system.testing.BaseTestCase" {
 		describe( "#variables.providerName# Abstract Specs", function(){
 			beforeEach( function( currentSpec ){
 				disk = getDisk();
+				if ( structKeyExists( this, "delaySpecs") && isNumeric( this.delaySpecs ) ) {
+					sleep( this.delaySpecs );
+				}
 			} );
 
 			/********************************************************/
@@ -45,7 +48,8 @@ component extends="coldbox.system.testing.BaseTestCase" {
 						disk.create(
 							path    : path,
 							contents: "hola amigo!",
-							metadata: {}
+							metadata: {},
+							overwrite: true
 						);
 						expect( disk.exists( path ) ).toBeTrue( "File should exist" );
 						expect( disk.get( path ) ).toBe( "hola amigo!" );
@@ -186,7 +190,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 							contents  = "my contents",
 							overwrite = true
 						);
-						disk.copy( sourcePath, destination );
+						disk.copy( source=sourcePath, destination=destination, overwrite=true );
 						expect( disk.exists( destination ) ).toBeTrue();
 						expect( disk.exists( sourcePath ) ).toBeTrue();
 						expect( disk.get( destination ) ).toBe( disk.get( sourcePath ) );
@@ -205,7 +209,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 								contents  = "old stuff",
 								overwrite = true
 							);
-							disk.copy( sourcePath, destination );
+							disk.copy( source=sourcePath, destination=destination, overwrite=true );
 							expect( disk.exists( destination ) ).toBeTrue();
 							expect( disk.exists( sourcePath ) ).toBeTrue();
 							expect( disk.get( destination ) ).toBe( disk.get( sourcePath ) );
@@ -225,7 +229,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 							);
 
 							expect( function(){
-								disk.copy( sourcePath, destination, false );
+								disk.copy( source=sourcePath, destination=destination, overwrite=false );
 							} ).toThrow( "cbfs.FileOverrideException" );
 						} );
 					} );
@@ -233,7 +237,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 				given( "A non-existent source", function(){
 					it( "it should throw an FileNotFoundException", function(){
 						expect( function(){
-							disk.copy( sourcePath, destination );
+							disk.copy( source=sourcePath, destination=destination );
 						} ).toThrow( "cbfs.FileNotFoundException" );
 					} );
 				} );
@@ -272,7 +276,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 								contents  = "old stuff",
 								overwrite = true
 							);
-							disk.move( sourcePath, destination );
+							disk.move( source=sourcePath, destination=destination, overwrite=true );
 							expect( disk.exists( destination ) ).toBeTrue( "destination should exist" );
 							expect( disk.missing( sourcePath ) ).toBeTrue( "source should not exist" );
 							expect( disk.get( destination ) ).toBe( "my contents" );
@@ -319,10 +323,10 @@ component extends="coldbox.system.testing.BaseTestCase" {
 					} );
 				} );
 				given( "a directory that exists", function(){
-					it( "it can verify it", function(){
-						var filePath      = "/one/two/test_file.txt";
-						var directoryPath = "/one/two/";
-						disk.deleteDirectory( "/one/" );
+					it( "it can verify it real good", function(){
+						var filePath      = "/one/test_file.txt";
+						var directoryPath = "/one";
+						disk.deleteDirectory( directory="/one", recurse=true );
 						expect( disk.exists( directoryPath ) ).toBeFalse( "#directoryPath# should not exist" );
 						disk.create( filePath, "my contents" );
 						expect( disk.exists( directoryPath ) ).toBeTrue( "#directoryPath# should exist" );
@@ -334,6 +338,8 @@ component extends="coldbox.system.testing.BaseTestCase" {
 				given( "a file exists", function(){
 					then( "it should delete it", function(){
 						var path = "test_file.txt";
+						disk.create( path=path, contents="test", overwrite=true );
+						expect( disk.exists( path ) ).toBeTrue();
 						disk.delete( path );
 						expect( disk.exists( path ) ).toBeFalse( "#path# should not exist" );
 
@@ -479,7 +485,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 					expect( before ).toBeDate();
 					sleep( 500 );
 					disk.touch( path );
-					expect( getEpochTimeFromLocal( disk.lastModified( path ) ) ).toBeGTE( before );
+					expect( getEpochTimeFromLocal( disk.lastModified( path ) ) ).toBeGTE( getEpochTimeFromLocal( before ) );
 				} );
 			} );
 
@@ -600,7 +606,11 @@ component extends="coldbox.system.testing.BaseTestCase" {
 				given( "a non-existent file", function(){
 					then( "it will throw a `cbfs.FileNotFoundException`", function(){
 						var path = "does_not_exist.txt";
-						disk.delete( path );
+
+						expect( function() {
+							disk.delete( path=path, throwOnMissing=true  );
+						} ).toThrow( "cbfs.FileNotFoundException" );
+
 						expect( disk.exists( path ) ).toBeFalse( "File should not exist" );
 						expect( disk.isFile( path ) ).toBeFalse();
 					} );
@@ -817,7 +827,6 @@ component extends="coldbox.system.testing.BaseTestCase" {
 				given( "an non existent directory and throwOnMissing = true", function(){
 					then( "it should throw a cbfs.DirectoryNotFoundException", function(){
 						var path = "bogus";
-
 						expect( function(){
 							disk.deleteDirectory( directory = path, throwOnMissing = true );
 						} ).toThrow( "cbfs.DirectoryNotFoundException" );
@@ -1141,11 +1150,13 @@ component extends="coldbox.system.testing.BaseTestCase" {
 						var dirPath = "bddtests";
 
 						disk.createDirectory( dirPath );
-						disk.create( dirPath & "/luis.txt", "hello mi amigo" );
-						disk.create( dirPath & "/Test.cfc", "component{}" );
-						disk.create( dirPath & "/embedded/luis.txt", "hello mi amigo" );
-
+						disk.create( path=dirPath & "/luis.txt", contents="hello mi amigo", overwrite=true);
+						disk.create( path=dirPath & "/Test.cfc", contents="component{}", overwrite=true );
+						disk.create( path=dirPath & "/embedded/luis.txt", contents="hello mi amigo", overwrite=true );
+						var start = getTickCount();
 						var results = disk.allContentsMap( dirPath );
+						debug( getTickcount() - start );
+						debug( results );
 						expect( results.len() ).toBe( 3 );
 						expect( results[ 1 ].contents ).notToBeEmpty();
 						expect( results[ 1 ].path ).notToBeEmpty();
