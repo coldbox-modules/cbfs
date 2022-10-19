@@ -22,7 +22,8 @@
     ],
     "contributors":[],
     "dependencies":{
-        "cbstreams":"^1.5"
+        "cbstreams":"^2.0",
+        "s3sdk":"^5.0.0+45"
     },
     "devDependencies":{
         "commandbox-cfformat":"*",
@@ -31,14 +32,15 @@
         "commandbox-cfconfig":"*"
     },
     "installPaths":{
-        "cbstreams":"modules/cbstreams/"
+        "cbstreams":"modules/cbstreams/",
+        "s3sdk":"modules/s3sdk/"
     },
     "ignore":[
         "**/.*",
         "test-harness",
         "/server*.json"
     ],
-	"testbox":{
+    "testbox":{
         "runner":"http://localhost:60299/tests/runner.cfm"
     },
     "scripts":{
