@@ -9,13 +9,22 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	property name="s3";
 
 	/**
+	 * Return if startup has occurred.
+	 *
+	 * @return Boolean
+	 */
+	function hasStarted() {
+		return structKeyExists( variables, "s3" );
+	}
+
+	/**
 	 * Configure the provider. Usually called at startup.
 	 *
 	 * @properties A struct of configuration data for this provider, usually coming from the configuration file
 	 *
 	 * @return S3Provider
 	 */
-	public function startup( required string name, struct properties = {} ){
+	function startup( required string name, struct properties = {} ){
 		try {
 			variables.s3 = variables.wirebox.getInstance( name="AmazonS3@s3sdk", initArguments=properties );
 		} catch ( any e ) {
@@ -42,7 +51,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * Called before the cbfs module is unloaded, or via reinits. This can be implemented
 	 * as you see fit to gracefully shutdown connections, sockets, etc.
 	 */
-	public function shutdown(){
+	function shutdown(){
 		return this;
 	}
 
@@ -100,7 +109,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 *
 	 * @return S3Provider
 	 */
-	public IDisk function setVisibility( required string path, required string visibility ){
+	function setVisibility( required string path, required string visibility ){
 		switch ( arguments.visibility ) {
 			case "private": {
 				arguments.visibility = variables.s3.ACL_PRIVATE;
@@ -126,7 +135,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 *
 	 * @path The target file
 	 */
-	public string function visibility( required string path ){
+	string function visibility( required string path ){
 		try {
 			var policies = variables.s3
 				.getAccessControlPolicy(
@@ -264,6 +273,10 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 			}
 		}
 
+		if ( arguments.overwrite && this.exists( arguments.destination ) ) {
+			this.delete( arguments.destination );
+		}	
+
 		variables.s3.copyObject(
 			fromBucket = variables.properties.bucketName,
 			fromURI    = buildPath( arguments.source ),
@@ -314,24 +327,6 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		);
 
 		return this.delete( arguments.source );
-	}
-
-	/**
-	 * Rename a file from one destination to another. Shortcut to the `move()` command
-	 *
-	 * @source      The source file path
-	 * @destination The end destination path
-	 *
-	 * @return S3Provider
-	 *
-	 * @throws cbfs.FileNotFoundException
-	 */
-	function rename(
-		required source,
-		required destination,
-		boolean overwrite = false
-	){
-		return this.move( argumentCollection = arguments );
 	}
 
 	/**
@@ -390,7 +385,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 *
 	 * @throws cbfs.FileNotFoundException
 	 */
-	public any function getAsBinary( required path ){
+	any function getAsBinary( required path ){
 		return toBinary( this.get( arguments.path ) );
 	}
 
@@ -414,7 +409,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @throws cbfs.FileNotFoundException
 	 * @throws cbfs.FileNotFoundException
 	 */
-	public string function url( required string path ){
+	string function url( required string path ){
 		return temporaryURL( path = arguments.path );
 	}
 
@@ -472,7 +467,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @path
 	 * @throwOnMissing When true an error will be thrown if the file does not exist
 	 */
-	public boolean function delete( required any path, boolean throwOnMissing = false ){
+	boolean function delete( required any path, boolean throwOnMissing = false ){
 		if ( this.exists( arguments.path ) ) {
 			if ( isDirectory( arguments.path ) ) {
 				this.contents(
@@ -594,10 +589,14 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 *
 	 * @throws cbfs.FileNotFoundException
 	 */
-	public boolean function isFile( required path ){
-		var ext = extension( arguments.path );
-		ensureFileExists( arguments.path );
-		return len( ext );
+	boolean function isFile( required path ){
+		try {
+			var ext = extension( arguments.path );
+			ensureFileExists( arguments.path );
+			return len( ext );
+		} catch ( cbfs.FileNotFoundException e ) {
+			return false;
+		}
 	}
 
 	/**
@@ -629,6 +628,17 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	}
 
 	/**
+	 * Is the file executable or not
+	 *
+	 * @path The file path
+	 *
+	 * @throws cbfs.FileNotFoundException - If the filepath is missing
+	 */
+	boolean function isExecutable( required path ){
+		return false;
+	}
+
+	/**
 	 * Find path names matching a given globbing pattern
 	 *
 	 * @pattern The globbing pattern to match
@@ -643,7 +653,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @path The file path
 	 * @mode Access mode, the same attributes you use for the Linux command `chmod`
 	 */
-	public IDisk function chmod( required string path, required string mode ){
+	function chmod( required string path, required string mode ){
 		switch ( right( mode, 1 ) ) {
 			case 7: {
 				var acl = variables.s3.ACL_PUBLIC_READ_WRITE;
@@ -730,8 +740,8 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 */
 	function createDirectory(
 		required directory,
-		boolean createPath,
-		boolean ignoreExists
+		boolean createPath = true,
+		boolean ignoreExists = true
 	){
 		return ensureDirectoryExists( arguments.directory );
 	}
@@ -755,7 +765,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	function copyDirectory(
 		required source,
 		required destination,
-		boolean recurse    = true,
+		boolean recurse    = false,
 		any filter         = "",
 		boolean createPath = true
 	){
@@ -799,28 +809,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	function moveDirectory(
 		required oldPath,
 		required newPath,
-		boolean createPath
-	){
-		return this.move(
-			source      = arguments.oldPath,
-			destination = arguments.newPath,
-			overwrite   = arguments.createPath
-		);
-	}
-
-	/**
-	 * Rename a directory, facade to `moveDirectory()`
-	 *
-	 * @oldPath    The source directory
-	 * @newPath    The destination directory
-	 * @createPath If false, expects all parent directories to exist, true will generate all necessary directories. Default is true.
-	 *
-	 * @return S3Provider
-	 */
-	function renameDirectory(
-		required oldPath,
-		required newPath,
-		boolean createPath
+		boolean createPath = true
 	){
 		return this.move(
 			source      = arguments.oldPath,
@@ -838,11 +827,22 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 *
 	 * @return A boolean value or a struct of booleans determining if the directory paths got deleted or not.
 	 */
-	public boolean function deleteDirectory(
+	boolean function deleteDirectory(
 		required string directory,
 		boolean recurse        = true,
 		boolean throwOnMissing = false
 	){
+
+		if ( !isDirectory( arguments.directory ) ) {
+			if ( arguments.throwOnMissing ) {
+				throw(
+					type    = "cbfs.DirectoryNotFoundException",
+					message = "Directory [#arguments.directory#] not found."
+				);
+			}
+			return false;
+		}
+
 		if (
 			!arguments.recurse
 			&&
@@ -861,18 +861,27 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 				message = "The destination directory [#buildPath( directory )#] contains files and the recurse argument is false.  It may  not be deleted."
 			);
 		} else {
-			return this.delete( arguments.directory, arguments.throwOnMissing );
+			return delete( arguments.directory, arguments.throwOnMissing );
 		}
 	}
 
 	/**
 	 * Empty the specified directory of all files and folders.
 	 *
-	 * @directory The directory
+	 * @directory      The directory
+	 * @throwOnMissing Throws an exception if the directory does not exist, defaults to false
 	 *
 	 * @return S3Provider
 	 */
-	function cleanDirectory( required directory ){
+	function cleanDirectory( required directory, boolean throwOnMissing = false ){
+
+		if ( !isDirectory( arguments.directory ) ) {
+			throw(
+				type    = "cbfs.DirectoryNotFoundException",
+				message = "Directory [#arguments.directory#] does not exist."
+			);
+		}
+
 		this.deleteDirectory( arguments.directory, true );
 		this.createDirectory( arguments.directory );
 		return this;
@@ -885,17 +894,43 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @filter    A string wildcard or a lambda/closure that receives the file path and should return true to include it in the returned array or not.
 	 * @sort      Columns by which to sort. e.g. Directory, Size DESC, DateLastModified.
 	 * @recurse   Recurse into subdirectories, default is false
+	 * @type      Filter the result to only include files, directories, or both. ('file|files', 'dir|directory', 'all'). Default is 'all'
+	 * @absolute  Local provider only: We return relative disk paths by default. If true, we return absolute paths
+	 *
 	 */
 	array function contents(
-		required directory = "",
+		required directory,
 		any filter,
 		sort,
-		boolean recurse
+		boolean recurse  = false,
+		type             = "all",
+		boolean absolute = false
 	){
+
+		if ( !isDirectory( arguments.directory ) ) {
+			throw(
+				type    = "cbfs.DirectoryNotFoundException",
+				message = "Directory [#arguments.directory#] does not exist."
+			);
+		}
+
 		var sourcePath = buildPath( arguments.directory ) & "/";
 
+		// writeDump( variables.s3.getBucket( bucketName = variables.properties.bucketName, prefix = sourcePath ) );
+		// abort;
 		var bucketContents = variables.s3
 			.getBucket( bucketName = variables.properties.bucketName, prefix = sourcePath )
+			.reduce( function( agg, item ) {
+				if ( item.isDirectory ) {
+					if ( type != "file" ) {
+						agg.append( item );
+					}
+					agg.append( this.contents( directory=item.key, filter=filter, sort=sort, recurse=recurse, type=type, absolute=absolute, map=true ), true )
+				} else if ( listLen( item.key, "." ) > 1 || val( item.size ) > 0 ) {
+					agg.append( item );
+				}
+				return agg;
+			}, [] )
 			.filter( function( item ){
 				if ( item.key == sourcePath ) {
 					return false;
@@ -907,12 +942,6 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 					return true;
 				}
 			} );
-
-		if ( !isNull( arguments.recurse ) && !arguments.recurse ) {
-			bucketContents = bucketContents.filter( function( item ){
-				return getDirectoryFromPath( item.key ) == sourcePath;
-			} );
-		}
 
 		if ( !isNull( arguments.sort ) ) {
 			bucketContents.sort( arguments.sort );
@@ -933,11 +962,16 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @directory The directory
 	 * @filter    A string wildcard or a lambda/closure that receives the file path and should return true to include it in the returned array or not.
 	 * @sort      Columns by which to sort. e.g. Directory, Size DESC, DateLastModified.
-	 * @recurse   Recurse into subdirectories, default is false
+	 * @type      Filter the result to only include files, directories, or both. ('file|files', 'dir|directory', 'all'). Default is 'all'
 	 */
-	array function allContents( required directory, any filter = "", sort ){
+	array function allContents(
+		required directory,
+		any filter,
+		sort,
+		type             = "all"
+	){
 		arguments.recurse = true;
-		return this.contents( argumentCollection = arguments );
+		return contents( argumentCollection = arguments );
 	}
 
 	/**
@@ -952,17 +986,11 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		required directory,
 		any filter,
 		sort,
-		boolean recurse
+		boolean recurse = false
 	){
 		arguments.map = true;
-		return this
-			.contents( argumentCollection = arguments )
-			.filter( function( item ){
-				return !item.isDirectory;
-			} )
-			.map( function( item ){
-				return replaceNoCase( item.key, getProperties().path, "" );
-			} );
+		arguments.type = "file";		
+		return this.contents( argumentCollection = arguments );
 	};
 
 	/**
@@ -977,7 +1005,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		required directory,
 		any filter,
 		sort,
-		boolean recurse
+		boolean recurse = false
 	){
 		arguments.type = "directory";
 		arguments.map  = true;
@@ -998,7 +1026,11 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @filter    A string wildcard or a lambda/closure that receives the file path and should return true to include it in the returned array or not.
 	 * @sort      Columns by which to sort. e.g. Directory, Size DESC, DateLastModified.
 	 */
-	array function allFiles( required directory, any filter, sort ){
+	array function allFiles(
+		required directory,
+		any filter,
+		sort
+	){
 		arguments.recurse = true;
 		this.files( argumentCollection = arguments );
 	};
@@ -1010,7 +1042,11 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @filter    A string wildcard or a lambda/closure that receives the file path and should return true to include it in the returned array or not.
 	 * @sort      Columns by which to sort. e.g. Directory, Size DESC, DateLastModified.
 	 */
-	array function allDirectories( required directory, any filter, sort ){
+	array function allDirectories(
+		required directory,
+		any filter,
+		sort
+	){
 		arguments.recurse = true;
 		this.directories( argumentCollection = arguments );
 	};
@@ -1131,7 +1167,14 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		boolean recurse
 	){
 		arguments.map = true;
-		this.contents( argumentCollection = arguments );
+		return files( argumentCollection = arguments ).map( function( file ){
+			return {
+				"path"     : arguments.file.key,
+				"contents" : get( arguments.file.key ),
+				"size"     : arguments.file.size
+			};
+		} );
+		return this.contents( argumentCollection = arguments );
 	};
 
 	/**
@@ -1150,8 +1193,28 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 */
 	array function allContentsMap( required directory, any filter, sort ){
 		arguments.recurse = true;
-		this.contentsMap( argumentCollection = arguments );
+		return contentsMap( argumentCollection = arguments );
 	};
+
+	/**
+	 * Is the file is hidden or not. Here to adhere to interface.
+	 *
+	 * @path The file path
+	 */
+	boolean function isHidden( required path ){
+		return info( path ).isHidden;
+	}
+
+	/**
+	 * Is the file is a symbolic link
+	 *
+	 * @path The file path
+	 *
+	 * @throws cbfs.FileNotFoundException - If the filepath is missing
+	 */
+	boolean function isSymbolicLink( required path ){
+		return false;
+	}
 
 	/************************* PRIVATE METHODS *******************************/
 
