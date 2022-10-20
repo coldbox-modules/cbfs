@@ -43,12 +43,12 @@
 						"properties": {
 							"visibility": "public", // can be 'public' or 'private'
 							"path": "",
-							"accessKey": "DO00UHCCGATUKJTRWHFT",
-							"secretKey": "uHa5m61Uv0+wWRjlBSK3M95kn0oMmFzKroSekdRSx3o",
-							"awsDomain": "sfo3.digitaloceanspaces.com",
-							"awsRegion": "",
-							"defaultBucketName": "granttestspaces",
-							"signatureType": "v4"
+							"accessKey": getSystemSetting( "AWS_S3_ACCESS_KEY", "" ),
+							"secretKey": getSystemSetting( "AWS_S3_SECRET_KEY", "" ),
+							"awsDomain": getSystemSetting( "AWS_S3_DOMAIN", "" ),
+							"awsRegion": getSystemSetting( "AWS_S3_REGION", "" ),
+							"defaultBucketName": getSystemSetting( "AWS_S3_BUCKET_NAME" ),
+							"signatureType": getSystemSetting( "AWS_S3_SIGNATURE_TYPE", "v4" )
 						}
 					}
 
