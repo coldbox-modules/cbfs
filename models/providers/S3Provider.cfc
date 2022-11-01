@@ -238,15 +238,15 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 			if ( arguments.throwOnMissing ) {
 				throw( type = "cbfs.FileNotFoundException", message = "File [#arguments.path#] not found." );
 			}
-			return this.create(
+			return create(
 				path     = arguments.path,
 				contents = arguments.contents,
 				metadata = arguments.metadata
 			);
 		}
-		return this.create(
+		return create(
 			path      = arguments.path,
-			contents  = arguments.contents & this.get( arguments.path ),
+			contents  = arguments.contents & get( arguments.path ),
 			overwrite = true
 		);
 	}
@@ -368,10 +368,10 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 			fromURI    = buildPath( arguments.source ),
 			toBucket   = variables.properties.bucketName,
 			toURI      = buildPath( arguments.destination ),
-			acl        = this.visibility( arguments.source )
+			acl        = visibility( arguments.source )
 		);
 
-		return this.delete( arguments.source );
+		return delete( arguments.source );
 	}
 
 	/**
@@ -431,7 +431,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @throws cbfs.FileNotFoundException
 	 */
 	any function getAsBinary( required path ){
-		return toBinary( this.get( arguments.path ) );
+		return toBinary( get( arguments.path ) );
 	}
 
 	/**
@@ -483,7 +483,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @throws cbfs.FileNotFoundException
 	 */
 	numeric function size( required path ){
-		return this.info( arguments.path ).size;
+		return info( arguments.path ).size;
 	}
 
 	/**
@@ -494,7 +494,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @throws cbfs.FileNotFoundException
 	 */
 	function lastModified( required path ){
-		return this.info( arguments.path ).lastModified;
+		return info( arguments.path ).lastModified;
 	}
 
 	/**
@@ -503,7 +503,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @path
 	 **/
 	function mimeType( required path ){
-		return this.info( arguments.path ).type;
+		return info( arguments.path ).type;
 	}
 
 	/**
@@ -513,16 +513,16 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @throwOnMissing When true an error will be thrown if the file does not exist
 	 */
 	boolean function delete( required any path, boolean throwOnMissing = false ){
-		if ( this.exists( arguments.path ) ) {
+		if ( exists( arguments.path ) ) {
 			if ( isDirectory( arguments.path ) ) {
-				this.contents(
+				contents(
 						directory = arguments.path,
 						recurse   = true,
 						map       = true
 					)
 					.each( function( item ){
 						if ( item.isDirectory ) {
-							this.delete( replace( item.key, getProperties().path, "" ) );
+							delete( replace( item.key, getProperties().path, "" ) );
 						}
 						variables.s3.deleteObject( bucketName = variables.properties.bucketName, uri = item.key );
 					} );
@@ -575,7 +575,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		ensureFileExists( arguments.path );
 		var filePath = buildPath( arguments.path );
 		var s3Info   = variables.s3.getObjectInfo( bucketName = variables.properties.bucketName, uri = filePath );
-		var acl      = this.visibility( arguments.path );
+		var acl      = visibility( arguments.path );
 		var info     = {
 			"name"         : getFileFromPath( filePath ),
 			"lastModified" : s3Info[ "Last-Modified" ],
@@ -620,11 +620,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 */
 	string function extension( required path ){
 		var fileName = this.name( arguments.path );
-		if ( listLen( fileName, "." ) > 1 ) {
-			return listLast( fileName, "." );
-		} else {
-			return "";
-		}
+		return listLen( fileName, "." ) > 1 ? listLast( fileName, "." ) : "";
 	}
 
 	/**
@@ -735,7 +731,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @return Stream object: See https://apidocs.ortussolutions.com/coldbox-modules/cbstreams/1.1.0/index.html
 	 */
 	function stream( required path ){
-		return streamBuilder.new().ofFile( this.url() );
+		return streamBuilder.new().ofFile( url() );
 	};
 
 	/**
@@ -1035,7 +1031,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	){
 		arguments.map = true;
 		arguments.type = "file";		
-		return this.contents( argumentCollection = arguments );
+		return contents( argumentCollection = arguments );
 	};
 
 	/**
@@ -1077,7 +1073,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		sort
 	){
 		arguments.recurse = true;
-		this.files( argumentCollection = arguments );
+		return files( argumentCollection = arguments );
 	};
 
 	/**
@@ -1093,7 +1089,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		sort
 	){
 		arguments.recurse = true;
-		this.directories( argumentCollection = arguments );
+		return directories( argumentCollection = arguments );
 	};
 
 	/**
@@ -1118,7 +1114,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		boolean recurse
 	){
 		arguments.map = true;
-		this.contents( argumentCollection = arguments )
+		return contents( argumentCollection = arguments )
 			.filter( function( item ){
 				return !item.isDirectory;
 			} );
@@ -1140,7 +1136,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 */
 	array function allFilesMap( required directory, any filter, sort ){
 		arguments.recurse = true;
-		this.filesMap( argumentCollection = arguments );
+		return filesMap( argumentCollection = arguments );
 	};
 
 	/**
@@ -1165,7 +1161,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		boolean recurse
 	){
 		arguments.map = true;
-		this.contents( argumentCollection = arguments )
+		return contents( argumentCollection = arguments )
 			.filter( function( item ){
 				return item.isDirectory;
 			} );
@@ -1187,7 +1183,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 */
 	array function allDirectoriesMap( required directory, any filter, sort ){
 		arguments.recurse = true;
-		this.directoriesMap( argumentCollection = arguments );
+		return directoriesMap( argumentCollection = arguments );
 	};
 
 	/**
@@ -1219,7 +1215,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 				"size"     : arguments.file.size
 			};
 		} );
-		return this.contents( argumentCollection = arguments );
+		return contents( argumentCollection = arguments );
 	};
 
 	/**
