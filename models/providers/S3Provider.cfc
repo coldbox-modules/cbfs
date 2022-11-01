@@ -25,8 +25,53 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @return S3Provider
 	 */
 	function startup( required string name, struct properties = {} ){
+
+		// Param the properties
+		param arguments.properties.awsDomain           	= "amazonaws.com";
+		param arguments.properties.awsRegion           	= "us-east-1";
+		param arguments.properties.encryptionCharset   	= "UTF-8";
+		param arguments.properties.signatureType       	= "V4";
+		param arguments.properties.ssl                	= true;
+		param arguments.properties.defaultTimeOut      	= 300;
+		param arguments.properties.defaultDelimiter    	= "/";
+		param arguments.properties.defaultBucketName   	= "";
+		param arguments.properties.defaultCacheControl 	= "no-store, no-cache, must-revalidate";
+		param arguments.properties.defaultStorageClass 	= "STANDARD";
+		param arguments.properties.defaultACL          	= "public-read";
+		param arguments.properties.throwOnRequestError 	= true;
+		param arguments.properties.retriesOnError		= 3;
+		param arguments.properties.autoContentType    	= false;
+		param arguments.properties.autoMD5            	= false;
+		param arguments.properties.serviceName         	= "s3";
+		param arguments.properties.debug             	= false;
+
+		// Map our s3sdk provider
+		variables.wirebox.getBinder()
+			.map( "cbfs-s3sdk-#arguments.name#" )
+			.to( "s3sdk.models.AmazonS3" )
+			.initArg( name : "accessKey", value : arguments.properties.accessKey )
+			.initArg( name : "secretKey", value : arguments.properties.secretKey )
+			.initArg( name: "awsDomain", value : arguments.properties.awsDomain )
+			.initArg( name: "awsRegion", value : arguments.properties.awsRegion )
+			.initArg( name: "encryptionCharset", value : arguments.properties.encryptionCharset )
+			.initArg( name: "signatureType", value : arguments.properties.signatureType )
+			.initArg( name: "ssl", value : arguments.properties.ssl )
+			.initArg( name: "defaultTimeOut", value : arguments.properties.defaultTimeOut )
+			.initArg( name: "defaultDelimiter", value : arguments.properties.defaultDelimiter )
+			.initArg( name: "defaultBucketName", value : arguments.properties.defaultBucketName )
+			.initArg( name: "defaultCacheControl", value : arguments.properties.defaultCacheControl )
+			.initArg( name: "defaultStorageClass", value : arguments.properties.defaultStorageClass )
+			.initArg( name: "defaultACL", value : arguments.properties.defaultACL )
+			.initArg( name: "throwOnRequestError", value : arguments.properties.throwOnRequestError )
+			.initArg( name: "retriesOnError", value : arguments.properties.retriesOnError )
+			.initArg( name: "autoContentType", value : arguments.properties.autoContentType )
+			.initArg( name: "autoMD5", value : arguments.properties.autoMD5 )
+			.initArg( name: "serviceName", value : arguments.properties.serviceName )
+			.initArg( name: "debug", value : arguments.properties.debug );
+
 		try {
-			variables.s3 = variables.wirebox.getInstance( name="AmazonS3@s3sdk", initArguments=properties );
+			variables.s3 = variables.wirebox.getInstance( "cbfs-s3sdk-#arguments.name#" );
+			// variables.s3 = variables.wirebox.getInstance( name="AmazonS3@s3sdk", initArguments=arguments.properties );
 		} catch ( any e ) {
 			throw(
 				type    = "cbfs.ProviderConfigurationException",
