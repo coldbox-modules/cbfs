@@ -118,7 +118,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		struct metadata   = {},
 		boolean overwrite = false
 	){
-		if ( !arguments.overwrite && this.exists( arguments.path ) ) {
+		if ( !arguments.overwrite && exists( arguments.path ) ) {
 			throw(
 				type    = "cbfs.FileOverrideException",
 				message = "Cannot create file. File already exists [Bucket: #variables.properties.bucketName#, Path: #buildPath( arguments.path )#]"
@@ -234,7 +234,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		struct metadata        = {},
 		boolean throwOnMissing = false
 	){
-		if ( !this.exists( arguments.path ) ) {
+		if ( !exists( arguments.path ) ) {
 			if ( arguments.throwOnMissing ) {
 				throw( type = "cbfs.FileNotFoundException", message = "File [#arguments.path#] not found." );
 			}
@@ -269,19 +269,19 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		struct metadata        = {},
 		boolean throwOnMissing = false
 	){
-		if ( !this.exists( arguments.path ) ) {
+		if ( !exists( arguments.path ) ) {
 			if ( arguments.throwOnMissing ) {
 				throw( type = "cbfs.FileNotFoundException", message = "File [#arguments.path#] not found." );
 			}
-			return this.create(
+			return create(
 				path     = arguments.path,
 				contents = arguments.contents,
 				metadata = arguments.metadata
 			);
 		}
-		return this.create(
+		return create(
 			path      = arguments.path,
-			contents  = this.get( arguments.path ) & arguments.contents,
+			contents  = get( arguments.path ) & arguments.contents,
 			overwrite = true
 		);
 	}
@@ -302,7 +302,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		required destination,
 		boolean overwrite = false
 	){
-		if ( !arguments.overwrite && this.exists( arguments.destination ) ) {
+		if ( !arguments.overwrite && exists( arguments.destination ) ) {
 			throw(
 				type    = "cbfs.FileOverrideException",
 				message = "Cannot create file. File already exists [Bucket: #variables.properties.bucketName#, Path: #buildPath( arguments.destination )#]"
@@ -318,8 +318,8 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 			}
 		}
 
-		if ( arguments.overwrite && this.exists( arguments.destination ) ) {
-			this.delete( arguments.destination );
+		if ( arguments.overwrite && exists( arguments.destination ) ) {
+			delete( arguments.destination );
 		}	
 
 		variables.s3.copyObject(
@@ -327,7 +327,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 			fromURI    = buildPath( arguments.source ),
 			toBucket   = variables.properties.bucketName,
 			toURI      = buildPath( arguments.destination ),
-			acl        = this.visibility( arguments.source )
+			acl        = visibility( arguments.source )
 		);
 
 		return this;
@@ -348,7 +348,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		required destination,
 		boolean overwrite = false
 	){
-		if ( !arguments.overwrite && this.exists( arguments.destination ) ) {
+		if ( !arguments.overwrite && exists( arguments.destination ) ) {
 			throw(
 				type    = "cbfs.FileOverrideException",
 				message = "Cannot create file. File already exists [Bucket: #variables.properties.bucketName#, Path: #buildPath( arguments.destination )#]"
@@ -810,8 +810,8 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		any filter         = "",
 		boolean createPath = true
 	){
-		var sourcePath      = buildPath( source );
-		var destinationPath = buildPath( destination );
+		var sourcePath      = source;
+		var destinationPath = destination;
 
 		if ( !arguments.createPath && !exists( destinationPath ) ) {
 			throw(
@@ -923,8 +923,8 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 			);
 		}
 
-		this.deleteDirectory( arguments.directory, true );
-		this.createDirectory( arguments.directory );
+		deleteDirectory( arguments.directory, true );
+		createDirectory( arguments.directory );
 		return this;
 	}
 
