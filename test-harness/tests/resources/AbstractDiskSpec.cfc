@@ -185,8 +185,8 @@ component extends="coldbox.system.testing.BaseTestCase" {
 							overwrite = true
 						);
 						disk.copy( source=sourcePath, destination=destination, overwrite=true );
-						expect( disk.exists( destination ) ).toBeTrue();
-						expect( disk.exists( sourcePath ) ).toBeTrue();
+						expect( disk.fileExists( destination ) ).toBeTrue();
+						expect( disk.fileExists( sourcePath ) ).toBeTrue();
 						expect( disk.get( destination ) ).toBe( disk.get( sourcePath ) );
 					} );
 				} );
@@ -204,8 +204,8 @@ component extends="coldbox.system.testing.BaseTestCase" {
 								overwrite = true
 							);
 							disk.copy( source=sourcePath, destination=destination, overwrite=true );
-							expect( disk.exists( destination ) ).toBeTrue();
-							expect( disk.exists( sourcePath ) ).toBeTrue();
+							expect( disk.fileExists( destination ) ).toBeTrue();
+							expect( disk.fileExists( sourcePath ) ).toBeTrue();
 							expect( disk.get( destination ) ).toBe( disk.get( sourcePath ) );
 						} );
 					} );
@@ -252,8 +252,8 @@ component extends="coldbox.system.testing.BaseTestCase" {
 							overwrite = true
 						);
 						disk.move( sourcePath, destination );
-						expect( disk.exists( destination ) ).toBeTrue( "destination should exist" );
-						expect( disk.missing( sourcePath ) ).toBeTrue( "source should not exist" );
+						expect( disk.fileExists( destination ) ).toBeTrue( "destination should exist" );
+						expect( disk.fileMissing( sourcePath ) ).toBeTrue( "source should not exist" );
 						expect( disk.get( destination ) ).toBe( "my contents" );
 					} );
 				} );
@@ -271,8 +271,8 @@ component extends="coldbox.system.testing.BaseTestCase" {
 								overwrite = true
 							);
 							disk.move( source=sourcePath, destination=destination, overwrite=true );
-							expect( disk.exists( destination ) ).toBeTrue( "destination should exist" );
-							expect( disk.missing( sourcePath ) ).toBeTrue( "source should not exist" );
+							expect( disk.fileExists( destination ) ).toBeTrue( "destination should exist" );
+							expect( disk.fileMissing( sourcePath ) ).toBeTrue( "source should not exist" );
 							expect( disk.get( destination ) ).toBe( "my contents" );
 						} );
 					} );
@@ -311,9 +311,9 @@ component extends="coldbox.system.testing.BaseTestCase" {
 					it( "it can verify it", function(){
 						var path = "test_file.txt";
 						disk.delete( path );
-						expect( disk.exists( path ) ).toBeFalse( "#path# should not exist" );
+						expect( disk.fileExists( path ) ).toBeFalse( "#path# should not exist" );
 						disk.create( path, "my contents" );
-						expect( disk.exists( path ) ).toBeTrue( "#path# should exist" );
+						expect( disk.fileExists( path ) ).toBeTrue( "#path# should exist" );
 					} );
 				} );
 				given( "a directory that exists", function(){
@@ -321,10 +321,10 @@ component extends="coldbox.system.testing.BaseTestCase" {
 						var filePath      = "one/test_file.txt";
 						var directoryPath = "one";
 						disk.deleteDirectory( directory="one", recurse=true );
-						expect( disk.exists( directoryPath ) ).toBeFalse( "#directoryPath# should not exist" );
+						expect( disk.directoryExists( directoryPath ) ).toBeFalse( "#directoryPath# should not exist" );
 						disk.createDirectory( directoryPath );
 						disk.create( filePath, "my contents" );
-						expect( disk.exists( directoryPath ) ).toBeTrue( "#directoryPath# should exist" );
+						expect( disk.directoryExists( directoryPath ) ).toBeTrue( "#directoryPath# should exist" );
 					} );
 				} );
 			} );
@@ -334,13 +334,13 @@ component extends="coldbox.system.testing.BaseTestCase" {
 					then( "it should delete it", function(){
 						var path = "test_file.txt";
 						disk.create( path=path, contents="test", overwrite=true );
-						expect( disk.exists( path ) ).toBeTrue();
+						expect( disk.fileExists( path ) ).toBeTrue();
 						disk.delete( path );
-						expect( disk.exists( path ) ).toBeFalse( "#path# should not exist" );
+						expect( disk.fileExists( path ) ).toBeFalse( "#path# should not exist" );
 
 						disk.create( path, "my contents" );
 						expect( disk.delete( path ) ).toBeTrue( "delete() should return true" );
-						expect( disk.exists( path ) ).toBeFalse( "#path# should not exist" );
+						expect( disk.fileExists( path ) ).toBeFalse( "#path# should not exist" );
 					} );
 				} );
 				given( "a file doesn't exist and throwOnMissing is false", function(){
@@ -368,7 +368,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 						var path = "test_file.txt";
 						disk.delete( path );
 						disk.touch( path );
-						expect( disk.exists( path ) ).toBeTrue( "[#path#] should exist" );
+						expect( disk.fileExists( path ) ).toBeTrue( "[#path#] should exist" );
 						expect( disk.get( path ) ).toBe( "" );
 					} );
 				} );
@@ -381,7 +381,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 						sleep( 1000 );
 
 						var after = disk.touch( path ).lastModified( path );
-						expect( disk.exists( path ) ).toBeTrue( "[#path#] should exist" );
+						expect( disk.fileExists( path ) ).toBeTrue( "[#path#] should exist" );
 						expect( disk.get( path ) ).toBe( "hello" );
 						expect( before ).toBeLT( after );
 					} );
@@ -391,7 +391,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 						var path = "/one/two/test_file.txt";
 						disk.delete( path );
 						disk.touch( path );
-						expect( disk.exists( path ) ).toBeTrue( "[#path#] should exist" );
+						expect( disk.fileExists( path ) ).toBeTrue( "[#path#] should exist" );
 						expect( disk.get( path ) ).toBe( "" );
 					} );
 				} );
@@ -399,7 +399,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 					then( "It should throw a `cbfs.PathNotFoundException`", function(){
 						var path = "/one/two/test_file.txt";
 						disk.deleteDirectory( "/one/two" );
-						expect( disk.exists( path ) ).toBeFalse( "[#path#] should not exist" );
+						expect( disk.fileExists( path ) ).toBeFalse( "[#path#] should not exist" );
 						expect( function(){
 							disk.touch( path = path, createPath = false );
 						} ).toThrow( "cbfs.PathNotFoundException" );
@@ -426,7 +426,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 				it( "throws an exception if the file does not exist", function(){
 					var path = "test_file.txt";
 					disk.delete( path );
-					expect( disk.exists( path ) ).toBeFalse( "[#path#] should not exist." );
+					expect( disk.fileExists( path ) ).toBeFalse( "[#path#] should not exist." );
 					expect( function(){
 						disk.uri( path );
 					} ).toThrow( "cbfs.FileNotFoundException" );
@@ -447,7 +447,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 				it( "throws an exception if the file does not exist", function(){
 					var path = "test_file.txt";
 					disk.delete( path );
-					expect( disk.exists( path ) ).toBeFalse( "[#path#] should not exist." );
+					expect( disk.fileExists( path ) ).toBeFalse( "[#path#] should not exist." );
 					expect( function(){
 						disk.temporaryUri( path );
 					} ).toThrow( "cbfs.FileNotFoundException" );
@@ -463,7 +463,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 						contents  = contents,
 						overwrite = true
 					);
-					expect( disk.exists( path ) ).toBeTrue( "[#path#] should exist." );
+					expect( disk.fileExists( path ) ).toBeTrue( "[#path#] should exist." );
 					expect( disk.size( path ) ).toBe( retrieveSizeForTest( path, contents ) );
 				} );
 			} );
@@ -606,7 +606,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 							disk.delete( path=path, throwOnMissing=true  );
 						} ).toThrow( "cbfs.FileNotFoundException" );
 
-						expect( disk.exists( path ) ).toBeFalse( "File should not exist" );
+						expect( disk.fileExists( path ) ).toBeFalse( "File should not exist" );
 						expect( disk.isFile( path ) ).toBeFalse();
 					} );
 				} );
@@ -737,7 +737,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 						var path = "bddtests";
 						disk.deleteDirectory( path );
 						disk.createDirectory( path );
-						expect( disk.exists( path ) ).toBeTrue( "#path# should exist" );
+						expect( disk.directoryExists( path ) ).toBeTrue( "#path# should exist" );
 						expect( disk.isDirectory( path ) ).toBeTrue( "#path# should be a directory" );
 					} );
 				} );
@@ -783,10 +783,10 @@ component extends="coldbox.system.testing.BaseTestCase" {
 						);
 
 						expect( disk.deleteDirectory( path ) ).toBeTrue();
-						expect( disk.exists( path ) ).toBeFalse( "#path# should not exist" );
-						expect( disk.exists( path & "/test.txt" ) ).toBeFalse( "test.txt should not exist" );
-						expect( disk.exists( path & "/embedded" ) ).toBeFalse( "embedded directory should not exist" );
-						expect( disk.exists( path & "/embedded/test.txt" ) ).toBeFalse( "embedded test.txt should not exist" );
+						expect( disk.directoryExists( path ) ).toBeFalse( "#path# should not exist" );
+						expect( disk.fileExists( path & "/test.txt" ) ).toBeFalse( "test.txt should not exist" );
+						expect( disk.directoryExists( path & "/embedded" ) ).toBeFalse( "embedded directory should not exist" );
+						expect( disk.fileExists( path & "/embedded/test.txt" ) ).toBeFalse( "embedded test.txt should not exist" );
 					} );
 				} );
 				given( "a valid directory and recurse = false", function(){
@@ -806,10 +806,10 @@ component extends="coldbox.system.testing.BaseTestCase" {
 						);
 
 						expect( disk.deleteDirectory( path ) ).toBeTrue();
-						expect( disk.exists( path ) ).toBeFalse();
-						expect( disk.exists( path & "/test.txt" ) ).toBeFalse();
-						expect( disk.exists( path & "/embedded" ) ).toBeFalse();
-						expect( disk.exists( path & "/embedded/test.txt" ) ).toBeFalse();
+						expect( disk.directoryExists( path ) ).toBeFalse();
+						expect( disk.fileExists( path & "/test.txt" ) ).toBeFalse();
+						expect( disk.directoryExists( path & "/embedded" ) ).toBeFalse();
+						expect( disk.fileExists( path & "/embedded/test.txt" ) ).toBeFalse();
 					} );
 				} );
 				given( "an non existent directory and throwOnMissing = false", function(){
@@ -834,14 +834,14 @@ component extends="coldbox.system.testing.BaseTestCase" {
 						var dirPath = "bddtests";
 						disk.deleteDirectory( dirPath );
 						disk.createDirectory( dirPath );
-						expect( disk.exists( dirPath ) ).toBeTrue( "#dirPath# should exist" );
+						expect( disk.directoryExists( dirPath ) ).toBeTrue( "#dirPath# should exist" );
 						disk.create( dirPath & "/luis.txt", "hello mi amigo" );
 						disk.moveDirectory( dirPath, "tddtests" );
 						return;
 
-						expect( disk.exists( dirPath ) ).toBeFalse( "#dirPath# should not exist" );
-						expect( disk.exists( "tddtests" ) ).toBeTrue( "tddtests should exist" );
-						expect( disk.exists( "tddtests/luis.txt" ) ).toBeTrue( "tddtests/luis.txt should exist" );
+						expect( disk.directoryExists( dirPath ) ).toBeFalse( "#dirPath# should not exist" );
+						expect( disk.directoryExists( "tddtests" ) ).toBeTrue( "tddtests should exist" );
+						expect( disk.fileExists( "tddtests/luis.txt" ) ).toBeTrue( "tddtests/luis.txt should exist" );
 					} );
 				} );
 				given( "an invalid old path", function(){
@@ -871,15 +871,15 @@ component extends="coldbox.system.testing.BaseTestCase" {
 						disk.create( sourcePath & "/luis.txt", "hello mi amigo" );
 						disk.create( sourcePath & "/embedded/luis.txt", "hola" );
 
-						expect( disk.exists( destinationPath ) ).toBeFalse( "#destinationPath# should not exist" );
+						expect( disk.directoryExists( destinationPath ) ).toBeFalse( "#destinationPath# should not exist" );
 						return;
-						expect( disk.exists( sourcePath ) ).toBeTrue( "#sourcePath# should exist" );
+						expect( disk.directoryExists( sourcePath ) ).toBeTrue( "#sourcePath# should exist" );
 						disk.copyDirectory( sourcePath, destinationPath );
 
-						expect( disk.exists( sourcePath ) ).toBeTrue( "#sourcePath# should still exist" );
-						expect( disk.exists( destinationPath ) ).toBeTrue( "#destinationPath# should exist" );
-						expect( disk.exists( "#destinationPath#/luis.txt" ) ).toBeTrue( " first level file should exist" );
-						expect( disk.exists( "#destinationPath#/embedded/luis.txt" ) ).toBeFalse( "embedded should have been skipped" );
+						expect( disk.directoryExists( sourcePath ) ).toBeTrue( "#sourcePath# should still exist" );
+						expect( disk.directoryExists( destinationPath ) ).toBeTrue( "#destinationPath# should exist" );
+						expect( disk.fileExists( "#destinationPath#/luis.txt" ) ).toBeTrue( " first level file should exist" );
+						expect( disk.fileExists( "#destinationPath#/embedded/luis.txt" ) ).toBeFalse( "embedded should have been skipped" );
 					} );
 				} );
 
@@ -888,18 +888,18 @@ component extends="coldbox.system.testing.BaseTestCase" {
 						disk.createDirectory( sourcePath );
 						disk.create( sourcePath & "/luis.txt", "hello mi amigo" );
 						disk.create( sourcePath & "/embedded/luis.txt", "hola" );
-						expect( disk.exists( destinationPath ) ).toBeFalse( "#destinationPath# should not exist" );
-						expect( disk.exists( sourcePath ) ).toBeTrue( "#sourcePath# should exist" );
+						expect( disk.directoryExists( destinationPath ) ).toBeFalse( "#destinationPath# should not exist" );
+						expect( disk.directoryExists( sourcePath ) ).toBeTrue( "#sourcePath# should exist" );
 						disk.copyDirectory(
 							source      = sourcePath,
 							destination = destinationPath,
 							recurse     = true
 						);
 							
-						expect( disk.exists( sourcePath ) ).toBeTrue( "#sourcePath# should still exist" );
-						expect( disk.exists( destinationPath ) ).toBeTrue( "#destinationPath# should exist" );
-						expect( disk.exists( "#destinationPath#/luis.txt" ) ).toBeTrue( " first level file should exist" );
-						expect( disk.exists( "#destinationPath#/embedded/luis.txt" ) ).toBeTrue( "embedded should exist" );
+						expect( disk.directoryExists( sourcePath ) ).toBeTrue( "#sourcePath# should still exist" );
+						expect( disk.directoryExists( destinationPath ) ).toBeTrue( "#destinationPath# should exist" );
+						expect( disk.fileExists( "#destinationPath#/luis.txt" ) ).toBeTrue( " first level file should exist" );
+						expect( disk.fileExists( "#destinationPath#/embedded/luis.txt" ) ).toBeTrue( "embedded should exist" );
 					} );
 				} );
 
@@ -909,8 +909,8 @@ component extends="coldbox.system.testing.BaseTestCase" {
 						disk.create( sourcePath & "/luis.cfc", "component{}" );
 						disk.create( sourcePath & "/embedded/luis.txt", "hola" );
 
-						expect( disk.exists( destinationPath ) ).toBeFalse( "#destinationPath# should not exist" );
-						expect( disk.exists( sourcePath ) ).toBeTrue( "#sourcePath# should exist" );
+						expect( disk.directoryExists( destinationPath ) ).toBeFalse( "#destinationPath# should not exist" );
+						expect( disk.directoryExists( sourcePath ) ).toBeTrue( "#sourcePath# should exist" );
 						disk.copyDirectory(
 							source      = sourcePath,
 							destination = destinationPath,
@@ -918,10 +918,10 @@ component extends="coldbox.system.testing.BaseTestCase" {
 							filter      = "*.cfc"
 						);
 
-						expect( disk.exists( sourcePath ) ).toBeTrue( "#sourcePath# should still exist" );
-						expect( disk.exists( destinationPath ) ).toBeTrue( "#destinationPath# should exist" );
-						expect( disk.exists( "#destinationPath#/luis.cfc" ) ).toBeTrue( "non-filtered file should exist" );
-						expect( disk.exists( "#destinationPath#/embedded/luis.txt" ) ).toBeFalse( "filtered file should NOT exist" );
+						expect( disk.directoryExists( sourcePath ) ).toBeTrue( "#sourcePath# should still exist" );
+						expect( disk.directoryExists( destinationPath ) ).toBeTrue( "#destinationPath# should exist" );
+						expect( disk.fileExists( "#destinationPath#/luis.cfc" ) ).toBeTrue( "non-filtered file should exist" );
+						expect( disk.fileExists( "#destinationPath#/embedded/luis.txt" ) ).toBeFalse( "filtered file should NOT exist" );
 					} );
 				} );
 
@@ -934,8 +934,8 @@ component extends="coldbox.system.testing.BaseTestCase" {
 							disk.create( sourcePath & "/luis.cfc", "component{}" );
 							disk.create( sourcePath & "/embedded/luis.txt", "hola" );
 							
-							expect( disk.exists( destinationPath ) ).toBeFalse( "#destinationPath# should not exist" );
-							expect( disk.exists( sourcePath ) ).toBeTrue( "#sourcePath# should exist" );
+							expect( disk.directoryExists( destinationPath ) ).toBeFalse( "#destinationPath# should not exist" );
+							expect( disk.directoryExists( sourcePath ) ).toBeTrue( "#sourcePath# should exist" );
 
 							disk.copyDirectory(
 								source      = sourcePath,
@@ -946,10 +946,10 @@ component extends="coldbox.system.testing.BaseTestCase" {
 								}
 							);
 
-							expect( disk.exists( sourcePath ) ).toBeTrue( "#sourcePath# should still exist" );
-							expect( disk.exists( destinationPath ) ).toBeTrue( "#destinationPath# should exist" );
-							expect( disk.exists( "#destinationPath#/luis.cfc" ) ).toBeTrue( "non-filtered file should exist" );
-							expect( disk.exists( "#destinationPath#/embedded/luis.txt" ) ).toBeFalse( "filtered file should NOT exist" );
+							expect( disk.directoryExists( sourcePath ) ).toBeTrue( "#sourcePath# should still exist" );
+							expect( disk.directoryExists( destinationPath ) ).toBeTrue( "#destinationPath# should exist" );
+							expect( disk.fileExists( "#destinationPath#/luis.cfc" ) ).toBeTrue( "non-filtered file should exist" );
+							expect( disk.fileExists( "#destinationPath#/embedded/luis.txt" ) ).toBeFalse( "filtered file should NOT exist" );
 						} );
 					}
 				);
@@ -965,202 +965,202 @@ component extends="coldbox.system.testing.BaseTestCase" {
 				} );
 			} );
 
-			// story( "The disk can clean directories", function(){
-			// 	given( "a valid directory", function(){
-			// 		then( "it will clean the directory", function(){
-			// 			var dirPath = "bddtests";
+			story( "The disk can clean directories", function(){
+				given( "a valid directory", function(){
+					then( "it will clean the directory", function(){
+						var dirPath = "bddtests";
 
-			// 			disk.createDirectory( dirPath );
-			// 			disk.create( dirPath & "/luis.txt", "hello mi amigo" );
-			// 			disk.create( dirPath & "/embedded/luis.txt", "hello mi amigo" );
+						disk.createDirectory( dirPath );
+						disk.create( dirPath & "/luis.txt", "hello mi amigo" );
+						disk.create( dirPath & "/embedded/luis.txt", "hello mi amigo" );
 
-			// 			disk.cleanDirectory( dirPath );
+						disk.cleanDirectory( dirPath );
 
-			// 			expect( disk.exists( dirPath ) ).toBeTrue( "directory should remain" );
-			// 			expect( disk.exists( dirPath & "/luis.txt" ) ).toBeFalse();
-			// 			expect( disk.exists( dirPath & "/embedded/luis.txt" ) ).toBeFalse();
-			// 		} );
-			// 	} );
-			// 	given( "an invalid directory", function(){
-			// 		then( "it should throw a cbfs.DirectoryNotFoundException duh", function(){
-			// 			var dirPath = "boguspath";
-			// 			expect( function(){
-			// 				disk.cleanDirectory( directory = dirPath, throwOnMissing = true );
-			// 			} ).toThrow( "cbfs.DirectoryNotFoundException" );
-			// 		} );
-			// 	} );
-			// } );
+						expect( disk.directoryExists( dirPath ) ).toBeTrue( "directory should remain" );
+						expect( disk.fileExists( dirPath & "/luis.txt" ) ).toBeFalse();
+						expect( disk.fileExists( dirPath & "/embedded/luis.txt" ) ).toBeFalse();
+					} );
+				} );
+				given( "an invalid directory", function(){
+					then( "it should throw a cbfs.DirectoryNotFoundException duh", function(){
+						var dirPath = "boguspath";
+						expect( function(){
+							disk.cleanDirectory( directory = dirPath, throwOnMissing = true );
+						} ).toThrow( "cbfs.DirectoryNotFoundException" );
+					} );
+				} );
+			} );
 
-			// story( "The disk can get the contents of a directory", function(){
-			// 	beforeEach( function( currentSpec ){
-			// 		disk.deleteDirectory( "bddtests" );
-			// 	} );
-			// 	given( "a valid directory", function(){
-			// 		then( "it will list the directory", function(){
-			// 			var dirPath = "bddtests";
+			story( "The disk can get the contents of a directory", function(){
+				beforeEach( function( currentSpec ){
+					disk.deleteDirectory( "bddtests" );
+				} );
+				given( "a valid directory", function(){
+					then( "it will list the directory", function(){
+						var dirPath = "bddtests";
 
-			// 			disk.createDirectory( dirPath );
-			// 			disk.create( dirPath & "/luis.txt", "hello mi amigo" );
-			// 			disk.create( dirPath & "/embedded/luis.txt", "hello mi amigo" );
+						disk.createDirectory( dirPath );
+						disk.create( dirPath & "/luis.txt", "hello mi amigo" );
+						disk.create( dirPath & "/embedded/luis.txt", "hello mi amigo" );
 
-			// 			var results = disk.contents( dirPath & "/" );
+						var results = disk.contents( dirPath & "/" );
 
-			// 			expect( results.len() ).toBe( 2 );
-			// 		} );
-			// 	} );
-			// 	given( "a valid directory and recurse = true", function(){
-			// 		then( "it will list the directory recursively", function(){
-			// 			var dirPath = "bddtests";
+						expect( results.len() ).toBe( 2 );
+					} );
+				} );
+				given( "a valid directory and recurse = true", function(){
+					then( "it will list the directory recursively", function(){
+						var dirPath = "bddtests";
 
-			// 			disk.createDirectory( dirPath );
-			// 			disk.create( dirPath & "/luis.txt", "hello mi amigo" );
-			// 			disk.create( dirPath & "/embedded/luis.txt", "hello mi amigo" );
+						disk.createDirectory( dirPath );
+						disk.create( dirPath & "/luis.txt", "hello mi amigo" );
+						disk.create( dirPath & "/embedded/luis.txt", "hello mi amigo" );
 
-			// 			var results = disk.contents( directory = dirPath, recurse = true );
-			// 			expect( results.toList() ).toInclude( "bddtests/embedded/luis.txt" );
-			// 		} );
-			// 	} );
-			// 	given( "a valid directory using allContents()", function(){
-			// 		then( "it will list the directory recursively", function(){
-			// 			var dirPath = "bddtests";
+						var results = disk.contents( directory = dirPath, recurse = true );
+						expect( results.toList() ).toInclude( "bddtests/embedded/luis.txt" );
+					} );
+				} );
+				given( "a valid directory using allContents()", function(){
+					then( "it will list the directory recursively", function(){
+						var dirPath = "bddtests";
 
-			// 			disk.createDirectory( dirPath );
-			// 			disk.create( dirPath & "/luis.txt", "hello mi amigo" );
-			// 			disk.create( dirPath & "/embedded/luis.txt", "hello mi amigo" );
+						disk.createDirectory( dirPath );
+						disk.create( dirPath & "/luis.txt", "hello mi amigo" );
+						disk.create( dirPath & "/embedded/luis.txt", "hello mi amigo" );
 
-			// 			var results = disk.allContents( dirPath );
-			// 			expect( results.toList() ).toInclude( "bddtests/embedded/luis.txt" );
-			// 		} );
-			// 	} );
-			// 	given( "a valid directory with type of 'file'", function(){
-			// 		then( "it will list the directory for files only", function(){
-			// 			var dirPath = "bddtests";
+						var results = disk.allContents( dirPath );
+						expect( results.toList() ).toInclude( "bddtests/embedded/luis.txt" );
+					} );
+				} );
+				given( "a valid directory with type of 'file'", function(){
+					then( "it will list the directory for files only", function(){
+						var dirPath = "bddtests";
 
-			// 			disk.createDirectory( dirPath );
-			// 			disk.create( dirPath & "/luis.txt", "hello mi amigo" );
-			// 			disk.create( dirPath & "/embedded/luis.txt", "hello mi amigo" );
+						disk.createDirectory( dirPath );
+						disk.create( dirPath & "/luis.txt", "hello mi amigo" );
+						disk.create( dirPath & "/embedded/luis.txt", "hello mi amigo" );
 
-			// 			var results = disk.contents( directory = dirPath, type = "file" );
-			// 			expect( results.len() ).toBe( 1 );
-			// 		} );
-			// 	} );
-			// 	given( "a valid directory with a files() call", function(){
-			// 		then( "it will list the directory for files only", function(){
-			// 			var dirPath = "bddtests";
+						var results = disk.contents( directory = dirPath, type = "file" );
+						expect( results.len() ).toBe( 1 );
+					} );
+				} );
+				given( "a valid directory with a files() call", function(){
+					then( "it will list the directory for files only", function(){
+						var dirPath = "bddtests";
 
-			// 			disk.createDirectory( dirPath );
-			// 			disk.create( dirPath & "/luis.txt", "hello mi amigo" );
-			// 			disk.create( dirPath & "/embedded/luis.txt", "hello mi amigo" );
+						disk.createDirectory( dirPath );
+						disk.create( dirPath & "/luis.txt", "hello mi amigo" );
+						disk.create( dirPath & "/embedded/luis.txt", "hello mi amigo" );
 
-			// 			var results = disk.files( dirPath );
-			// 			expect( results.len() ).toBe( 1 );
-			// 		} );
-			// 	} );
-			// 	given( "a valid directory with type of 'dir'", function(){
-			// 		then( "it will list the directory for directories only", function(){
-			// 			var dirPath = "bddtests";
+						var results = disk.files( dirPath );
+						expect( results.len() ).toBe( 1 );
+					} );
+				} );
+				given( "a valid directory with type of 'dir'", function(){
+					then( "it will list the directory for directories only", function(){
+						var dirPath = "bddtests";
 
-			// 			disk.createDirectory( dirPath );
-			// 			disk.create( dirPath & "/luis.txt", "hello mi amigo" );
-			// 			disk.create( dirPath & "/embedded/luis.txt", "hello mi amigo" );
+						disk.createDirectory( dirPath );
+						disk.create( dirPath & "/luis.txt", "hello mi amigo" );
+						disk.create( dirPath & "/embedded/luis.txt", "hello mi amigo" );
 
-			// 			var results = disk.contents( directory = dirPath, type = "dir" );
-			// 			debug( results );
-			// 			expect( results.len() ).toBe( 1 );
-			// 		} );
-			// 	} );
-			// 	given( "a valid directory with a directories() call", function(){
-			// 		then( "it will list the directory for directories only", function(){
-			// 			var dirPath = "bddtests";
+						var results = disk.contents( directory = dirPath, type = "dir" );
+						debug( results );
+						expect( results.len() ).toBe( 1 );
+					} );
+				} );
+				given( "a valid directory with a directories() call", function(){
+					then( "it will list the directory for directories only", function(){
+						var dirPath = "bddtests";
 
-			// 			disk.createDirectory( dirPath );
-			// 			disk.create( dirPath & "/luis.txt", "hello mi amigo" );
-			// 			disk.create( dirPath & "/embedded/luis.txt", "hello mi amigo" );
+						disk.createDirectory( dirPath );
+						disk.create( dirPath & "/luis.txt", "hello mi amigo" );
+						disk.create( dirPath & "/embedded/luis.txt", "hello mi amigo" );
 
-			// 			var results = disk.directories( dirPath );
-			// 			expect( results.len() ).toBe( 1 );
-			// 		} );
-			// 	} );
-			// 	given( "an invalid directory", function(){
-			// 		then( "it should throw a cbfs.DirectoryNotFoundException sdfsadfsd", function(){
-			// 			var dirPath = "boguspath";
-			// 			expect( function(){
-			// 				disk.contents( dirPath );
-			// 			} ).toThrow( "cbfs.DirectoryNotFoundException" );
-			// 		} );
-			// 	} );
-			// } );
+						var results = disk.directories( dirPath );
+						expect( results.len() ).toBe( 1 );
+					} );
+				} );
+				given( "an invalid directory", function(){
+					then( "it should throw a cbfs.DirectoryNotFoundException sdfsadfsd", function(){
+						var dirPath = "boguspath";
+						expect( function(){
+							disk.contents( dirPath );
+						} ).toThrow( "cbfs.DirectoryNotFoundException" );
+					} );
+				} );
+			} );
 
-			// story( "The disk can get file information maps", function(){
-			// 	beforeEach( function( currentSpec ){
-			// 		disk.deleteDirectory( "bddtests" );
-			// 	} );
-			// 	given( "a valid directory", function(){
-			// 		then( "it can get a file map structure", function(){
-			// 			var dirPath = "bddtests";
+			story( "The disk can get file information maps", function(){
+				beforeEach( function( currentSpec ){
+					disk.deleteDirectory( "bddtests" );
+				} );
+				given( "a valid directory", function(){
+					then( "it can get a file map structure", function(){
+						var dirPath = "bddtests";
 
-			// 			disk.createDirectory( dirPath );
-			// 			disk.create( dirPath & "/luis.txt", "hello mi amigo" );
-			// 			disk.create( dirPath & "/Test.cfc", "component{}" );
-			// 			disk.create( dirPath & "/embedded/luis.txt", "hello mi amigo" );
+						disk.createDirectory( dirPath );
+						disk.create( dirPath & "/luis.txt", "hello mi amigo" );
+						disk.create( dirPath & "/Test.cfc", "component{}" );
+						disk.create( dirPath & "/embedded/luis.txt", "hello mi amigo" );
 
-			// 			var results = disk.filesMap( dirPath );
-			// 			expect( results.len() ).toBe( 2 );
-			// 		} );
-			// 	} );
-			// 	given( "a valid directory with recurse = true", function(){
-			// 		then( "it can get a recursive file map structure", function(){
-			// 			var dirPath = "bddtests";
+						var results = disk.filesMap( dirPath );
+						expect( results.len() ).toBe( 2 );
+					} );
+				} );
+				given( "a valid directory with recurse = true", function(){
+					then( "it can get a recursive file map structure", function(){
+						var dirPath = "bddtests";
 
-			// 			disk.createDirectory( dirPath );
-			// 			disk.create( dirPath & "/luis.txt", "hello mi amigo" );
-			// 			disk.create( dirPath & "/Test.cfc", "component{}" );
-			// 			disk.create( dirPath & "/embedded/luis.txt", "hello mi amigo" );
+						disk.createDirectory( dirPath );
+						disk.create( dirPath & "/luis.txt", "hello mi amigo" );
+						disk.create( dirPath & "/Test.cfc", "component{}" );
+						disk.create( dirPath & "/embedded/luis.txt", "hello mi amigo" );
 
-			// 			var results = disk.allFilesMap( dirPath );
-			// 			expect( results.len() ).toBe( 3 );
-			// 		} );
-			// 	} );
-			// } );
+						var results = disk.allFilesMap( dirPath );
+						expect( results.len() ).toBe( 3 );
+					} );
+				} );
+			} );
 
-			// story( "The disk can get multiple file content maps", function(){
-			// 	beforeEach( function( currentSpec ){
-			// 		disk.deleteDirectory( "bddtests" );
-			// 	} );
-			// 	given( "a valid directory", function(){
-			// 		then( "it can get a file content map structure", function(){
-			// 			var dirPath = "bddtests";
+			story( "The disk can get multiple file content maps", function(){
+				beforeEach( function( currentSpec ){
+					disk.deleteDirectory( "bddtests" );
+				} );
+				given( "a valid directory", function(){
+					then( "it can get a file content map structure", function(){
+						var dirPath = "bddtests";
 
-			// 			disk.createDirectory( dirPath );
-			// 			disk.create( dirPath & "/luis.txt", "hello mi amigo" );
-			// 			disk.create( dirPath & "/Test.cfc", "component{}" );
-			// 			disk.create( dirPath & "/embedded/luis.txt", "hello mi amigo" );
+						disk.createDirectory( dirPath );
+						disk.create( dirPath & "/luis.txt", "hello mi amigo" );
+						disk.create( dirPath & "/Test.cfc", "component{}" );
+						disk.create( dirPath & "/embedded/luis.txt", "hello mi amigo" );
 
-			// 			var results = disk.contentsMap( dirPath );
-			// 			expect( results.len() ).toBe( 2 );
-			// 			expect( results[ 1 ].contents ).notToBeEmpty();
-			// 			expect( results[ 1 ].path ).notToBeEmpty();
-			// 			expect( results[ 1 ].size ).notToBeEmpty();
-			// 		} );
-			// 	} );
-			// 	given( "a valid directory with recurse = true", function(){
-			// 		then( "it can get a recursive file content map structure", function(){
-			// 			var dirPath = "bddtests/";
-			// 			disk.createDirectory( dirPath );
-			// 			disk.create( path=dirPath & "luis.txt", contents="hello mi amigo", overwrite=true);
-			// 			disk.create( path=dirPath & "Test.cfc", contents="component{}", overwrite=true );
-			// 			disk.create( path=dirPath & "embedded/luis.txt", contents="hello mi amigo", overwrite=true );
-			// 			var start = getTickCount();
-			// 			var results = disk.allContentsMap( dirPath );
-			// 			debug( getTickcount() - start );
-			// 			debug( results );
-			// 			expect( results.len() ).toBe( 3 );
-			// 			expect( results[ 1 ].contents ).notToBeEmpty();
-			// 			expect( results[ 1 ].path ).notToBeEmpty();
-			// 			expect( results[ 1 ].size ).notToBeEmpty();
-			// 		} );
-			// 	} );
-			// } );
+						var results = disk.contentsMap( dirPath );
+						expect( results.len() ).toBe( 2 );
+						expect( results[ 1 ].contents ).notToBeEmpty();
+						expect( results[ 1 ].path ).notToBeEmpty();
+						expect( results[ 1 ].size ).notToBeEmpty();
+					} );
+				} );
+				given( "a valid directory with recurse = true", function(){
+					then( "it can get a recursive file content map structure", function(){
+						var dirPath = "bddtests/";
+						disk.createDirectory( dirPath );
+						disk.create( path=dirPath & "luis.txt", contents="hello mi amigo", overwrite=true);
+						disk.create( path=dirPath & "Test.cfc", contents="component{}", overwrite=true );
+						disk.create( path=dirPath & "embedded/luis.txt", contents="hello mi amigo", overwrite=true );
+						var start = getTickCount();
+						var results = disk.allContentsMap( dirPath );
+						debug( getTickcount() - start );
+						debug( results );
+						expect( results.len() ).toBe( 3 );
+						expect( results[ 1 ].contents ).notToBeEmpty();
+						expect( results[ 1 ].path ).notToBeEmpty();
+						expect( results[ 1 ].size ).notToBeEmpty();
+					} );
+				} );
+			} );
 		} ); // end suite
 	}
 

@@ -118,7 +118,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		struct metadata   = {},
 		boolean overwrite = false
 	){
-		if ( !arguments.overwrite && exists( arguments.path ) ) {
+		if ( !arguments.overwrite && this.fileExists( arguments.path ) ) {
 			throw(
 				type    = "cbfs.FileOverrideException",
 				message = "Cannot create file. File already exists [Bucket: #variables.properties.bucketName#, Path: #buildPath( arguments.path )#]"
@@ -210,8 +210,8 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 			}
 		} catch ( S3SDKError e ) {
 			throw(
-				type    = "cbfs.S3Provider.InvalidPermissionsException",
-				message = "An error occurred while attempting to read the ACL permission on the requested object [#buildPath( arguments.path )#]. Please verify the permissions of your AWS credentials."
+				type    = "cbfs.S3Provider.InvalidOperationException",
+				message = "An error occurred while attempting to read the ACL permission on the requested object [#buildPath( arguments.path )#]. #e.message#"
 			);
 		}
 	}
@@ -234,9 +234,9 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		struct metadata        = {},
 		boolean throwOnMissing = false
 	){
-		if ( !exists( arguments.path ) ) {
+		if ( !this.fileExists( arguments.path ) ) {
 			if ( arguments.throwOnMissing ) {
-				throw( type = "cbfs.FileNotFoundException", message = "File [#arguments.path#] not found." );
+				throwFileNotFoundException( arguments.path );
 			}
 			return create(
 				path     = arguments.path,
@@ -269,9 +269,9 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		struct metadata        = {},
 		boolean throwOnMissing = false
 	){
-		if ( !exists( arguments.path ) ) {
+		if ( !this.fileExists( arguments.path ) ) {
 			if ( arguments.throwOnMissing ) {
-				throw( type = "cbfs.FileNotFoundException", message = "File [#arguments.path#] not found." );
+				throwFileNotFoundException( arguments.path );
 			}
 			return create(
 				path     = arguments.path,
@@ -302,23 +302,18 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		required destination,
 		boolean overwrite = false
 	){
-		if ( !arguments.overwrite && exists( arguments.destination ) ) {
+
+		if ( !this.fileExists( arguments.source ) ) {
+			throwFileNotFoundException( arguments.source );
+		}
+		if ( !arguments.overwrite && this.fileExists( arguments.destination ) ) {
 			throw(
 				type    = "cbfs.FileOverrideException",
 				message = "Cannot create file. File already exists [Bucket: #variables.properties.bucketName#, Path: #buildPath( arguments.destination )#]"
 			);
-		} else {
-			if ( !isDirectory( arguments.source ) ) {
-				ensureFileExists( arguments.source );
-			} else if ( !exists( arguments.source ) ) {
-				throw(
-					type    = "cbfs.DirectoryNotFoundException",
-					message = "Directory [#arguments.source#] does not exist."
-				);
-			}
 		}
 
-		if ( arguments.overwrite && exists( arguments.destination ) ) {
+		if ( arguments.overwrite && this.fileExists( arguments.destination ) ) {
 			delete( arguments.destination );
 		}	
 
@@ -348,21 +343,17 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		required destination,
 		boolean overwrite = false
 	){
-		if ( !arguments.overwrite && exists( arguments.destination ) ) {
+		if ( !this.fileExists( arguments.source ) ){
+			throwFileNotFoundException( arguments.source );
+		}
+
+		if ( !arguments.overwrite && this.fileExists( arguments.destination ) ) {
 			throw(
 				type    = "cbfs.FileOverrideException",
 				message = "Cannot create file. File already exists [Bucket: #variables.properties.bucketName#, Path: #buildPath( arguments.destination )#]"
 			);
-		} else {
-			if ( !isDirectory( arguments.source ) ) {
-				ensureFileExists( arguments.source );
-			} else if ( !exists( arguments.source ) ) {
-				throw(
-					type    = "cbfs.DirectoryNotFoundException",
-					message = "Directory [#arguments.source#] does not exist."
-				);
-			}
 		}
+
 		variables.s3.copyObject(
 			fromBucket = variables.properties.bucketName,
 			fromURI    = buildPath( arguments.source ),
@@ -435,14 +426,29 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	}
 
 	/**
-	 * Validate if a file/directory exists
+	 * Validate if a file exists
 	 *
-	 * @path The file/directory path to verify
+	 * @path The file to verify
 	 */
-	boolean function exists( required string path ){
+	boolean function fileExists( required string path ){
 		return variables.s3.objectExists(
 			bucketName = variables.properties.bucketName,
 			uri        = buildPath( arguments.path )
+		);
+	}
+
+	/**
+	 * Validate if a directory exists
+	 *
+	 * @path The directory to verify
+	 */
+	boolean function directoryExists( required string path ){
+
+		arguments.path = ensureTrailingSlash( buildPath( arguments.path ) );
+
+		return variables.s3.objectExists(
+			bucketName = variables.properties.bucketName,
+			uri        = arguments.path
 		);
 	}
 
@@ -465,8 +471,8 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @throws cbfs.FileNotFoundException
 	 */
 	string function uri( required string path ){
-		if ( !exists( arguments.path ) ) {
-			throw( type = "cbfs.FileNotFoundException", message = "File [#arguments.path#] not found." );
+		if ( !this.fileExists( arguments.path ) ) {
+			throwFileNotFoundException( arguments.path );
 		}
 		return arguments.path;
 	}
@@ -539,36 +545,14 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 */
 	boolean function delete( required any path, boolean throwOnMissing = false ){
 
-		var assetExists = exists( path );
-
-		if ( assetExists ) {
-			// If this is a directory, get the contents and delete		
-			if ( isDirectory( arguments.path ) ) {
-				contents(
-					directory = arguments.path,
-					recurse   = true,
-					map       = true
-				)
-				.each( function( item ){
-					if ( item.isDirectory ) {
-						delete( replace( item.key, getProperties().path, "" ), throwOnMissing );
-					}
-					variables.s3.deleteObject( bucketName = variables.properties.bucketName, uri = item.key );
-				} );
-
-				return variables.s3.deleteObject(
-					bucketName = variables.properties.bucketName,
-					uri        = buildPath( arguments.path )
-				);
-			} else {
-				return variables.s3.deleteObject(
-					bucketName = variables.properties.bucketName,
-					uri        = buildPath( arguments.path )
-				);
-			}
+		if ( this.fileExists( path ) ) {
+			return variables.s3.deleteObject(
+				bucketName = variables.properties.bucketName,
+				uri        = buildPath( arguments.path )
+			);
 		} else {
 			if ( throwOnMissing ) {
-				throw( type = "cbfs.FileNotFoundException", message = "File [#arguments.path#] not found." );
+				throwFileNotFoundException( arguments.path );
 			}
 			return false;
 		}	
@@ -585,7 +569,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @throws cbfs.PathNotFoundException
 	 */
 	function touch( required path, boolean createPath = true ){
-		if ( !arguments.createPath && !exists( getDirectoryFromPath( arguments.path ) ) ) {
+		if ( !arguments.createPath && !this.directoryExists( getDirectoryFromPath( arguments.path ) ) ) {
 			throw(
 				type    = "cbfs.PathNotFoundException",
 				message = "Directory does not already exist [#getDirectoryFromPath( arguments.path )#] and the `createPath` flag is set to false"
@@ -812,8 +796,9 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		boolean createPath = true,
 		boolean ignoreExists = true
 	){
+		arguments.directory = ensureTrailingSlash( buildPath( arguments.directory ) );
 
-		if ( !ignoreExists && exists( arguments.directory ) ) {
+		if ( !ignoreExists && this.directoryExists( arguments.directory ) ) {
 			throw(
 				type="cbfs.DirectoryExistsException",
 				message="The destination directory [#arguments.directory#] already exists."
@@ -846,24 +831,20 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		any filter         = "",
 		boolean createPath = true
 	){
-		var sourcePath      = source;
-		var destinationPath = destination;
+		var sourcePath      = ensureTrailingSlash( source );
+		var destinationPath = ensureTrailingSlash( destination );
 
-		if ( !arguments.createPath && !exists( destinationPath ) ) {
+		if ( !arguments.createPath && !this.directoryExists( destinationPath ) ) {
 			throw(
 				type    = "cbfs.DirectoryNotFoundException",
 				message = "The destination directory [#destinationPath#] does not exist and the createPath argument is false."
 			);
-		} else {
-			if ( arguments.createPath ) {
-				createDirectory( destinationPath );
-			}
 		}
 
 		var bucketAssets = files(
-			arguments.source,
+			"bddtests/embedded",
 			arguments.filter,
-			arguments.recurse
+			true
 		);
 
 		writeDump( bucketAssets );
@@ -895,7 +876,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		boolean createPath = true
 	){
 		copyDirectory(
-			source      = arguments.oldPath,
+			source      = ensureTrailingSlash( arguments.oldPath ),
 			destination = arguments.newPath,
 			recurse		= true
 		);
@@ -917,29 +898,34 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		boolean recurse        = true,
 		boolean throwOnMissing = false
 	){
-		if ( throwOnMissing && !exists( directory ) ) {
+		arguments.directory = ensureTrailingSlash( buildPath( arguments.directory ) );
+
+		var dirExists = this.directoryExists( directory );
+
+		if ( throwOnMissing && !dirExists ) {
 			throw(
 				type    = "cbfs.DirectoryNotFoundException",
 				message = "Directory [#arguments.directory#] not found."
 			);
+		} else if ( dirExists ) {
+			contents(
+				directory = arguments.directory,
+				recurse   = true,
+				map       = true
+			)
+			.each( function( item ){
+				if ( item.isDirectory && recurse ) {
+					this.deleteDirectory( directory=item.key, recurse=recurse, throwOnMissing=throwOnMissing );
+				} else {
+					variables.s3.deleteObject( bucketName = variables.properties.bucketName, uri = item.key );
+				}
+			} );
+			return variables.s3.deleteObject(
+				bucketName = variables.properties.bucketName,
+				uri        = arguments.directory
+			);
 		}
-
-		var results = variables.s3.getBucket(
-			bucketName = variables.properties.bucketName,
-			prefix     = buildPath( arguments.directory ) & "/"
-		).filter( function( file ) {
-			return file.key != directory;
-		} );
-
-		results.each( function( file ) {
-			if ( file.isDirectory && recurse ) {
-				deleteDirectory( directory=file.key, recurse=true, throwOnMissing=throwOnMissing );
-			} else if ( !file.isDirectory ) {
-				delete( path=file.key, throwOnMissing=throwOnMissing );
-			}
-		} );
-
-		return delete( path=arguments.directory, throwOnMissing=arguments.throwOnMissing );
+		return false;
 	}
 
 	/**
@@ -951,7 +937,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @return S3Provider
 	 */
 	function cleanDirectory( required directory, boolean throwOnMissing = false ){
-		if ( exists( arguments.directory ) ) {
+		if ( this.directoryExists( arguments.directory ) ) {
 			deleteDirectory( arguments.directory, true );
 			createDirectory( arguments.directory );
 			return this;
@@ -984,18 +970,13 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		type             = "all",
 		boolean absolute = false
 	){
-		var sourcePath = arguments.directory;
+		var sourcePath = ensureTrailingSlash( arguments.directory );
 		
-		if ( !exists( sourcePath ) ) {
+		if ( !this.directoryExists( sourcePath ) ) {
 			throw(
 				type    = "cbfs.DirectoryNotFoundException",
 				message = "Directory [#sourcePath#] not found."
 			);
-		}
-
-		// Ensure we do a folder search within S3
-		if ( right( sourcePath, 1 ) != "/" ) {
-			sourcePath &= "/"; 
 		}
 
 		var bucketContents = variables.s3
@@ -1320,8 +1301,8 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @throws cbfs.FileNotFoundException Throws if the file does not exist
 	 */
 	private function ensureFileExists( required path ){
-		if ( !this.exists( arguments.path ) ) {
-			throw( type = "cbfs.FileNotFoundException", message = "File [#arguments.path#] not found." );
+		if ( !this.fileExists( arguments.path ) ) {
+			throwFileNotFoundException( arguments.path );
 		}
 		return this;
 	}
@@ -1335,10 +1316,24 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		var p             = buildPath( arguments.path );
 		var directoryPath = len( extension( p ) ) ? replaceNoCase( p, getFileFromPath( p ), "" ) : p;
 
-		if ( !exists( directoryPath ) ) {
+		if ( !this.directoryExists( directoryPath ) ) {
 			variables.s3.putObjectFolder( bucketName = variables.properties.bucketName, uri = directoryPath );
 		}
 		return this;
 	}
 
+	private function ensureTrailingSlash( path ) {
+		if ( right( arguments.path, 1 ) != "/" ) {
+			arguments.path &= "/"; 
+		}
+		return arguments.path;
+	}
+
+	/**
+	 * Throw a file not found exception
+	 */
+	private function throwFileNotFoundException( path ) {
+		throw( type = "cbfs.FileNotFoundException", message = "File [#arguments.path#] not found." );
+	}
 }
+

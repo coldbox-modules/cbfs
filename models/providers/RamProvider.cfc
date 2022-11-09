@@ -73,7 +73,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		// Normalize slashes
 		arguments.path = replace( arguments.path, "\", "/", "all" );
 
-		if ( !arguments.overwrite && this.exists( arguments.path ) ) {
+		if ( !arguments.overwrite && this.fileExists( arguments.path ) ) {
 			throw(
 				type    = "cbfs.FileOverrideException",
 				message = "Cannot create file. File already exists [#arguments.path#]"
@@ -174,7 +174,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		struct metadata        = {},
 		boolean throwOnMissing = false
 	){
-		if ( missing( arguments.path ) ) {
+		if ( fileMissing( arguments.path ) ) {
 			if ( arguments.throwOnMissing ) {
 				throw( type = "cbfs.FileNotFoundException", message = "File [#arguments.path#] not found." );
 			}
@@ -208,7 +208,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		struct metadata        = {},
 		boolean throwOnMissing = false
 	){
-		if ( missing( arguments.path ) ) {
+		if ( fileMissing( arguments.path ) ) {
 			if ( arguments.throwOnMissing ) {
 				throw( type = "cbfs.FileNotFoundException", message = "File [#arguments.path#] not found." );
 			}
@@ -296,11 +296,11 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	}
 
 	/**
-	 * Validate if a file/directory exists
+	 * Validate if a file exists
 	 *
-	 * @path The file/directory path to verify
+	 * @path The file path to verify
 	 */
-	boolean function exists( required string path ){
+	boolean function fileExists( required string path ){
 		arguments.path = normalizePath( arguments.path );
 		for ( var existingPath in variables.files.keyArray() ) {
 			if ( find( arguments.path, existingPath ) == 1 ) {
@@ -308,6 +308,15 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 			}
 		}
 		return false;
+	}
+
+	/**
+	 * Validate if a directory exists
+	 *
+	 * @path The directory path to verify
+	 */
+	boolean function directoryExists( required string path ){
+		return structKeyExists( variables.files, path ) && variables.files[ path ].type == "Directory";
 	}
 
 	/**
@@ -322,7 +331,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @throws cbfs.FileNotFoundException
 	 */
 	public boolean function delete( required any path, boolean throwOnMissing = false ){
-		if ( missing( arguments.path ) ) {
+		if ( fileMissing( arguments.path ) ) {
 			if ( arguments.throwOnMissing ) {
 				throw( type = "cbfs.FileNotFoundException", message = "File [#arguments.path#] not found." );
 			}
@@ -343,12 +352,12 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @throws cbfs.PathNotFoundException
 	 */
 	function touch( required path, boolean createPath = true ){
-		if ( exists( arguments.path ) ) {
+		if ( this.fileExists( arguments.path ) ) {
 			variables.files[ arguments.path ].lastModified = now();
 			return this;
 		}
 		if ( !arguments.createPath ) {
-			if ( !this.exists( getDirectoryFromPath( arguments.path ) ) ) {
+			if ( !this.directoryExists( getDirectoryFromPath( arguments.path ) ) ) {
 				throw(
 					type    = "cbfs.PathNotFoundException",
 					message = "Directory does not already exist and the `createPath` flag is set to false"
@@ -493,7 +502,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 */
 	boolean function isFile( required path ){
 		arguments.path = normalizePath( arguments.path );
-		return missing( arguments.path ) ? false : variables.files[ arguments.path ].type == "File";
+		return fileMissing( arguments.path ) ? false : variables.files[ arguments.path ].type == "File";
 	}
 
 	/**
@@ -560,7 +569,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 */
 	boolean function isDirectory( required path ){
 		arguments.path = normalizePath( arguments.path );
-		return missing( arguments.path ) ? false : variables.files[ arguments.path ].type == "Directory";
+		return directoryMissing( arguments.path ) ? false : variables.files[ arguments.path ].type == "Directory";
 	}
 
 	/**
@@ -1215,7 +1224,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @throws cbfs.FileNotFoundException - If the filepath is missing
 	 */
 	private struct function ensureRecordExists( required path ){
-		if ( missing( arguments.path ) ) {
+		if ( fileMissing( arguments.path ) ) {
 			throw( type = "cbfs.FileNotFoundException", message = "File [#arguments.path#] not found." );
 		}
 		return variables.files[ arguments.path ];
