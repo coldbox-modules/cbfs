@@ -13,7 +13,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 *
 	 * @return Boolean
 	 */
-	function hasStarted() {
+	function hasStarted(){
 		return structKeyExists( variables, "s3" );
 	}
 
@@ -25,49 +25,49 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @return S3Provider
 	 */
 	function startup( required string name, struct properties = {} ){
-
 		// Param the properties
-		param arguments.properties.awsDomain           	= "amazonaws.com";
-		param arguments.properties.awsRegion           	= "us-east-1";
-		param arguments.properties.encryptionCharset   	= "UTF-8";
-		param arguments.properties.signatureType       	= "V4";
-		param arguments.properties.ssl                	= true;
-		param arguments.properties.defaultTimeOut      	= 300;
-		param arguments.properties.defaultDelimiter    	= "/";
-		param arguments.properties.defaultBucketName   	= "";
-		param arguments.properties.defaultCacheControl 	= "no-store, no-cache, must-revalidate";
-		param arguments.properties.defaultStorageClass 	= "STANDARD";
-		param arguments.properties.defaultACL          	= "public-read";
-		param arguments.properties.throwOnRequestError 	= true;
-		param arguments.properties.retriesOnError		= 3;
-		param arguments.properties.autoContentType    	= false;
-		param arguments.properties.autoMD5            	= false;
-		param arguments.properties.serviceName         	= "s3";
-		param arguments.properties.debug             	= false;
+		param arguments.properties.awsDomain           = "amazonaws.com";
+		param arguments.properties.awsRegion           = "us-east-1";
+		param arguments.properties.encryptionCharset   = "UTF-8";
+		param arguments.properties.signatureType       = "V4";
+		param arguments.properties.ssl                 = true;
+		param arguments.properties.defaultTimeOut      = 300;
+		param arguments.properties.defaultDelimiter    = "/";
+		param arguments.properties.defaultBucketName   = "";
+		param arguments.properties.defaultCacheControl = "no-store, no-cache, must-revalidate";
+		param arguments.properties.defaultStorageClass = "STANDARD";
+		param arguments.properties.defaultACL          = "public-read";
+		param arguments.properties.throwOnRequestError = true;
+		param arguments.properties.retriesOnError      = 3;
+		param arguments.properties.autoContentType     = false;
+		param arguments.properties.autoMD5             = false;
+		param arguments.properties.serviceName         = "s3";
+		param arguments.properties.debug               = false;
 
 		// Map our s3sdk provider
-		variables.wirebox.getBinder()
+		variables.wirebox
+			.getBinder()
 			.map( "cbfs-s3sdk-#arguments.name#" )
 			.to( "s3sdk.models.AmazonS3" )
-			.initArg( name : "accessKey", value : arguments.properties.accessKey )
-			.initArg( name : "secretKey", value : arguments.properties.secretKey )
-			.initArg( name: "awsDomain", value : arguments.properties.awsDomain )
-			.initArg( name: "awsRegion", value : arguments.properties.awsRegion )
-			.initArg( name: "encryptionCharset", value : arguments.properties.encryptionCharset )
-			.initArg( name: "signatureType", value : arguments.properties.signatureType )
-			.initArg( name: "ssl", value : arguments.properties.ssl )
-			.initArg( name: "defaultTimeOut", value : arguments.properties.defaultTimeOut )
-			.initArg( name: "defaultDelimiter", value : arguments.properties.defaultDelimiter )
-			.initArg( name: "defaultBucketName", value : arguments.properties.defaultBucketName )
-			.initArg( name: "defaultCacheControl", value : arguments.properties.defaultCacheControl )
-			.initArg( name: "defaultStorageClass", value : arguments.properties.defaultStorageClass )
-			.initArg( name: "defaultACL", value : arguments.properties.defaultACL )
-			.initArg( name: "throwOnRequestError", value : arguments.properties.throwOnRequestError )
-			.initArg( name: "retriesOnError", value : arguments.properties.retriesOnError )
-			.initArg( name: "autoContentType", value : arguments.properties.autoContentType )
-			.initArg( name: "autoMD5", value : arguments.properties.autoMD5 )
-			.initArg( name: "serviceName", value : arguments.properties.serviceName )
-			.initArg( name: "debug", value : arguments.properties.debug );
+			.initArg( name: "accessKey", value: arguments.properties.accessKey )
+			.initArg( name: "secretKey", value: arguments.properties.secretKey )
+			.initArg( name: "awsDomain", value: arguments.properties.awsDomain )
+			.initArg( name: "awsRegion", value: arguments.properties.awsRegion )
+			.initArg( name: "encryptionCharset", value: arguments.properties.encryptionCharset )
+			.initArg( name: "signatureType", value: arguments.properties.signatureType )
+			.initArg( name: "ssl", value: arguments.properties.ssl )
+			.initArg( name: "defaultTimeOut", value: arguments.properties.defaultTimeOut )
+			.initArg( name: "defaultDelimiter", value: arguments.properties.defaultDelimiter )
+			.initArg( name: "defaultBucketName", value: arguments.properties.defaultBucketName )
+			.initArg( name: "defaultCacheControl", value: arguments.properties.defaultCacheControl )
+			.initArg( name: "defaultStorageClass", value: arguments.properties.defaultStorageClass )
+			.initArg( name: "defaultACL", value: arguments.properties.defaultACL )
+			.initArg( name: "throwOnRequestError", value: arguments.properties.throwOnRequestError )
+			.initArg( name: "retriesOnError", value: arguments.properties.retriesOnError )
+			.initArg( name: "autoContentType", value: arguments.properties.autoContentType )
+			.initArg( name: "autoMD5", value: arguments.properties.autoMD5 )
+			.initArg( name: "serviceName", value: arguments.properties.serviceName )
+			.initArg( name: "debug", value: arguments.properties.debug );
 
 		try {
 			variables.s3 = variables.wirebox.getInstance( "cbfs-s3sdk-#arguments.name#" );
@@ -118,7 +118,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		struct metadata   = {},
 		boolean overwrite = false
 	){
-		if ( !arguments.overwrite && exists( arguments.path ) ) {
+		if ( !arguments.overwrite && this.fileExists( arguments.path ) ) {
 			throw(
 				type    = "cbfs.FileOverrideException",
 				message = "Cannot create file. File already exists [Bucket: #variables.properties.bucketName#, Path: #buildPath( arguments.path )#]"
@@ -138,7 +138,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 
 		variables.s3.putObject(
 			bucketName = variables.properties.bucketName,
-			uri        = buildPath( arguments.path ),
+			uri        = variables.buildPath( arguments.path ),
 			data       = arguments.contents,
 			acl        = arguments.visibility
 		);
@@ -168,7 +168,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 
 		variables.s3.setAccessControlPolicy(
 			bucketName = variables.properties.bucketName,
-			uri        = buildPath( arguments.path ),
+			uri        = variables.buildPath( arguments.path ),
 			acl        = arguments.visibility
 		);
 
@@ -185,7 +185,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 			var policies = variables.s3
 				.getAccessControlPolicy(
 					bucketName = variables.properties.bucketName,
-					uri        = buildPath( arguments.path )
+					uri        = variables.buildPath( arguments.path )
 				)
 				.filter( function( acl ){
 					return acl.type == "Group" && findNoCase( "/AllUsers", acl.uri );
@@ -210,8 +210,8 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 			}
 		} catch ( S3SDKError e ) {
 			throw(
-				type    = "cbfs.S3Provider.InvalidPermissionsException",
-				message = "An error occurred while attempting to read the ACL permission on the requested object [#buildPath( arguments.path )#]. Please verify the permissions of your AWS credentials."
+				type    = "cbfs.S3Provider.InvalidOperationException",
+				message = "An error occurred while attempting to read the ACL permission on the requested object [#buildPath( arguments.path )#]. #e.message#"
 			);
 		}
 	}
@@ -234,19 +234,19 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		struct metadata        = {},
 		boolean throwOnMissing = false
 	){
-		if ( !exists( arguments.path ) ) {
+		if ( !this.fileExists( arguments.path ) ) {
 			if ( arguments.throwOnMissing ) {
 				throw( type = "cbfs.FileNotFoundException", message = "File [#arguments.path#] not found." );
 			}
-			return create(
+			return this.create(
 				path     = arguments.path,
 				contents = arguments.contents,
 				metadata = arguments.metadata
 			);
 		}
-		return create(
+		return this.create(
 			path      = arguments.path,
-			contents  = arguments.contents & get( arguments.path ),
+			contents  = arguments.contents & this.get( arguments.path ),
 			overwrite = true
 		);
 	}
@@ -269,19 +269,19 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		struct metadata        = {},
 		boolean throwOnMissing = false
 	){
-		if ( !exists( arguments.path ) ) {
+		if ( !this.fileExists( arguments.path ) ) {
 			if ( arguments.throwOnMissing ) {
 				throw( type = "cbfs.FileNotFoundException", message = "File [#arguments.path#] not found." );
 			}
-			return create(
+			return this.create(
 				path     = arguments.path,
 				contents = arguments.contents,
 				metadata = arguments.metadata
 			);
 		}
-		return create(
+		return this.create(
 			path      = arguments.path,
-			contents  = get( arguments.path ) & arguments.contents,
+			contents  = this.get( arguments.path ) & arguments.contents,
 			overwrite = true
 		);
 	}
@@ -302,32 +302,29 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		required destination,
 		boolean overwrite = false
 	){
-		if ( !arguments.overwrite && exists( arguments.destination ) ) {
+		var sourceExists      = this.fileExists( arguments.source );
+		var destinationExists = this.fileExists( arguments.destination );
+		if ( !arguments.overwrite && destinationExists ) {
 			throw(
 				type    = "cbfs.FileOverrideException",
 				message = "Cannot create file. File already exists [Bucket: #variables.properties.bucketName#, Path: #buildPath( arguments.destination )#]"
 			);
 		} else {
-			if ( !isDirectory( arguments.source ) ) {
-				ensureFileExists( arguments.source );
-			} else if ( !exists( arguments.source ) ) {
-				throw(
-					type    = "cbfs.DirectoryNotFoundException",
-					message = "Directory [#arguments.source#] does not exist."
-				);
+			if ( !this.fileExists( arguments.source ) ) {
+				throw( type = "cbfs.FileNotFoundException", message = "File [#arguments.source#] not found." );
 			}
 		}
 
-		if ( arguments.overwrite && exists( arguments.destination ) ) {
-			delete( arguments.destination );
-		}	
+		if ( arguments.overwrite && destinationExists ) {
+			this.delete( arguments.destination );
+		}
 
 		variables.s3.copyObject(
 			fromBucket = variables.properties.bucketName,
-			fromURI    = buildPath( arguments.source ),
+			fromURI    = variables.buildPath( arguments.source ),
 			toBucket   = variables.properties.bucketName,
-			toURI      = buildPath( arguments.destination ),
-			acl        = visibility( arguments.source )
+			toURI      = variables.buildPath( arguments.destination ),
+			acl        = this.visibility( arguments.source )
 		);
 
 		return this;
@@ -348,30 +345,25 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		required destination,
 		boolean overwrite = false
 	){
-		if ( !arguments.overwrite && exists( arguments.destination ) ) {
+		if ( !arguments.overwrite && this.fileExists( arguments.destination ) ) {
 			throw(
 				type    = "cbfs.FileOverrideException",
 				message = "Cannot create file. File already exists [Bucket: #variables.properties.bucketName#, Path: #buildPath( arguments.destination )#]"
 			);
 		} else {
-			if ( !isDirectory( arguments.source ) ) {
-				ensureFileExists( arguments.source );
-			} else if ( !exists( arguments.source ) ) {
-				throw(
-					type    = "cbfs.DirectoryNotFoundException",
-					message = "Directory [#arguments.source#] does not exist."
-				);
+			if ( !this.fileExists( arguments.source ) ) {
+				throw( type = "cbfs.FileNotFoundException", message = "File [#arguments.source#] not found." );
 			}
 		}
 		variables.s3.copyObject(
 			fromBucket = variables.properties.bucketName,
-			fromURI    = buildPath( arguments.source ),
+			fromURI    = variables.buildPath( arguments.source ),
 			toBucket   = variables.properties.bucketName,
-			toURI      = buildPath( arguments.destination ),
-			acl        = visibility( arguments.source )
+			toURI      = variables.buildPath( arguments.destination ),
+			acl        = this.visibility( arguments.source )
 		);
 
-		return delete( arguments.source );
+		return this.delete( arguments.source );
 	}
 
 	/**
@@ -384,16 +376,14 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @throws cbfs.FileNotFoundException
 	 */
 	any function get( required path ){
-		ensureFileExists( arguments.path );
+		variables.ensureFileExists( arguments.path );
 		// ACF will not allow us to read the file directly via URL
-		if (
-			server.coldfusion.productVersion.listFirst() == 2018
-		) {
-			var tempFileName = createUUID() & "." & extension( arguments.path );
+		if ( server.coldfusion.productVersion.listFirst() >= 2018 ) {
+			var tempFileName = createUUID() & "." & this.extension( arguments.path );
 
 			if ( getProperties().keyExists( "tempDirectory" ) ) {
 				var tempDir = getProperties().tempDirectory;
-				if ( !directoryExists( expandPath( tempDir ) ) ) directoryCreate( expandPath( tempDir ) );
+				if ( !this.directoryExists( expandPath( tempDir ) ) ) this.directoryCreate( expandPath( tempDir ) );
 				var tempFilePath = expandPath( tempDir & "/" & tempFileName );
 			} else {
 				var tempFilePath = getTempFile( getTempDirectory(), tempFileName );
@@ -403,7 +393,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 
 			variables.s3.downloadObject(
 				bucketName = variables.properties.bucketName,
-				uri        = buildPath( arguments.path ),
+				uri        = variables.buildPath( arguments.path ),
 				filepath   = tempFilePath
 			);
 
@@ -414,7 +404,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 			return fileRead(
 				variables.s3.getAuthenticatedURL(
 					bucketName   = variables.properties.bucketName,
-					uri          = buildPath( arguments.path ),
+					uri          = variables.buildPath( arguments.path ),
 					minutesValid = 1
 				)
 			);
@@ -431,19 +421,36 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @throws cbfs.FileNotFoundException
 	 */
 	any function getAsBinary( required path ){
-		return toBinary( get( arguments.path ) );
+		return toBinary( this.get( arguments.path ) );
 	}
 
 	/**
-	 * Validate if a file/directory exists
+	 * Validate if a file exists
 	 *
-	 * @path The file/directory path to verify
+	 * @path The file to verify
 	 */
-	boolean function exists( required string path ){
+	boolean function fileExists( required string path ){
 		return variables.s3.objectExists(
 			bucketName = variables.properties.bucketName,
-			uri        = buildPath( arguments.path )
+			uri        = variables.buildPath( arguments.path )
 		);
+	}
+
+	/**
+	 * Validate if a directory exists
+	 *
+	 * @path The directory to verify
+	 */
+	boolean function directoryExists( required string path ){
+		arguments.path = variables.buildDirectoryPath( arguments.path );
+
+		var matches = variables.s3.getBucket(
+			bucketName = variables.properties.bucketName,
+			prefix     = arguments.path,
+			maxKeys    = 1
+		);
+
+		return arrayLen( matches ) > 0 ? true : false;
 	}
 
 	/**
@@ -454,7 +461,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @throws cbfs.FileNotFoundException
 	 */
 	string function url( required string path ){
-		return temporaryURL( path = arguments.path );
+		return this.temporaryURL( path = arguments.path );
 	}
 
 	/**
@@ -465,7 +472,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @throws cbfs.FileNotFoundException
 	 */
 	string function uri( required string path ){
-		if ( !exists( arguments.path ) ) {
+		if ( !this.fileExists( arguments.path ) ) {
 			throw( type = "cbfs.FileNotFoundException", message = "File [#arguments.path#] not found." );
 		}
 		return arguments.path;
@@ -480,7 +487,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @throws cbfs.FileNotFoundException
 	 */
 	string function temporaryUri( required path, numeric expiration ){
-		return uri( arguments.path );
+		return this.uri( arguments.path );
 	}
 
 	/**
@@ -492,10 +499,10 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @throws cbfs.FileNotFoundException
 	 */
 	string function temporaryURL( required path, numeric expiration = 1 ){
-		ensureFileExists( arguments.path );
+		variables.ensureFileExists( arguments.path );
 		return variables.s3.getAuthenticatedURL(
 			bucketName   = variables.properties.bucketName,
-			uri          = buildPath( arguments.path ),
+			uri          = variables.buildPath( arguments.path ),
 			minutesValid = arguments.expiration
 		);
 	}
@@ -508,7 +515,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @throws cbfs.FileNotFoundException
 	 */
 	numeric function size( required path ){
-		return info( arguments.path ).size;
+		return this.info( arguments.path ).size;
 	}
 
 	/**
@@ -519,7 +526,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @throws cbfs.FileNotFoundException
 	 */
 	function lastModified( required path ){
-		return info( arguments.path ).lastModified;
+		return this.info( arguments.path ).lastModified;
 	}
 
 	/**
@@ -528,50 +535,34 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @path
 	 **/
 	function mimeType( required path ){
-		return info( arguments.path ).type;
+		return this.info( arguments.path ).type;
 	}
 
 	/**
 	 * Deletes a file
 	 *
-	 * @path
+	 * @path          
 	 * @throwOnMissing When true an error will be thrown if the file does not exist
 	 */
 	boolean function delete( required any path, boolean throwOnMissing = false ){
-
-		var assetExists = exists( path );
-
-		if ( assetExists ) {
-			// If this is a directory, get the contents and delete		
-			if ( isDirectory( arguments.path ) ) {
-				contents(
-					directory = arguments.path,
-					recurse   = true,
-					map       = true
-				)
-				.each( function( item ){
-					if ( item.isDirectory ) {
-						delete( replace( item.key, getProperties().path, "" ), throwOnMissing );
-					}
-					variables.s3.deleteObject( bucketName = variables.properties.bucketName, uri = item.key );
-				} );
-
-				return variables.s3.deleteObject(
-					bucketName = variables.properties.bucketName,
-					uri        = buildPath( arguments.path )
-				);
-			} else {
-				return variables.s3.deleteObject(
-					bucketName = variables.properties.bucketName,
-					uri        = buildPath( arguments.path )
-				);
-			}
+		if ( this.fileExists( path ) ) {
+			variables.s3.deleteObject(
+				bucketName = variables.properties.bucketName,
+				uri        = variables.buildPath( arguments.path )
+			);
+			return true;
+		} else if ( this.directoryExists( path ) ) {
+			variables.s3.deleteObject(
+				bucketName = variables.properties.bucketName,
+				uri        = variables.buildDirectoryPath( arguments.path )
+			);
+			return true;
 		} else {
 			if ( throwOnMissing ) {
 				throw( type = "cbfs.FileNotFoundException", message = "File [#arguments.path#] not found." );
 			}
 			return false;
-		}	
+		}
 	}
 
 	/**
@@ -585,7 +576,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @throws cbfs.PathNotFoundException
 	 */
 	function touch( required path, boolean createPath = true ){
-		if ( !arguments.createPath && !exists( getDirectoryFromPath( arguments.path ) ) ) {
+		if ( !arguments.createPath && !this.directoryExists( getDirectoryFromPath( arguments.path ) ) ) {
 			throw(
 				type    = "cbfs.PathNotFoundException",
 				message = "Directory does not already exist [#getDirectoryFromPath( arguments.path )#] and the `createPath` flag is set to false"
@@ -600,10 +591,10 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @path
 	 */
 	struct function info( required path ){
-		ensureFileExists( arguments.path );
-		var filePath = buildPath( arguments.path );
+		variables.ensureFileExists( arguments.path );
+		var filePath = variables.buildPath( arguments.path );
 		var s3Info   = variables.s3.getObjectInfo( bucketName = variables.properties.bucketName, uri = filePath );
-		var acl      = visibility( arguments.path );
+		var acl      = this.visibility( arguments.path );
 		var info     = {
 			"name"         : getFileFromPath( filePath ),
 			"lastModified" : s3Info[ "Last-Modified" ],
@@ -628,8 +619,8 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @throws cbfs.FileNotFoundException
 	 */
 	string function checksum( required path, algorithm = "MD5" ){
-		ensureFileExists( arguments.path );
-		return hash( get( arguments.path ), arguments.algorithm );
+		variables.ensureFileExists( arguments.path );
+		return hash( this.get( arguments.path ), arguments.algorithm );
 	}
 
 	/**
@@ -638,7 +629,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @path The file path
 	 */
 	string function name( required path ){
-		return getFileFromPath( buildPath( arguments.path ) );
+		return getFileFromPath( variables.buildPath( arguments.path ) );
 	}
 
 	/**
@@ -660,8 +651,8 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 */
 	boolean function isFile( required path ){
 		try {
-			var ext = extension( arguments.path );
-			ensureFileExists( arguments.path );
+			var ext = this.extension( arguments.path );
+			variables.ensureFileExists( arguments.path );
 			return len( ext );
 		} catch ( cbfs.FileNotFoundException e ) {
 			return false;
@@ -675,11 +666,11 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 */
 	boolean function isWritable( required path ){
 		try {
-			ensureFileExists( path );
+			variables.ensureFileExists( path );
 		} catch ( cbfs.FileNotFoundException e ) {
 			return false;
 		}
-		return visibility( path ) != "private";
+		return this.visibility( path ) != "private";
 	}
 
 	/**
@@ -689,11 +680,11 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 */
 	boolean function isReadable( required path ){
 		try {
-			ensureFileExists( path );
+			variables.ensureFileExists( path );
 		} catch ( cbfs.FileNotFoundException e ) {
 			return false;
 		}
-		return visibility( path ) != "private";
+		return this.visibility( path ) != "private";
 	}
 
 	/**
@@ -743,7 +734,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		}
 		return variables.s3.setAccessControlPolicy(
 			bucketName = variables.properties.bucketName,
-			uri        = buildPath( arguments.path ),
+			uri        = variables.buildPath( arguments.path ),
 			acl        = acl
 		);
 	}
@@ -789,7 +780,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @path The directory path
 	 */
 	boolean function isDirectory( required path ){
-		var fullPath = buildPath( arguments.path );
+		var fullPath = variables.buildPath( arguments.path );
 		return !!variables.s3
 			.getBucket( bucketName = variables.properties.bucketName, prefix = fullPath )
 			.filter( function( item ){
@@ -809,16 +800,17 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 */
 	function createDirectory(
 		required directory,
-		boolean createPath = true,
+		boolean createPath   = true,
 		boolean ignoreExists = true
 	){
-
-		if ( !ignoreExists && exists( arguments.directory ) ) {
+		if ( !ignoreExists && this.directoryExists( arguments.directory ) ) {
 			throw(
-				type="cbfs.DirectoryExistsException",
-				message="The destination directory [#arguments.directory#] already exists."
+				type    = "cbfs.DirectoryExistsException",
+				message = "The destination directory [#arguments.directory#] already exists."
 			);
 		}
+
+		arguments.directory = variables.buildDirectoryPath( arguments.directory );
 
 		variables.s3.putObjectFolder( bucketName = variables.properties.bucketName, uri = arguments.directory );
 	}
@@ -846,36 +838,29 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		any filter         = "",
 		boolean createPath = true
 	){
-		var sourcePath      = source;
-		var destinationPath = destination;
+		var sourcePath      = variables.buildDirectoryPath( arguments.source );
+		var destinationPath = variables.buildDirectoryPath( arguments.destination );
 
-		if ( !arguments.createPath && !exists( destinationPath ) ) {
+		if ( !arguments.createPath && !this.directoryExists( destinationPath ) ) {
 			throw(
 				type    = "cbfs.DirectoryNotFoundException",
 				message = "The destination directory [#destinationPath#] does not exist and the createPath argument is false."
 			);
-		} else {
-			if ( arguments.createPath ) {
-				createDirectory( destinationPath );
-			}
 		}
 
-		var bucketAssets = files(
-			arguments.source,
-			arguments.filter,
-			arguments.recurse
+		var bucketAssets = this.files(
+			directory = sourcePath,
+			filter    = arguments.filter,
+			recurse   = arguments.recurse
 		);
-
-		writeDump( bucketAssets );
-		abort;
 
 		bucketAssets.each( function( asset ){
 			variables.s3.copyObject(
 				fromBucket = variables.properties.bucketName,
-				fromURI    = buildPath( asset.key ),
+				fromURI    = variables.buildPath( asset.key ),
 				toBucket   = variables.properties.bucketName,
-				toURI      = buildPath( replace( asset.key, source, destination ) ),
-				acl        = visibility( asset.key )
+				toURI      = variables.buildPath( replace( asset.key, source, destination ) ),
+				acl        = this.visibility( asset.key )
 			);
 		} );
 	};
@@ -894,13 +879,13 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		required newPath,
 		boolean createPath = true
 	){
-		copyDirectory(
+		this.copyDirectory(
 			source      = arguments.oldPath,
 			destination = arguments.newPath,
-			recurse		= true
+			recurse     = true
 		);
 
-		deleteDirectory( oldPath );
+		this.deleteDirectory( oldPath );
 	}
 
 	/**
@@ -917,29 +902,47 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		boolean recurse        = true,
 		boolean throwOnMissing = false
 	){
-		if ( throwOnMissing && !exists( directory ) ) {
-			throw(
-				type    = "cbfs.DirectoryNotFoundException",
-				message = "Directory [#arguments.directory#] not found."
-			);
+		arguments.directory = variables.buildDirectoryPath( arguments.directory );
+
+		var exists = this.directoryExists( directory );
+
+		if ( !exists ) {
+			if ( arguments.throwOnMissing ) {
+				throw(
+					type    = "cbfs.DirectoryNotFoundException",
+					message = "Directory [#arguments.directory#] not found."
+				);
+			}
+			return false;
 		}
 
-		var results = variables.s3.getBucket(
-			bucketName = variables.properties.bucketName,
-			prefix     = buildPath( arguments.directory ) & "/"
-		).filter( function( file ) {
-			return file.key != directory;
-		} );
+		var results = variables.s3
+			.getBucket( bucketName = variables.properties.bucketName, prefix = arguments.directory )
+			.filter( function( file ){
+				return file.key != directory;
+			} );
 
-		results.each( function( file ) {
-			if ( file.isDirectory && recurse ) {
-				deleteDirectory( directory=file.key, recurse=true, throwOnMissing=throwOnMissing );
-			} else if ( !file.isDirectory ) {
-				delete( path=file.key, throwOnMissing=throwOnMissing );
+		var foundDirectory = false;
+
+		results.each( function( file ){
+			if ( file.isDirectory ) {
+				if ( recurse ) {
+					this.deleteDirectory(
+						directory      = file.key,
+						recurse        = true,
+						throwOnMissing = throwOnMissing
+					);
+				} else {
+					foundDirectory = true;
+				}
+			} else {
+				this.delete( path = file.key, throwOnMissing = throwOnMissing );
 			}
 		} );
 
-		return delete( path=arguments.directory, throwOnMissing=arguments.throwOnMissing );
+		this.delete( path = arguments.directory, throwOnMissing = arguments.throwOnMissing );
+
+		return !foundDirectory ? true : false;
 	}
 
 	/**
@@ -951,9 +954,9 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @return S3Provider
 	 */
 	function cleanDirectory( required directory, boolean throwOnMissing = false ){
-		if ( exists( arguments.directory ) ) {
-			deleteDirectory( arguments.directory, true );
-			createDirectory( arguments.directory );
+		if ( this.directoryExists( arguments.directory ) ) {
+			this.deleteDirectory( arguments.directory, true );
+			this.createDirectory( arguments.directory );
 			return this;
 		}
 
@@ -974,33 +977,27 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @recurse   Recurse into subdirectories, default is false
 	 * @type      Filter the result to only include files, directories, or both. ('file|files', 'dir|directory', 'all'). Default is 'all'
 	 * @absolute  Local provider only: We return relative disk paths by default. If true, we return absolute paths
-	 *
 	 */
 	array function contents(
 		required directory,
-		any filter,
-		sort,
+		any filter       = "",
+		sort             = "",
 		boolean recurse  = false,
 		type             = "all",
 		boolean absolute = false
 	){
 		var sourcePath = arguments.directory;
-		
-		if ( !exists( sourcePath ) ) {
-			throw(
-				type    = "cbfs.DirectoryNotFoundException",
-				message = "Directory [#sourcePath#] not found."
-			);
+
+		if ( !this.directoryExists( sourcePath ) ) {
+			throw( type = "cbfs.DirectoryNotFoundException", message = "Directory [#sourcePath#] not found." );
 		}
 
 		// Ensure we do a folder search within S3
-		if ( right( sourcePath, 1 ) != "/" ) {
-			sourcePath &= "/"; 
-		}
+		sourcePath = variables.buildDirectoryPath( sourcePath );
 
 		var bucketContents = variables.s3
 			.getBucket( bucketName = variables.properties.bucketName, prefix = sourcePath )
-			.reduce( function( agg, item ) {
+			.reduce( function( agg, item ){
 				if ( type == "dir" && !item.isDirectory ) {
 					return agg;
 				}
@@ -1010,7 +1007,18 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 						agg.append( item );
 					}
 					if ( recurse && item.key != sourcePath ) {
-						agg.append( contents( directory=item.key, filter=filter, sort=sort, recurse=recurse, type=type, absolute=absolute, map=true ), true )
+						agg.append(
+							this.contents(
+								directory = item.key,
+								filter    = filter,
+								sort      = sort,
+								recurse   = recurse,
+								type      = type,
+								absolute  = absolute,
+								map       = true
+							),
+							true
+						)
 					}
 				} else if ( listLen( item.key, "." ) > 1 || val( item.size ) > 0 ) {
 					agg.append( item );
@@ -1050,10 +1058,10 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		required directory,
 		any filter,
 		sort,
-		type             = "all"
+		type = "all"
 	){
 		arguments.recurse = true;
-		return contents( argumentCollection = arguments );
+		return this.contents( argumentCollection = arguments );
 	}
 
 	/**
@@ -1070,9 +1078,9 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		sort,
 		boolean recurse = false
 	){
-		arguments.map = true;
-		arguments.type = "file";		
-		return contents( argumentCollection = arguments );
+		arguments.map  = true;
+		arguments.type = "file";
+		return this.contents( argumentCollection = arguments );
 	};
 
 	/**
@@ -1108,13 +1116,9 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @filter    A string wildcard or a lambda/closure that receives the file path and should return true to include it in the returned array or not.
 	 * @sort      Columns by which to sort. e.g. Directory, Size DESC, DateLastModified.
 	 */
-	array function allFiles(
-		required directory,
-		any filter,
-		sort
-	){
+	array function allFiles( required directory, any filter, sort ){
 		arguments.recurse = true;
-		return files( argumentCollection = arguments );
+		return this.files( argumentCollection = arguments );
 	};
 
 	/**
@@ -1124,13 +1128,9 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @filter    A string wildcard or a lambda/closure that receives the file path and should return true to include it in the returned array or not.
 	 * @sort      Columns by which to sort. e.g. Directory, Size DESC, DateLastModified.
 	 */
-	array function allDirectories(
-		required directory,
-		any filter,
-		sort
-	){
+	array function allDirectories( required directory, any filter, sort ){
 		arguments.recurse = true;
-		return directories( argumentCollection = arguments );
+		return this.directories( argumentCollection = arguments );
 	};
 
 	/**
@@ -1155,7 +1155,8 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		boolean recurse
 	){
 		arguments.map = true;
-		return contents( argumentCollection = arguments )
+		return this
+			.contents( argumentCollection = arguments )
 			.filter( function( item ){
 				return !item.isDirectory;
 			} );
@@ -1177,7 +1178,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 */
 	array function allFilesMap( required directory, any filter, sort ){
 		arguments.recurse = true;
-		return filesMap( argumentCollection = arguments );
+		return this.filesMap( argumentCollection = arguments );
 	};
 
 	/**
@@ -1202,7 +1203,8 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		boolean recurse
 	){
 		arguments.map = true;
-		return contents( argumentCollection = arguments )
+		return this
+			.contents( argumentCollection = arguments )
 			.filter( function( item ){
 				return item.isDirectory;
 			} );
@@ -1224,7 +1226,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 */
 	array function allDirectoriesMap( required directory, any filter, sort ){
 		arguments.recurse = true;
-		return directoriesMap( argumentCollection = arguments );
+		return this.directoriesMap( argumentCollection = arguments );
 	};
 
 	/**
@@ -1249,13 +1251,15 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		boolean recurse
 	){
 		arguments.map = true;
-		return files( argumentCollection = arguments ).map( function( file ){
-			return {
-				"path"     : arguments.file.key,
-				"contents" : get( arguments.file.key ),
-				"size"     : arguments.file.size
-			};
-		} );
+		return this
+			.files( argumentCollection = arguments )
+			.map( function( file ){
+				return {
+					"path"     : arguments.file.key,
+					"contents" : this.get( arguments.file.key ),
+					"size"     : arguments.file.size
+				};
+			} );
 	};
 
 	/**
@@ -1274,7 +1278,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 */
 	array function allContentsMap( required directory, any filter, sort ){
 		arguments.recurse = true;
-		return contentsMap( argumentCollection = arguments );
+		return this.contentsMap( argumentCollection = arguments );
 	};
 
 	/**
@@ -1283,7 +1287,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @path The file path
 	 */
 	boolean function isHidden( required path ){
-		return info( path ).isHidden;
+		return this.info( path ).isHidden;
 	}
 
 	/**
@@ -1320,7 +1324,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @throws cbfs.FileNotFoundException Throws if the file does not exist
 	 */
 	private function ensureFileExists( required path ){
-		if ( !this.exists( arguments.path ) ) {
+		if ( !this.fileExists( arguments.path ) ) {
 			throw( type = "cbfs.FileNotFoundException", message = "File [#arguments.path#] not found." );
 		}
 		return this;
@@ -1332,13 +1336,30 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @path The path to be checked for existence
 	 */
 	private function ensureDirectoryExists( required path ){
-		var p             = buildPath( arguments.path );
-		var directoryPath = len( extension( p ) ) ? replaceNoCase( p, getFileFromPath( p ), "" ) : p;
+		var p             = variables.buildPath( arguments.path );
+		var directoryPath = len( this.extension( p ) ) ? replaceNoCase( p, getFileFromPath( p ), "" ) : p;
 
-		if ( !exists( directoryPath ) ) {
+		if ( !this.directoryExists( directoryPath ) ) {
 			variables.s3.putObjectFolder( bucketName = variables.properties.bucketName, uri = directoryPath );
 		}
 		return this;
 	}
 
+	/**
+	 * Ensures proper pathing to a directory needed for S3.
+	 *
+	 * @path
+	 *
+	 * @return String
+	 */
+	private function buildDirectoryPath( path ){
+		arguments.path = variables.buildPath( arguments.path );
+
+		if ( right( arguments.path, 1 ) != "/" ) {
+			arguments.path &= "/";
+		}
+		return arguments.path;
+	}
+
 }
+

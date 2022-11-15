@@ -73,7 +73,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		// Normalize slashes
 		arguments.path = replace( arguments.path, "\", "/", "all" );
 
-		if ( !arguments.overwrite && this.exists( arguments.path ) ) {
+		if ( !arguments.overwrite && this.fileExists( arguments.path ) ) {
 			throw(
 				type    = "cbfs.FileOverrideException",
 				message = "Cannot create file. File already exists [#arguments.path#]"
@@ -124,7 +124,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @throws cbfs.FileNotFoundException
 	 */
 	function setVisibility( required string path, required string visibility ){
-		if ( this.exists( arguments.path ) ) {
+		if ( this.fileExists( arguments.path ) ) {
 			variables.files[ arguments.path ].visibility = arguments.visibility;
 		} else {
 			throw(
@@ -145,7 +145,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @throws cbfs.FileNotFoundException
 	 */
 	public string function visibility( required string path ){
-		if ( this.exists( arguments.path ) ) {
+		if ( this.fileExists( arguments.path ) ) {
 			return variables.files[ arguments.path ].visibility;
 		} else {
 			throw(
@@ -174,11 +174,11 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		struct metadata        = {},
 		boolean throwOnMissing = false
 	){
-		if ( missing( arguments.path ) ) {
+		if ( this.fileMissing( arguments.path ) ) {
 			if ( arguments.throwOnMissing ) {
 				throw( type = "cbfs.FileNotFoundException", message = "File [#arguments.path#] not found." );
 			}
-			return create(
+			return this.create(
 				path     = arguments.path,
 				contents = arguments.contents,
 				metadata = arguments.metadata
@@ -208,11 +208,11 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		struct metadata        = {},
 		boolean throwOnMissing = false
 	){
-		if ( missing( arguments.path ) ) {
+		if ( this.fileMissing( arguments.path ) ) {
 			if ( arguments.throwOnMissing ) {
 				throw( type = "cbfs.FileNotFoundException", message = "File [#arguments.path#] not found." );
 			}
-			return create(
+			return this.create(
 				path     = arguments.path,
 				contents = arguments.contents,
 				metadata = arguments.metadata
@@ -239,9 +239,9 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		required destination,
 		boolean overwrite = true
 	){
-		return create(
+		return this.create(
 			path      = arguments.destination,
-			contents  = get( arguments.source ),
+			contents  = this.get( arguments.source ),
 			overwrite = arguments.overwrite
 		);
 	}
@@ -261,12 +261,12 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		required destination,
 		boolean overwrite = true
 	){
-		create(
+		this.create(
 			path      = arguments.destination,
-			contents  = get( arguments.source ),
+			contents  = this.get( arguments.source ),
 			overwrite = arguments.overwrite
 		);
-		return delete( arguments.source );
+		return this.delete( arguments.source );
 	}
 
 	/**
@@ -279,7 +279,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @throws cbfs.FileNotFoundException
 	 */
 	any function get( required path ){
-		return ensureRecordExists( arguments.path ).contents;
+		return variables.ensureRecordExists( arguments.path ).contents;
 	}
 
 	/**
@@ -296,12 +296,12 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	}
 
 	/**
-	 * Validate if a file/directory exists
+	 * Validate if a file exists
 	 *
-	 * @path The file/directory path to verify
+	 * @path The file path to verify
 	 */
-	boolean function exists( required string path ){
-		arguments.path = normalizePath( arguments.path );
+	boolean function fileExists( required string path ){
+		arguments.path = this.normalizePath( arguments.path );
 		for ( var existingPath in variables.files.keyArray() ) {
 			if ( find( arguments.path, existingPath ) == 1 ) {
 				return true;
@@ -322,7 +322,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @throws cbfs.FileNotFoundException
 	 */
 	public boolean function delete( required any path, boolean throwOnMissing = false ){
-		if ( missing( arguments.path ) ) {
+		if ( this.fileMissing( arguments.path ) ) {
 			if ( arguments.throwOnMissing ) {
 				throw( type = "cbfs.FileNotFoundException", message = "File [#arguments.path#] not found." );
 			}
@@ -343,19 +343,19 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @throws cbfs.PathNotFoundException
 	 */
 	function touch( required path, boolean createPath = true ){
-		if ( exists( arguments.path ) ) {
+		if ( this.fileExists( arguments.path ) ) {
 			variables.files[ arguments.path ].lastModified = now();
 			return this;
 		}
 		if ( !arguments.createPath ) {
-			if ( !this.exists( getDirectoryFromPath( arguments.path ) ) ) {
+			if ( !this.directoryExists( getDirectoryFromPath( arguments.path ) ) ) {
 				throw(
 					type    = "cbfs.PathNotFoundException",
 					message = "Directory does not already exist and the `createPath` flag is set to false"
 				);
 			}
 		}
-		return create( arguments.path, "" );
+		return this.create( arguments.path, "" );
 	}
 
 	/**************************************** UTILITY METHODS ****************************************/
@@ -368,7 +368,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @throws cbfs.FileNotFoundException
 	 */
 	string function uri( required string path ){
-		return ensureRecordExists( arguments.path ).path;
+		return variables.ensureRecordExists( arguments.path ).path;
 	}
 
 	/**
@@ -402,7 +402,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @throws cbfs.FileNotFoundException
 	 */
 	function lastModified( required path ){
-		return ensureRecordExists( arguments.path ).lastModified;
+		return variables.ensureRecordExists( arguments.path ).lastModified;
 	}
 
 	/**
@@ -413,7 +413,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @throws cbfs.FileNotFoundException
 	 */
 	function mimeType( required path ){
-		return getMimeType( ensureRecordExists( arguments.path ).path );
+		return this.getMimeType( variables.ensureRecordExists( arguments.path ).path );
 	}
 
 	/**
@@ -427,7 +427,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @throws cbfs.FileNotFoundException
 	 */
 	struct function info( required path ){
-		return ensureRecordExists( arguments.path );
+		return variables.ensureRecordExists( arguments.path );
 	}
 
 	/**
@@ -439,7 +439,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @throws cbfs.FileNotFoundException
 	 */
 	string function checksum( required path, algorithm = "MD5" ){
-		return hash( ensureRecordExists( arguments.path ).contents, arguments.algorithm );
+		return hash( variables.ensureRecordExists( arguments.path ).contents, arguments.algorithm );
 	}
 
 	/**
@@ -460,7 +460,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @return cbfs.models.IDisk
 	 */
 	function chmod( required string path, required string mode ){
-		ensureRecordExists( arguments.path ).mode = arguments.mode;
+		variables.ensureRecordExists( arguments.path ).mode = arguments.mode;
 		return this;
 	}
 
@@ -478,7 +478,8 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @throws UnsupportedOperationException - if the implementation does not support symbolic links
 	 */
 	function createSymbolicLink( required link, required target ){
-		variables.files[ arguments.link ] = ensureRecordExists( arguments.target )
+		variables.files[ arguments.link ] = variables
+			.ensureRecordExists( arguments.target )
 			.duplicate()
 			.append( { symbolicLink : true } );
 		return this;
@@ -492,8 +493,8 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @path The file path
 	 */
 	boolean function isFile( required path ){
-		arguments.path = normalizePath( arguments.path );
-		return missing( arguments.path ) ? false : variables.files[ arguments.path ].type == "File";
+		arguments.path = this.normalizePath( arguments.path );
+		return this.fileMissing( arguments.path ) ? false : variables.files[ arguments.path ].type == "File";
 	}
 
 	/**
@@ -504,7 +505,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @throws cbfs.FileNotFoundException - If the filepath is missing
 	 */
 	boolean function isWritable( required path ){
-		return ensureRecordExists( arguments.path ).visibility == "public";
+		return variables.ensureRecordExists( arguments.path ).visibility == "public";
 	}
 
 	/**
@@ -515,7 +516,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @throws cbfs.FileNotFoundException - If the filepath is missing
 	 */
 	boolean function isReadable( required path ){
-		return isWritable( arguments.path ) || ensureRecordExists( arguments.path ).visibility == "readonly";
+		return this.isWritable( arguments.path ) || variables.ensureRecordExists( arguments.path ).visibility == "readonly";
 	}
 
 	/**
@@ -537,7 +538,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @throws cbfs.FileNotFoundException - If the filepath is missing
 	 */
 	boolean function isHidden( required path ){
-		return ensureRecordExists( arguments.path ).visibility == "private";
+		return variables.ensureRecordExists( arguments.path ).visibility == "private";
 	}
 
 	/**
@@ -548,7 +549,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @throws cbfs.FileNotFoundException - If the filepath is missing
 	 */
 	boolean function isSymbolicLink( required path ){
-		return ensureRecordExists( arguments.path ).symbolicLink;
+		return variables.ensureRecordExists( arguments.path ).symbolicLink;
 	}
 
 	/**************************************** DIRECTORY METHODS ****************************************/
@@ -559,8 +560,8 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @path The directory path
 	 */
 	boolean function isDirectory( required path ){
-		arguments.path = normalizePath( arguments.path );
-		return missing( arguments.path ) ? false : variables.files[ arguments.path ].type == "Directory";
+		arguments.path = this.normalizePath( arguments.path );
+		return this.fileMissing( arguments.path ) ? false : variables.files[ arguments.path ].type == "Directory";
 	}
 
 	/**
@@ -580,9 +581,9 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		boolean ignoreExists = true
 	){
 		// Cleanup directory name
-		arguments.directory = normalizePath( arguments.directory );
+		arguments.directory = this.normalizePath( arguments.directory );
 
-		if ( this.exists( arguments.directory ) && !arguments.ignoreExists ) {
+		if ( this.directoryExists( arguments.directory ) && !arguments.ignoreExists ) {
 			throw(
 				type    = "cbfs.DirectoryExistsException",
 				message = "Cannot create directory. The directory already exists [#arguments.directory#]"
@@ -635,10 +636,10 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		any filter,
 		boolean createPath = true
 	){
-		arguments.source      = normalizePath( arguments.source );
-		arguments.destination = normalizePath( arguments.destination );
+		arguments.source      = this.normalizePath( arguments.source );
+		arguments.destination = this.normalizePath( arguments.destination );
 		try {
-			var sourceRecord = ensureRecordExists( arguments.source );
+			var sourceRecord = variables.ensureRecordExists( arguments.source );
 		} catch ( "cbfs.FileNotFoundException" e ) {
 			throw(
 				type    = "cbfs.DirectoryNotFoundException",
@@ -706,10 +707,10 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		required destination,
 		boolean createPath = true
 	){
-		arguments.source      = normalizePath( arguments.source );
-		arguments.destination = normalizePath( arguments.destination );
+		arguments.source      = this.normalizePath( arguments.source );
+		arguments.destination = this.normalizePath( arguments.destination );
 		try {
-			var oldRecord = ensureRecordExists( arguments.source );
+			var oldRecord = variables.ensureRecordExists( arguments.source );
 		} catch ( "cbfs.FileNotFoundException" e ) {
 			throw(
 				type    = "cbfs.DirectoryNotFoundException",
@@ -758,9 +759,9 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		boolean recurse        = true,
 		boolean throwOnMissing = false
 	){
-		arguments.directory = normalizePath( arguments.directory );
+		arguments.directory = this.normalizePath( arguments.directory );
 		try {
-			var dirRecord = ensureRecordExists( arguments.directory );
+			var dirRecord = variables.ensureRecordExists( arguments.directory );
 		} catch ( "cbfs.FileNotFoundException" e ) {
 			if ( arguments.throwOnMissing ) {
 				throw(
@@ -772,16 +773,25 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		}
 
 		// Discover the directories in memory that start with this directory path and wipe them
-		var aDeleted = variables.files
-			.keyArray()
-			.filter( function( filePath ){
-				return arguments.filePath.startsWith( directory );
-			} )
-			.each( function( filePath ){
-				variables.files.delete( arguments.filepath );
-			} );
+		if ( arguments.recurse == true ) {
+			var aDeleted = variables.files
+				.keyArray()
+				.filter( function( filePath ){
+					return arguments.filePath.startsWith( directory );
+				} )
+				.each( function( filePath ){
+					variables.files.delete( arguments.filepath );
+				} );
 
-		return isNull( aDeleted ) ? true : aDeleted.len() > 0 ? true : false;
+			return isNull( aDeleted ) ? true : aDeleted.len() > 0 ? true : false;
+		} else {
+			var files = this
+				.files( arguments.directory )
+				.each( function( file ){
+					this.delete( file );
+				} );
+			return !this.directoryExists( arguments.directory );
+		}
 	}
 
 	/**
@@ -795,9 +805,9 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @throws cbfs.DirectoryNotFoundException
 	 */
 	function cleanDirectory( required directory, boolean throwOnMissing = false ){
-		arguments.directory = normalizePath( arguments.directory );
+		arguments.directory = this.normalizePath( arguments.directory );
 		try {
-			var dirRecord = ensureRecordExists( arguments.directory );
+			var dirRecord = variables.ensureRecordExists( arguments.directory );
 		} catch ( "cbfs.FileNotFoundException" e ) {
 			if ( arguments.throwOnMissing ) {
 				throw(
@@ -842,9 +852,9 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		type            = "all"
 	){
 		// Verify Directory
-		arguments.directory = normalizePath( arguments.directory );
+		arguments.directory = this.normalizePath( arguments.directory );
 		try {
-			var dirRecord = ensureRecordExists( arguments.directory );
+			var dirRecord = variables.ensureRecordExists( arguments.directory );
 		} catch ( "cbfs.FileNotFoundException" e ) {
 			throw(
 				type    = "cbfs.DirectoryNotFoundException",
@@ -909,7 +919,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		type = "all"
 	){
 		arguments.recurse = true;
-		return contents( argumentCollection = arguments );
+		return this.contents( argumentCollection = arguments );
 	}
 
 	/**
@@ -929,7 +939,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		boolean recurse = false
 	){
 		arguments.type = "file";
-		return contents( argumentCollection = arguments );
+		return this.contents( argumentCollection = arguments );
 	}
 
 	/**
@@ -949,7 +959,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		boolean recurse = false
 	){
 		arguments.type = "Dir";
-		return contents( argumentCollection = arguments );
+		return this.contents( argumentCollection = arguments );
 	}
 
 	/**
@@ -964,7 +974,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	array function allFiles( required directory, any filter, sort ){
 		arguments.type    = "File";
 		arguments.recurse = true;
-		return contents( argumentCollection = arguments );
+		return this.contents( argumentCollection = arguments );
 	}
 
 	/**
@@ -979,7 +989,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	array function allDirectories( required directory, any filter, sort ){
 		arguments.type    = "Dir";
 		arguments.recurse = true;
-		return contents( argumentCollection = arguments );
+		return this.contents( argumentCollection = arguments );
 	}
 
 	/**
@@ -1007,9 +1017,9 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		boolean recurse = false
 	){
 		// Verify Directory
-		arguments.directory = normalizePath( arguments.directory );
+		arguments.directory = this.normalizePath( arguments.directory );
 		try {
-			var dirRecord = ensureRecordExists( arguments.directory );
+			var dirRecord = variables.ensureRecordExists( arguments.directory );
 		} catch ( "cbfs.FileNotFoundException" e ) {
 			throw(
 				type    = "cbfs.DirectoryNotFoundException",
@@ -1072,7 +1082,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 */
 	array function allFilesMap( required directory, any filter, sort ){
 		arguments.recurse = true;
-		return filesMap( argumentCollection = arguments );
+		return this.filesMap( argumentCollection = arguments );
 	}
 
 	/**
@@ -1092,9 +1102,9 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		boolean recurse = false
 	){
 		// Verify Directory
-		arguments.directory = normalizePath( arguments.directory );
+		arguments.directory = this.normalizePath( arguments.directory );
 		try {
-			var dirRecord = ensureRecordExists( arguments.directory );
+			var dirRecord = variables.ensureRecordExists( arguments.directory );
 		} catch ( "cbfs.FileNotFoundException" e ) {
 			throw(
 				type    = "cbfs.DirectoryNotFoundException",
@@ -1153,7 +1163,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 */
 	array function allContentsMap( required directory, any filter, sort ){
 		arguments.recurse = true;
-		return contentsMap( argumentCollection = arguments );
+		return this.contentsMap( argumentCollection = arguments );
 	}
 
 	/**************************************** STREAM METHODS ****************************************/
@@ -1169,7 +1179,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	function stream( required path ){
 		return wirebox
 			.getInstance( "StreamBuilder@cbstreams" )
-			.new( get( arguments.path ).listToArray( "#chr( 13 )##chr( 10 )#" ) );
+			.new( this.get( arguments.path ).listToArray( "#chr( 13 )##chr( 10 )#" ) );
 	};
 
 	/**
@@ -1215,7 +1225,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @throws cbfs.FileNotFoundException - If the filepath is missing
 	 */
 	private struct function ensureRecordExists( required path ){
-		if ( missing( arguments.path ) ) {
+		if ( this.fileMissing( arguments.path ) ) {
 			throw( type = "cbfs.FileNotFoundException", message = "File [#arguments.path#] not found." );
 		}
 		return variables.files[ arguments.path ];
