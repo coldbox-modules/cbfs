@@ -311,6 +311,15 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	}
 
 	/**
+	 * Validate if a directory exists
+	 *
+	 * @path The directory path to verify
+	 */
+	boolean function directoryExists( required string path ){
+		return structKeyExists( variables.files, path ) && variables.files[ path ].type == "Directory";
+	}
+
+	/**
 	 * Delete a file or an array of file paths. If a file does not exist a `false` will be
 	 * shown for it's return.
 	 *

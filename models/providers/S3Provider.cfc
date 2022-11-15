@@ -236,7 +236,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	){
 		if ( !this.fileExists( arguments.path ) ) {
 			if ( arguments.throwOnMissing ) {
-				throw( type = "cbfs.FileNotFoundException", message = "File [#arguments.path#] not found." );
+				throwFileNotFoundException( arguments.path );
 			}
 			return this.create(
 				path     = arguments.path,
@@ -271,7 +271,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	){
 		if ( !this.fileExists( arguments.path ) ) {
 			if ( arguments.throwOnMissing ) {
-				throw( type = "cbfs.FileNotFoundException", message = "File [#arguments.path#] not found." );
+				throwFileNotFoundException( arguments.path );
 			}
 			return this.create(
 				path     = arguments.path,
@@ -559,7 +559,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 			return true;
 		} else {
 			if ( throwOnMissing ) {
-				throw( type = "cbfs.FileNotFoundException", message = "File [#arguments.path#] not found." );
+				throwFileNotFoundException( arguments.path );
 			}
 			return false;
 		}

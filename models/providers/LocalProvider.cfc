@@ -389,6 +389,24 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	}
 
 	/**
+	 * Validate if a file exists
+	 *
+	 * @path The file path to verify
+	 */
+	boolean function fileExists( required string path ){
+		return exists( arguments.path );
+	}
+
+	/**
+	 * Validate if a directory exists
+	 *
+	 * @path The directory path to verify
+	 */
+	boolean function directoryExists( required string path ){
+		return exists( arguments.path );
+	}
+
+	/**
 	 * Delete a file or an array of file paths. If a file does not exist a `false` will be shown for it's return.
 	 *
 	 * @path           A single file path or an array of file paths
