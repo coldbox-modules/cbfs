@@ -44,34 +44,9 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		param arguments.properties.serviceName         = "s3";
 		param arguments.properties.debug               = false;
 
-		// Map our s3sdk provider
-		variables.wirebox
-			.getBinder()
-			.map( "cbfs-s3sdk-#arguments.name#" )
-			.to( "s3sdk.models.AmazonS3" )
-			.initArg( name: "accessKey", value: arguments.properties.accessKey )
-			.initArg( name: "secretKey", value: arguments.properties.secretKey )
-			.initArg( name: "awsDomain", value: arguments.properties.awsDomain )
-			.initArg( name: "awsRegion", value: arguments.properties.awsRegion )
-			.initArg( name: "encryptionCharset", value: arguments.properties.encryptionCharset )
-			.initArg( name: "signatureType", value: arguments.properties.signatureType )
-			.initArg( name: "ssl", value: arguments.properties.ssl )
-			.initArg( name: "defaultTimeOut", value: arguments.properties.defaultTimeOut )
-			.initArg( name: "defaultDelimiter", value: arguments.properties.defaultDelimiter )
-			.initArg( name: "defaultBucketName", value: arguments.properties.defaultBucketName )
-			.initArg( name: "defaultCacheControl", value: arguments.properties.defaultCacheControl )
-			.initArg( name: "defaultStorageClass", value: arguments.properties.defaultStorageClass )
-			.initArg( name: "defaultACL", value: arguments.properties.defaultACL )
-			.initArg( name: "throwOnRequestError", value: arguments.properties.throwOnRequestError )
-			.initArg( name: "retriesOnError", value: arguments.properties.retriesOnError )
-			.initArg( name: "autoContentType", value: arguments.properties.autoContentType )
-			.initArg( name: "autoMD5", value: arguments.properties.autoMD5 )
-			.initArg( name: "serviceName", value: arguments.properties.serviceName )
-			.initArg( name: "debug", value: arguments.properties.debug );
-
 		try {
-			variables.s3 = variables.wirebox.getInstance( "cbfs-s3sdk-#arguments.name#" );
-			// variables.s3 = variables.wirebox.getInstance( name="AmazonS3@s3sdk", initArguments=arguments.properties );
+			variables.s3 = createObject( "component", "s3sdk.models.AmazonS3" ).init( argumentCollection=arguments.properties );
+			variables.wirebox.autowire( variables.s3 );
 		} catch ( any e ) {
 			throw(
 				type    = "cbfs.ProviderConfigurationException",
