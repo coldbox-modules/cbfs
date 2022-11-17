@@ -977,7 +977,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 					} );
 				} );
 				given( "an invalid directory", function(){
-					then( "it should throw a cbfs.DirectoryNotFoundException duh", function(){
+					then( "it should throw a cbfs.DirectoryNotFoundException", function(){
 						var dirPath = "boguspath";
 						expect( function(){
 							disk.cleanDirectory( directory = dirPath, throwOnMissing = true );
@@ -1077,7 +1077,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 					} );
 				} );
 				given( "an invalid directory", function(){
-					then( "it should throw a cbfs.DirectoryNotFoundException sdfsadfsd", function(){
+					then( "it should throw a cbfs.DirectoryNotFoundException", function(){
 						var dirPath = "boguspath";
 						expect( function(){
 							disk.contents( dirPath );
