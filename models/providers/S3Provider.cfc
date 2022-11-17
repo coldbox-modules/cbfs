@@ -311,7 +311,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 			);
 		} else {
 			if ( !this.fileExists( arguments.source ) ) {
-				throw( type = "cbfs.FileNotFoundException", message = "File [#arguments.source#] not found." );
+				variables.throwFileNotFoundException( arguments.source );
 			}
 		}
 
@@ -352,7 +352,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 			);
 		} else {
 			if ( !this.fileExists( arguments.source ) ) {
-				throw( type = "cbfs.FileNotFoundException", message = "File [#arguments.source#] not found." );
+				variables.throwFileNotFoundException( arguments.source );
 			}
 		}
 		variables.s3.copyObject(
@@ -473,7 +473,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 */
 	string function uri( required string path ){
 		if ( !this.fileExists( arguments.path ) ) {
-			throw( type = "cbfs.FileNotFoundException", message = "File [#arguments.path#] not found." );
+			variables.throwFileNotFoundException( arguments.path );
 		}
 		return arguments.path;
 	}
@@ -1323,7 +1323,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 */
 	private function ensureFileExists( required path ){
 		if ( !this.fileExists( arguments.path ) ) {
-			throw( type = "cbfs.FileNotFoundException", message = "File [#arguments.path#] not found." );
+			variables.throwFileNotFoundException( arguments.path );
 		}
 		return this;
 	}
@@ -1357,6 +1357,14 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 			arguments.path &= "/";
 		}
 		return arguments.path;
+	}
+
+	/**
+	 * Throws file not found exception
+	 * @throw
+	 */
+	private function throwFileNotFoundException( path ) {
+		throw( type="cbfs.FileNotFoundException", message="File [#arguments.path#] not found." );
 	}
 
 }
