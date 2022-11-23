@@ -35,25 +35,29 @@ component {
 	this.mappings[ "/s3sdk" ] = moduleRootPath & "#request.MODULE_NAME#" & "/modules/s3sdk";
 
 	function onRequestStart( required targetPage ){
-		if ( url.keyExists( "fwreinit" ) ) {
-			if ( structKeyExists( server, "lucee" ) ) {
+		// Set a high timeout for long running tests
+		setting requestTimeout="9999";
+		// New ColdBox Virtual Application Starter
+		request.coldBoxVirtualApp = new coldbox.system.testing.VirtualApp( appMapping = "/root" );
+
+		// ORM Reload for fresh results
+		if( structKeyExists( url, "fwreinit" ) ){
+			if( structKeyExists( server, "lucee" ) ){
 				pagePoolClear();
 			}
+			request.coldBoxVirtualApp.shutdown();
 		}
 
-		// Cleanup
-		if ( !isNull( application.cbController ) ) {
-			application.cbController.getLoaderService().processShutdown();
+		// If hitting the runner or specs, prep our virtual app
+		if ( getBaseTemplatePath().replace( expandPath( "/tests" ), "" ).reFindNoCase( "(runner|specs)" ) ) {
+			request.coldBoxVirtualApp.startup();
 		}
-		structDelete( application, "cbController" );
-		structDelete( application, "wirebox" );
 
 		return true;
 	}
 
 	public function onRequestEnd(){
-		structDelete( application, "cbController" );
-		structDelete( application, "wirebox" );
+		request.coldBoxVirtualApp.shutdown();
 	}
 
 }
