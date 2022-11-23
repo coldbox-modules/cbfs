@@ -888,8 +888,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 			);
 		} else {
 			// Delete only the top level files
-			var files = this
-				.files( arguments.directory )
+			var files = files( arguments.directory )
 				.each( function( file ){
 					delete( file );
 				} );
@@ -1120,8 +1119,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		boolean recurse  = false,
 		boolean extended = false
 	){
-		return this
-			.files( argumentCollection = arguments )
+		return files( argumentCollection = arguments )
 			.map( function( item ){
 				return extended ? extendedInfo( arguments.item ) : info( arguments.item );
 			} );
@@ -1170,8 +1168,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		sort,
 		boolean recurse = false
 	){
-		return this
-			.files( argumentCollection = arguments )
+		return files( argumentCollection = arguments )
 			.map( function( item ){
 				return {
 					"path"     : arguments.item,
