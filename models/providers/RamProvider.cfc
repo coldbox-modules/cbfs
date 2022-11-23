@@ -73,7 +73,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		// Normalize slashes
 		arguments.path = replace( arguments.path, "\", "/", "all" );
 
-		if ( !arguments.overwrite && this.fileExists( arguments.path ) ) {
+		if ( !arguments.overwrite && exists( arguments.path ) ) {
 			throw(
 				type    = "cbfs.FileOverrideException",
 				message = "Cannot create file. File already exists [#arguments.path#]"
@@ -124,7 +124,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @throws cbfs.FileNotFoundException
 	 */
 	function setVisibility( required string path, required string visibility ){
-		if ( this.fileExists( arguments.path ) ) {
+		if ( exists( arguments.path ) ) {
 			variables.files[ arguments.path ].visibility = arguments.visibility;
 		} else {
 			throw(
@@ -145,7 +145,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @throws cbfs.FileNotFoundException
 	 */
 	public string function visibility( required string path ){
-		if ( this.fileExists( arguments.path ) ) {
+		if ( exists( arguments.path ) ) {
 			return variables.files[ arguments.path ].visibility;
 		} else {
 			throw(
@@ -300,7 +300,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 *
 	 * @path The file path to verify
 	 */
-	boolean function fileExists( required string path ){
+	boolean function exists( required string path ){
 		arguments.path = this.normalizePath( arguments.path );
 		for ( var existingPath in variables.files.keyArray() ) {
 			if ( find( arguments.path, existingPath ) == 1 ) {
@@ -352,7 +352,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @throws cbfs.PathNotFoundException
 	 */
 	function touch( required path, boolean createPath = true ){
-		if ( this.fileExists( arguments.path ) ) {
+		if ( exists( arguments.path ) ) {
 			variables.files[ arguments.path ].lastModified = now();
 			return this;
 		}

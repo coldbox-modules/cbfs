@@ -110,7 +110,7 @@ component accessors="true" {
 	 * @path The file path to verify
 	 */
 	boolean function fileMissing( required string path ){
-		return !this.fileExists( arguments.path );
+		return !exists( arguments.path );
 	}
 
 	/**
@@ -119,7 +119,7 @@ component accessors="true" {
 	 * @path The directory path to verify
 	 */
 	boolean function directoryExists( required string path ){
-		return this.fileExists( path );
+		return exists( arguments.path );
 	}
 
 	/**

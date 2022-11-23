@@ -93,7 +93,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		struct metadata   = {},
 		boolean overwrite = false
 	){
-		if ( !arguments.overwrite && this.fileExists( arguments.path ) ) {
+		if ( !arguments.overwrite && exists( arguments.path ) ) {
 			throw(
 				type    = "cbfs.FileOverrideException",
 				message = "Cannot create file. File already exists [Bucket: #variables.properties.bucketName#, Path: #buildPath( arguments.path )#]"
@@ -209,7 +209,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		struct metadata        = {},
 		boolean throwOnMissing = false
 	){
-		if ( !this.fileExists( arguments.path ) ) {
+		if ( !exists( arguments.path ) ) {
 			if ( arguments.throwOnMissing ) {
 				throwFileNotFoundException( arguments.path );
 			}
@@ -244,7 +244,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		struct metadata        = {},
 		boolean throwOnMissing = false
 	){
-		if ( !this.fileExists( arguments.path ) ) {
+		if ( !exists( arguments.path ) ) {
 			if ( arguments.throwOnMissing ) {
 				throwFileNotFoundException( arguments.path );
 			}
@@ -277,15 +277,15 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		required destination,
 		boolean overwrite = false
 	){
-		var sourceExists      = this.fileExists( arguments.source );
-		var destinationExists = this.fileExists( arguments.destination );
+		var sourceExists      = exists( arguments.source );
+		var destinationExists = exists( arguments.destination );
 		if ( !arguments.overwrite && destinationExists ) {
 			throw(
 				type    = "cbfs.FileOverrideException",
 				message = "Cannot create file. File already exists [Bucket: #variables.properties.bucketName#, Path: #buildPath( arguments.destination )#]"
 			);
 		} else {
-			if ( !this.fileExists( arguments.source ) ) {
+			if ( !exists( arguments.source ) ) {
 				variables.throwFileNotFoundException( arguments.source );
 			}
 		}
@@ -320,13 +320,13 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		required destination,
 		boolean overwrite = false
 	){
-		if ( !arguments.overwrite && this.fileExists( arguments.destination ) ) {
+		if ( !arguments.overwrite && exists( arguments.destination ) ) {
 			throw(
 				type    = "cbfs.FileOverrideException",
 				message = "Cannot create file. File already exists [Bucket: #variables.properties.bucketName#, Path: #buildPath( arguments.destination )#]"
 			);
 		} else {
-			if ( !this.fileExists( arguments.source ) ) {
+			if ( !exists( arguments.source ) ) {
 				variables.throwFileNotFoundException( arguments.source );
 			}
 		}
@@ -404,7 +404,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 *
 	 * @path The file to verify
 	 */
-	boolean function fileExists( required string path ){
+	boolean function exists( required string path ){
 		return variables.s3.objectExists(
 			bucketName = variables.properties.bucketName,
 			uri        = variables.buildPath( arguments.path )
@@ -447,7 +447,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @throws cbfs.FileNotFoundException
 	 */
 	string function uri( required string path ){
-		if ( !this.fileExists( arguments.path ) ) {
+		if ( !exists( arguments.path ) ) {
 			variables.throwFileNotFoundException( arguments.path );
 		}
 		return arguments.path;
@@ -520,7 +520,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @throwOnMissing When true an error will be thrown if the file does not exist
 	 */
 	boolean function delete( required any path, boolean throwOnMissing = false ){
-		if ( this.fileExists( path ) ) {
+		if ( exists( path ) ) {
 			variables.s3.deleteObject(
 				bucketName = variables.properties.bucketName,
 				uri        = variables.buildPath( arguments.path )
@@ -1297,7 +1297,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @throws cbfs.FileNotFoundException Throws if the file does not exist
 	 */
 	private function ensureFileExists( required path ){
-		if ( !this.fileExists( arguments.path ) ) {
+		if ( !exists( arguments.path ) ) {
 			variables.throwFileNotFoundException( arguments.path );
 		}
 		return this;

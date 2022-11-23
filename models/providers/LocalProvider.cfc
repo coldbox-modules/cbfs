@@ -106,7 +106,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		string mode
 	){
 		// Verify the path
-		if ( !arguments.overwrite && this.fileExists( arguments.path ) ) {
+		if ( !arguments.overwrite && exists( arguments.path ) ) {
 			throw(
 				type    = "cbfs.FileOverrideException",
 				message = "Cannot create file. File already exists [#arguments.path#]"
@@ -290,7 +290,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		}
 
 		// Overwrite checks for destination
-		if ( !arguments.overwrite && this.fileExists( arguments.destination ) ) {
+		if ( !arguments.overwrite && exists( arguments.destination ) ) {
 			throw(
 				type    = "cbfs.FileOverrideException",
 				message = "Cannot copy file. Destination already exists [#arguments.destination#] and overwrite is false"
@@ -335,7 +335,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		}
 
 		// Overwrite checks for destination
-		if ( !arguments.overwrite && this.fileExists( arguments.destination ) ) {
+		if ( !arguments.overwrite && exists( arguments.destination ) ) {
 			throw(
 				type    = "cbfs.FileOverrideException",
 				message = "Cannot move file. Destination already exists [#arguments.destination#] and overwrite is false"
@@ -384,7 +384,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 *
 	 * @path The file path to verify
 	 */
-	boolean function fileExists( required string path ){
+	boolean function exists( required string path ){
 		return variables.jFiles.exists( this.buildJavaDiskPath( arguments.path ), [] );
 	}
 
@@ -431,7 +431,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 */
 	function touch( required path, boolean createPath = true ){
 		// If it exists, just touch the timestamp
-		if ( this.fileExists( arguments.path ) ) {
+		if ( exists( arguments.path ) ) {
 			fileSetLastModified( this.buildDiskPath( arguments.path ), now() );
 			return this;
 		}
@@ -1297,7 +1297,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 */
 	private function ensureFileExists( required path ){
 		arguments.path = this.buildDiskPath( arguments.path );
-		if ( !this.fileExists( arguments.path ) ) {
+		if ( !exists( arguments.path ) ) {
 			throw( type = "cbfs.FileNotFoundException", message = "File [#arguments.path#] not found." );
 		}
 		return arguments.path;
