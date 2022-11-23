@@ -363,7 +363,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @throws cbfs.FileNotFoundException
 	 */
 	any function get( required path ){
-		return variables.jFiles.readString( getJavaPath( variables.ensureFileExists( arguments.path ) ) );
+		return variables.jFiles.readString( getJavaPath( ensureFileExists( arguments.path ) ) );
 	}
 
 	/**
@@ -376,7 +376,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @throws cbfs.FileNotFoundException
 	 */
 	any function getAsBinary( required path ){
-		return variables.jFiles.readAllBytes( getJavaPath( variables.ensureFileExists( arguments.path ) ) );
+		return variables.jFiles.readAllBytes( getJavaPath( ensureFileExists( arguments.path ) ) );
 	};
 
 	/**
@@ -528,7 +528,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 			throw( type = "cbfs.FileNotFoundException", message = "File [#arguments.path#] not found." );
 		}
 		var inMillis = variables.jFiles
-			.getLastModifiedTime( getJavaPath( variables.ensureFileExists( arguments.path ) ), [] )
+			.getLastModifiedTime( getJavaPath( ensureFileExists( arguments.path ) ), [] )
 			.toMillis();
 		// Calculate adjustments fot timezone and daylightsavindtime
 		var offset = ( ( getTimezoneInfo().utcHourOffset ) + 1 ) * -3600;

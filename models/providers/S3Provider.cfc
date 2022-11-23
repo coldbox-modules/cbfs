@@ -351,7 +351,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @throws cbfs.FileNotFoundException
 	 */
 	any function get( required path ){
-		variables.ensureFileExists( arguments.path );
+		ensureFileExists( arguments.path );
 		// ACF will not allow us to read the file directly via URL
 		if ( server.coldfusion.productVersion.listFirst() >= 2018 ) {
 			var tempFileName = createUUID() & "." & this.extension( arguments.path );
@@ -474,7 +474,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @throws cbfs.FileNotFoundException
 	 */
 	string function temporaryURL( required path, numeric expiration = 1 ){
-		variables.ensureFileExists( arguments.path );
+		ensureFileExists( arguments.path );
 		return variables.s3.getAuthenticatedURL(
 			bucketName   = variables.properties.bucketName,
 			uri          = variables.buildPath( arguments.path ),
@@ -566,7 +566,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @path
 	 */
 	struct function info( required path ){
-		variables.ensureFileExists( arguments.path );
+		ensureFileExists( arguments.path );
 		var filePath = variables.buildPath( arguments.path );
 		var s3Info   = variables.s3.getObjectInfo( bucketName = variables.properties.bucketName, uri = filePath );
 		var acl      = this.visibility( arguments.path );
@@ -594,7 +594,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @throws cbfs.FileNotFoundException
 	 */
 	string function checksum( required path, algorithm = "MD5" ){
-		variables.ensureFileExists( arguments.path );
+		ensureFileExists( arguments.path );
 		return hash( this.get( arguments.path ), arguments.algorithm );
 	}
 
@@ -627,7 +627,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	boolean function isFile( required path ){
 		try {
 			var ext = this.extension( arguments.path );
-			variables.ensureFileExists( arguments.path );
+			ensureFileExists( arguments.path );
 			return len( ext );
 		} catch ( cbfs.FileNotFoundException e ) {
 			return false;
@@ -641,7 +641,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 */
 	boolean function isWritable( required path ){
 		try {
-			variables.ensureFileExists( path );
+			ensureFileExists( path );
 		} catch ( cbfs.FileNotFoundException e ) {
 			return false;
 		}
@@ -655,7 +655,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 */
 	boolean function isReadable( required path ){
 		try {
-			variables.ensureFileExists( path );
+			ensureFileExists( path );
 		} catch ( cbfs.FileNotFoundException e ) {
 			return false;
 		}
