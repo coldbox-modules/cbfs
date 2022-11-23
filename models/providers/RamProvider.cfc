@@ -487,8 +487,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @throws UnsupportedOperationException - if the implementation does not support symbolic links
 	 */
 	function createSymbolicLink( required link, required target ){
-		variables.files[ arguments.link ] = variables
-			.ensureRecordExists( arguments.target )
+		variables.files[ arguments.link ] = ensureRecordExists( arguments.target )
 			.duplicate()
 			.append( { symbolicLink : true } );
 		return this;
