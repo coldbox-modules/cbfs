@@ -253,7 +253,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 						);
 						disk.move( sourcePath, destination );
 						expect( disk.exists( destination ) ).toBeTrue( "destination should exist" );
-						expect( disk.fileMissing( sourcePath ) ).toBeTrue( "source should not exist" );
+						expect( disk.missing( sourcePath ) ).toBeTrue( "source should not exist" );
 						expect( disk.get( destination ) ).toBe( "my contents" );
 					} );
 				} );
@@ -272,7 +272,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 							);
 							disk.move( source=sourcePath, destination=destination, overwrite=true );
 							expect( disk.exists( destination ) ).toBeTrue( "destination should exist" );
-							expect( disk.fileMissing( sourcePath ) ).toBeTrue( "source should not exist" );
+							expect( disk.missing( sourcePath ) ).toBeTrue( "source should not exist" );
 							expect( disk.get( destination ) ).toBe( "my contents" );
 						} );
 					} );

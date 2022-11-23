@@ -109,7 +109,7 @@ component accessors="true" {
 	 *
 	 * @path The file path to verify
 	 */
-	boolean function fileMissing( required string path ){
+	boolean function missing( required string path ){
 		return !exists( arguments.path );
 	}
 
