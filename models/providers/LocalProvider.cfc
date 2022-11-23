@@ -124,7 +124,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		// Make sure if we pass a nested file, that the sub-directories get created
 		var containerDirectory = getDirectoryFromPath( arguments.path );
 		if ( containerDirectory != variables.properties.path ) {
-			variables.ensureDirectoryExists( containerDirectory );
+			ensureDirectoryExists( containerDirectory );
 		}
 
 		// Write it
@@ -765,7 +765,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 				message = "Cannot create directory. The directory already exists [#arguments.directory#]"
 			);
 		}
-		variables.ensureDirectoryExists( buildJavaDiskPath( arguments.directory ) );
+		ensureDirectoryExists( buildJavaDiskPath( arguments.directory ) );
 		return this;
 	};
 

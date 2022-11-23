@@ -14,7 +14,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @return Boolean
 	 */
 	function hasStarted(){
-		return structKeyExists( variables, "s3" );
+		return !isNull( variables.s3 );
 	}
 
 	/**
