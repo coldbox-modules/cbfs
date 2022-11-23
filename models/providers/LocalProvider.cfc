@@ -887,23 +887,18 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 				) // visitor
 			);
 		} else {
-			// Delete only the top level files
-			var files = files( arguments.directory )
-				.each( function( file ){
-					delete( file );
-				} );
-			return !this.directoryExists( arguments.directory );
-
 			// Proxy it and delete like an egyptian!
-			// variables.jFiles.walkFileTree(
-			// 	buildJavaDiskPath( arguments.directory ), // start path
-			// 	createObject( "java", "java.util.HashSet" ), // options
-			// 	javacast( "int", 1 ), // maxDepth
-			// 	createDynamicProxy(
-			// 		wirebox.getInstance( "DeleteFileVisitor@cbfs" ),
-			// 		[ "java.nio.file.FileVisitor" ]
-			// 	) // visitor
-			// );
+			variables.jFiles.walkFileTree(
+				buildJavaDiskPath( arguments.directory ), // start path
+				createObject( "java", "java.util.HashSet" ).init(), // options
+				javacast( "int", 1 ), // maxDepth
+				createDynamicProxy(
+					wirebox.getInstance( "DeleteFileVisitor@cbfs" ),
+					[ "java.nio.file.FileVisitor" ]
+				) // visitor
+			);
+
+			return !this.directoryExists( arguments.directory );
 		}
 
 		return true;
