@@ -793,7 +793,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 
 			return isNull( aDeleted ) ? true : aDeleted.len() > 0 ? true : false;
 		} else {
-			var files = files( arguments.directory )
+			var files = this.files( arguments.directory )
 				.each( function( file ){
 					delete( file );
 				} );
