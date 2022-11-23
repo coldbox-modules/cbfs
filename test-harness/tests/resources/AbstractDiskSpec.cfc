@@ -381,7 +381,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 						sleep( 1000 );
 
 						var after = disk.touch( path ).lastModified( path );
-						expect( disk.directoryExists( path ) ).toBeTrue( "[#path#] should exist" );
+						expect( disk.fileExists( path ) ).toBeTrue( "[#path#] should exist" );
 						expect( disk.get( path ) ).toBe( "hello" );
 						expect( before ).toBeLT( after );
 					} );
