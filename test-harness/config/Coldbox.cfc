@@ -35,20 +35,21 @@
 						"provider"   : "Local",
 						"properties" : { "path" : expandPath( "/root/tests/storage" ) }
 					},
-					"ram" : {
-						"provider" : "Ram"
-					},
-					"S3" : {
-						"provider": "S3",
-						"properties": {
-							"visibility": "public", // can be 'public' or 'private'
-							"path": "",
-							"accessKey": getSystemSetting( "AWS_S3_ACCESS_KEY", "" ),
-							"secretKey": getSystemSetting( "AWS_S3_SECRET_KEY", "" ),
-							"awsDomain": getSystemSetting( "AWS_S3_DOMAIN", "amazonaws.com" ),
-							"awsRegion": getSystemSetting( "AWS_S3_REGION", "us-east-1" ),
-							"defaultBucketName": getSystemSetting( "AWS_S3_BUCKET_NAME", "ortus-cbfs-testing-disk" ),
-							"signatureType": getSystemSetting( "AWS_S3_SIGNATURE_TYPE", "v4" )
+					"ram" : { "provider" : "Ram" },
+					"S3"  : {
+						"provider"   : "S3",
+						"properties" : {
+							"visibility"        : "public", // can be 'public' or 'private'
+							"path"              : "",
+							"accessKey"         : getSystemSetting( "AWS_S3_ACCESS_KEY", "" ),
+							"secretKey"         : getSystemSetting( "AWS_S3_SECRET_KEY", "" ),
+							"awsDomain"         : getSystemSetting( "AWS_S3_DOMAIN", "amazonaws.com" ),
+							"awsRegion"         : getSystemSetting( "AWS_S3_REGION", "us-east-1" ),
+							"defaultBucketName" : getSystemSetting(
+								"AWS_S3_BUCKET_NAME",
+								"ortus-cbfs-testing-disk"
+							),
+							"signatureType" : getSystemSetting( "AWS_S3_SIGNATURE_TYPE", "v4" )
 						}
 					}
 				}
