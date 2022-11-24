@@ -32,6 +32,7 @@ component {
 	);
 	this.mappings[ "/moduleroot" ]            = moduleRootPath;
 	this.mappings[ "/#request.MODULE_NAME#" ] = moduleRootPath & "#request.MODULE_NAME#";
+	this.mappings[ "/s3sdk" ] = moduleRootPath & "#request.MODULE_NAME#" & "/modules/s3sdk";
 
 	function onRequestStart( required targetPage ){
 		// Set a high timeout for long running tests

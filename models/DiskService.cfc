@@ -239,14 +239,14 @@ component accessors="true" singleton threadsafe {
 	 * Get the default disk according to your module setting <pre>defaultDisk</pre>
 	 */
 	function defaultDisk(){
-		return this.get( variables.moduleSettings.defaultDisk );
+		return get( variables.moduleSettings.defaultDisk );
 	}
 
 	/**
 	 * Get the temp disk using the key <pre>temp</pre>
 	 */
 	function tempDisk(){
-		return this.get( "temp" );
+		return get( "temp" );
 	}
 
 	/**

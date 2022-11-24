@@ -105,12 +105,30 @@ component accessors="true" {
 	}
 
 	/**
-	 * Validate if a file/directory doesn't exist
+	 * Validate if a file doesn't exist
 	 *
-	 * @path The file/directory path to verify
+	 * @path The file path to verify
 	 */
 	boolean function missing( required string path ){
-		return !this.exists( arguments.path );
+		return !exists( arguments.path );
+	}
+
+	/**
+	 * Validate if a directory doesn't exist
+	 *
+	 * @path The directory path to verify
+	 */
+	boolean function directoryExists( required string path ){
+		return exists( arguments.path );
+	}
+
+	/**
+	 * Validate if a directory doesn't exist
+	 *
+	 * @path The directory path to verify
+	 */
+	boolean function directoryMissing( required string path ){
+		return !this.directoryExists( arguments.path );
 	}
 
 	/************************* UTILITY METHODS *******************************/

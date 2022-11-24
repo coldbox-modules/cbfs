@@ -35,7 +35,23 @@
 						"provider"   : "Local",
 						"properties" : { "path" : expandPath( "/root/tests/storage" ) }
 					},
-					"ram" : { provider : "Ram" }
+					"ram" : { 
+						"provider" : "Ram" 
+					},
+					"S3" : {
+						"provider": "S3",
+						"properties": {
+							"visibility": "public", // can be 'public' or 'private'
+							"path": "",
+							"accessKey": getSystemSetting( "AWS_S3_ACCESS_KEY", "" ),
+							"secretKey": getSystemSetting( "AWS_S3_SECRET_KEY", "" ),
+							"awsDomain": getSystemSetting( "AWS_S3_DOMAIN", "" ),
+							"awsRegion": getSystemSetting( "AWS_S3_REGION", "" ),
+							"defaultBucketName": getSystemSetting( "AWS_S3_BUCKET_NAME" ),
+							"signatureType": getSystemSetting( "AWS_S3_SIGNATURE_TYPE", "v4" )
+						}
+					}
+
 				}
 			}
 		};

@@ -73,7 +73,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		// Normalize slashes
 		arguments.path = replace( arguments.path, "\", "/", "all" );
 
-		if ( !arguments.overwrite && this.exists( arguments.path ) ) {
+		if ( !arguments.overwrite && exists( arguments.path ) ) {
 			throw(
 				type    = "cbfs.FileOverrideException",
 				message = "Cannot create file. File already exists [#arguments.path#]"
@@ -124,7 +124,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @throws cbfs.FileNotFoundException
 	 */
 	function setVisibility( required string path, required string visibility ){
-		if ( this.exists( arguments.path ) ) {
+		if ( exists( arguments.path ) ) {
 			variables.files[ arguments.path ].visibility = arguments.visibility;
 		} else {
 			throw(
@@ -145,7 +145,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @throws cbfs.FileNotFoundException
 	 */
 	public string function visibility( required string path ){
-		if ( this.exists( arguments.path ) ) {
+		if ( exists( arguments.path ) ) {
 			return variables.files[ arguments.path ].visibility;
 		} else {
 			throw(
@@ -296,9 +296,9 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	}
 
 	/**
-	 * Validate if a file/directory exists
+	 * Validate if a file exists
 	 *
-	 * @path The file/directory path to verify
+	 * @path The file path to verify
 	 */
 	boolean function exists( required string path ){
 		arguments.path = normalizePath( arguments.path );
@@ -308,6 +308,15 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 			}
 		}
 		return false;
+	}
+
+	/**
+	 * Validate if a directory exists
+	 *
+	 * @path The directory path to verify
+	 */
+	boolean function directoryExists( required string path ){
+		return structKeyExists( variables.files, path ) && variables.files[ path ].type == "Directory";
 	}
 
 	/**
@@ -348,7 +357,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 			return this;
 		}
 		if ( !arguments.createPath ) {
-			if ( !this.exists( getDirectoryFromPath( arguments.path ) ) ) {
+			if ( !this.directoryExists( getDirectoryFromPath( arguments.path ) ) ) {
 				throw(
 					type    = "cbfs.PathNotFoundException",
 					message = "Directory does not already exist and the `createPath` flag is set to false"
@@ -380,7 +389,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @throws cbfs.FileNotFoundException
 	 */
 	string function temporaryUri( required path, numeric expiration ){
-		return this.uri( arguments.path ) & "?expiration=#arguments.expiration#";
+		return uri( arguments.path ) & "?expiration=#arguments.expiration#";
 	}
 
 	/**
@@ -582,7 +591,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		// Cleanup directory name
 		arguments.directory = normalizePath( arguments.directory );
 
-		if ( this.exists( arguments.directory ) && !arguments.ignoreExists ) {
+		if ( this.directoryExists( arguments.directory ) && !arguments.ignoreExists ) {
 			throw(
 				type    = "cbfs.DirectoryExistsException",
 				message = "Cannot create directory. The directory already exists [#arguments.directory#]"
@@ -772,16 +781,24 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		}
 
 		// Discover the directories in memory that start with this directory path and wipe them
-		var aDeleted = variables.files
-			.keyArray()
-			.filter( function( filePath ){
-				return arguments.filePath.startsWith( directory );
-			} )
-			.each( function( filePath ){
-				variables.files.delete( arguments.filepath );
-			} );
+		if ( arguments.recurse == true ) {
+			var aDeleted = variables.files
+				.keyArray()
+				.filter( function( filePath ){
+					return arguments.filePath.startsWith( directory );
+				} )
+				.each( function( filePath ){
+					variables.files.delete( arguments.filepath );
+				} );
 
-		return isNull( aDeleted ) ? true : aDeleted.len() > 0 ? true : false;
+			return isNull( aDeleted ) ? true : aDeleted.len() > 0 ? true : false;
+		} else {
+			var files = this.files( arguments.directory )
+				.each( function( file ){
+					delete( file );
+				} );
+			return !this.directoryExists( arguments.directory );
+		}
 	}
 
 	/**

@@ -162,7 +162,10 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 			return this;
 		}
 		// Others
-		fileSetAccessMode( buildDiskPath( arguments.path ), variables.PERMISSIONS.file[ arguments.visibility ] );
+		fileSetAccessMode(
+			buildDiskPath( arguments.path ),
+			variables.PERMISSIONS.file[ arguments.visibility ]
+		);
 		return this;
 	};
 
@@ -210,15 +213,15 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 			if ( arguments.throwOnMissing ) {
 				throw( type = "cbfs.FileNotFoundException", message = "File [#arguments.path#] not found." );
 			}
-			return this.create(
+			return create(
 				path     = arguments.path,
 				contents = arguments.contents,
 				metadata = arguments.metadata
 			);
 		}
-		return this.create(
+		return create(
 			path      = arguments.path,
-			contents  = arguments.contents & this.get( arguments.path ),
+			contents  = arguments.contents & get( arguments.path ),
 			overwrite = true
 		);
 	}
@@ -377,11 +380,20 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	};
 
 	/**
-	 * Validate if a file/directory exists
+	 * Validate if a file exists
 	 *
-	 * @path The file/directory path to verify
+	 * @path The file path to verify
 	 */
 	boolean function exists( required string path ){
+		return variables.jFiles.exists( buildJavaDiskPath( arguments.path ), [] );
+	}
+
+	/**
+	 * Validate if a directory exists
+	 *
+	 * @path The directory path to verify
+	 */
+	boolean function directoryExists( required string path ){
 		return variables.jFiles.exists( buildJavaDiskPath( arguments.path ), [] );
 	}
 
@@ -427,7 +439,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		// else touch it baby!
 		arguments.path = buildDiskPath( arguments.path );
 		if ( !arguments.createPath ) {
-			if ( missing( getDirectoryFromPath( arguments.path ) ) ) {
+			if ( directoryMissing( getDirectoryFromPath( arguments.path ) ) ) {
 				throw(
 					type    = "cbfs.PathNotFoundException",
 					message = "Directory does not already exist and the `createPath` flag is set to false"
@@ -487,7 +499,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @throws cbfs.FileNotFoundException
 	 */
 	string function temporaryUri( required path, numeric expiration = 60 ){
-		return this.uri( arguments.path ) & "?expiration=#arguments.expiration#";
+		return uri( arguments.path ) & "?expiration=#arguments.expiration#";
 	}
 
 	/**
@@ -747,7 +759,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		boolean ignoreExists = true
 	){
 		// If not ignoring and directory exists, then throw exception
-		if ( !arguments.ignoreExists AND exists( arguments.directory ) ) {
+		if ( !arguments.ignoreExists AND this.directoryExists( arguments.directory ) ) {
 			throw(
 				type    = "cbfs.DirectoryExistsException",
 				message = "Cannot create directory. The directory already exists [#arguments.directory#]"
@@ -783,14 +795,13 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		boolean createPath = true
 	){
 		// If source is missing, blow up!
-		if ( missing( arguments.source ) ) {
+		if ( directoryMissing( arguments.source ) ) {
 			throw(
 				type    = "cbfs.DirectoryNotFoundException",
 				message = "Cannot move directory. Source directory doesn't exist [#arguments.source#]"
 			);
 		}
 
-		// TODO: MOve to a walkFileTree implementation later.
 		directoryCopy(
 			buildDiskPath( arguments.source ),
 			buildDiskPath( arguments.destination ),
@@ -819,7 +830,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		boolean createPath = true
 	){
 		// If source is missing, blow up!
-		if ( missing( arguments.source ) ) {
+		if ( directoryMissing( arguments.source ) ) {
 			throw(
 				type    = "cbfs.DirectoryNotFoundException",
 				message = "Cannot move directory. Source directory doesn't exist [#arguments.source#]"
@@ -840,7 +851,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	};
 
 	/**
-	 * Delete 1 or more directory locations
+	 * Delete one or more directory locations
 	 *
 	 * @directory      The directory or an array of directories
 	 * @recurse        Recurse the deletion or not, defaults to true
@@ -856,7 +867,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		boolean throwOnMissing = false
 	){
 		// If missing throw or ignore
-		if ( missing( arguments.directory ) ) {
+		if ( directoryMissing( arguments.directory ) ) {
 			if ( arguments.throwOnMissing ) {
 				throw(
 					type    = "cbfs.DirectoryNotFoundException",
@@ -879,13 +890,15 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 			// Proxy it and delete like an egyptian!
 			variables.jFiles.walkFileTree(
 				buildJavaDiskPath( arguments.directory ), // start path
-				createObject( "java", "java.util.HashSet" ), // options
+				createObject( "java", "java.util.HashSet" ).init(), // options
 				javacast( "int", 1 ), // maxDepth
 				createDynamicProxy(
 					wirebox.getInstance( "DeleteFileVisitor@cbfs" ),
 					[ "java.nio.file.FileVisitor" ]
 				) // visitor
 			);
+
+			return !this.directoryExists( arguments.directory );
 		}
 
 		return true;
@@ -903,7 +916,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 */
 	function cleanDirectory( required directory, boolean throwOnMissing = false ){
 		// If missing throw or ignore
-		if ( missing( arguments.directory ) ) {
+		if ( directoryMissing( arguments.directory ) ) {
 			if ( arguments.throwOnMissing ) {
 				throw(
 					type    = "cbfs.DirectoryNotFoundException",
@@ -948,7 +961,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		boolean absolute = false
 	){
 		// If missing throw or ignore
-		if ( missing( arguments.directory ) ) {
+		if ( directoryMissing( arguments.directory ) ) {
 			throw(
 				type    = "cbfs.DirectoryNotFoundException",
 				message = "Directory [#arguments.directory#] not found."
@@ -1101,9 +1114,10 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		boolean recurse  = false,
 		boolean extended = false
 	){
-		return files( argumentCollection = arguments ).map( function( item ){
-			return extended ? extendedInfo( arguments.item ) : info( arguments.item );
-		} );
+		return files( argumentCollection = arguments )
+			.map( function( item ){
+				return extended ? extendedInfo( arguments.item ) : info( arguments.item );
+			} );
 	};
 
 	/**
@@ -1149,13 +1163,14 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		sort,
 		boolean recurse = false
 	){
-		return files( argumentCollection = arguments ).map( function( item ){
-			return {
-				"path"     : arguments.item,
-				"contents" : get( arguments.item ),
-				"size"     : size( arguments.item )
-			};
-		} );
+		return files( argumentCollection = arguments )
+			.map( function( item ){
+				return {
+					"path"     : arguments.item,
+					"contents" : get( arguments.item ),
+					"size"     : size( arguments.item )
+				};
+			} );
 	};
 
 	/**
@@ -1255,7 +1270,11 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @path The path to be checked
 	 */
 	private function isDirectoryPath( required path ){
-		if ( !len( getFileFromPath( buildPath( arguments.path ) ) ) && !!len( extension( arguments.path ) ) ) {
+		if (
+			!len( getFileFromPath( buildPath( arguments.path ) ) ) && !!len(
+				extension( arguments.path )
+			)
+		) {
 			return true;
 		}
 		return false;

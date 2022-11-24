@@ -54,6 +54,7 @@ component {
 	// Module Root + Path Mappings
 	this.mappings[ "/moduleroot" ]            = moduleRootPath;
 	this.mappings[ "/#request.MODULE_NAME#" ] = modulePath;
+	this.mappings[ "/s3sdk" ] = modulePath & "modules/s3sdk";
 
 	// application start
 	public boolean function onApplicationStart(){
