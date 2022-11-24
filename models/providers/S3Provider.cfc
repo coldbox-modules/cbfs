@@ -45,7 +45,9 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		param arguments.properties.debug               = false;
 
 		try {
-			variables.s3 = createObject( "component", "s3sdk.models.AmazonS3" ).init( argumentCollection=arguments.properties );
+			variables.s3 = createObject( "component", "s3sdk.models.AmazonS3" ).init(
+				argumentCollection = arguments.properties
+			);
 			variables.wirebox.autowire( variables.s3 );
 		} catch ( any e ) {
 			throw(
@@ -1127,10 +1129,9 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		boolean recurse
 	){
 		arguments.map = true;
-		return contents( argumentCollection = arguments )
-			.filter( function( item ){
-				return !item.isDirectory;
-			} );
+		return contents( argumentCollection = arguments ).filter( function( item ){
+			return !item.isDirectory;
+		} );
 	};
 
 	/**
@@ -1174,10 +1175,9 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		boolean recurse
 	){
 		arguments.map = true;
-		return contents( argumentCollection = arguments )
-			.filter( function( item ){
-				return item.isDirectory;
-			} );
+		return contents( argumentCollection = arguments ).filter( function( item ){
+			return item.isDirectory;
+		} );
 	};
 
 	/**
@@ -1221,14 +1221,13 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		boolean recurse
 	){
 		arguments.map = true;
-		return files( argumentCollection = arguments )
-			.map( function( file ){
-				return {
-					"path"     : arguments.file.key,
-					"contents" : get( arguments.file.key ),
-					"size"     : arguments.file.size
-				};
-			} );
+		return files( argumentCollection = arguments ).map( function( file ){
+			return {
+				"path"     : arguments.file.key,
+				"contents" : get( arguments.file.key ),
+				"size"     : arguments.file.size
+			};
+		} );
 	};
 
 	/**
@@ -1332,10 +1331,11 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 
 	/**
 	 * Throws file not found exception
+	 *
 	 * @throw
 	 */
-	private function throwFileNotFoundException( path ) {
-		throw( type="cbfs.FileNotFoundException", message="File [#arguments.path#] not found." );
+	private function throwFileNotFoundException( path ){
+		throw( type = "cbfs.FileNotFoundException", message = "File [#arguments.path#] not found." );
 	}
 
 }

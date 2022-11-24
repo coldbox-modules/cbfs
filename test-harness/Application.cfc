@@ -54,7 +54,7 @@ component {
 	// Module Root + Path Mappings
 	this.mappings[ "/moduleroot" ]            = moduleRootPath;
 	this.mappings[ "/#request.MODULE_NAME#" ] = modulePath;
-	this.mappings[ "/s3sdk" ] = modulePath & "modules/s3sdk";
+	this.mappings[ "/s3sdk" ]                 = modulePath & "modules/s3sdk";
 
 	// application start
 	public boolean function onApplicationStart(){
@@ -70,8 +70,7 @@ component {
 
 	// request start
 	public boolean function onRequestStart( String targetPage ){
-
-		//applicationstop();abort;
+		// applicationstop();abort;
 
 		// Process ColdBox Request
 		application.cbBootstrap.onRequestStart( arguments.targetPage );
