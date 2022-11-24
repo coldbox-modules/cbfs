@@ -29,10 +29,10 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @throws InvalidPropertyException - On any configuration property exception
 	 */
 	function startup( required string name, struct properties = {} ){
-		variables.name       = arguments.name;
-		variables.properties = arguments.properties;
-		variables.started    = true;
-		variables.fileStorage      = {};
+		variables.name        = arguments.name;
+		variables.properties  = arguments.properties;
+		variables.started     = true;
+		variables.fileStorage = {};
 		return this;
 	}
 
@@ -43,8 +43,8 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @return cbfs.models.IDisk
 	 */
 	any function shutdown(){
-		variables.fileStorage   = {};
-		variables.started = false;
+		variables.fileStorage = {};
+		variables.started     = false;
 		return this;
 	}
 
@@ -85,7 +85,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 			arguments.mode = variables.PERMISSIONS.file[ arguments.visibility ];
 		}
 
-		var fileName                      = this.name( arguments.path );
+		var fileName                            = this.name( arguments.path );
 		variables.fileStorage[ arguments.path ] = {
 			"path"         : arguments.path,
 			"contents"     : arguments.contents,
@@ -690,7 +690,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 			} )
 			// Copy to new location
 			.each( function( item ){
-				var newKey                = arguments.item.replaceNoCase( source, destination );
+				var newKey                      = arguments.item.replaceNoCase( source, destination );
 				variables.fileStorage[ newKey ] = duplicate( variables.fileStorage[ item ] );
 				// Update pointers
 				variables.fileStorage[ newKey ].path = newKey;
@@ -727,8 +727,8 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		}
 
 		// Store new record with the previous data and new name/path
-		oldRecord.path                           = arguments.destination;
-		oldRecord.name                           = listLast( arguments.destination, "/\" );
+		oldRecord.path                                 = arguments.destination;
+		oldRecord.name                                 = listLast( arguments.destination, "/\" );
 		variables.fileStorage[ arguments.destination ] = duplicate( oldRecord );
 		// wipe out the old one
 		variables.fileStorage.delete( arguments.source );
@@ -741,7 +741,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 			} )
 			// Move old to new location
 			.each( function( oldItemPath ){
-				var newKey                = arguments.oldItemPath.replaceNoCase( source, destination );
+				var newKey                      = arguments.oldItemPath.replaceNoCase( source, destination );
 				variables.fileStorage[ newKey ] = duplicate( variables.fileStorage[ oldItemPath ] );
 				// Update pointers
 				variables.fileStorage[ newKey ].path = newKey;
@@ -793,10 +793,9 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 
 			return isNull( aDeleted ) ? true : aDeleted.len() > 0 ? true : false;
 		} else {
-			files( arguments.directory )
-				.each( function( file ){
-					delete( file );
-				} );
+			files( arguments.directory ).each( function( file ){
+				delete( file );
+			} );
 			return !this.directoryExists( arguments.directory );
 		}
 	}
@@ -902,7 +901,9 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 					return true;
 				} else if ( listFindNoCase( "file,files", type ) && variables.fileStorage[ item ].type == "file" ) {
 					return true;
-				} else if ( listFindNoCase( "dir,directory", type ) && variables.fileStorage[ item ].type == "Directory" ) {
+				} else if (
+					listFindNoCase( "dir,directory", type ) && variables.fileStorage[ item ].type == "Directory"
+				) {
 					return true;
 				}
 				return false;
