@@ -21,7 +21,7 @@
         "file":".cfconfig.json"
     },
     "scripts":{
-        "onServerInstall":"cfpm install zip"
+        "onServerInstall":"cfpm install zip,debugger"
     },
     "JVM":{
         "javaVersion":"openjdk11"

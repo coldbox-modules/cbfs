@@ -3,7 +3,7 @@
  */
 component extends="coldbox.system.testing.BaseTestCase" {
 
-    // Load and do not unload COldBOx, for performance
+	// Load and do not unload COldBOx, for performance
 	this.loadColdbox   = true;
 	this.unLoadColdBox = false;
 
@@ -144,13 +144,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 						var RamProvider = createStub().$( "shutdown" );
 						service
 							.getDisks()
-							.append( {
-								"local" : {
-									provider   : "Local",
-									properties : {},
-									disk       : RamProvider
-								}
-							} );
+							.append( { "local" : { provider : "Local", properties : {}, disk : RamProvider } } );
 
 						service.unregister( "local" );
 						expect( RamProvider.$callLog().shutdown ).toHaveLength( 1 );

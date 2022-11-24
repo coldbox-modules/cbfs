@@ -36,20 +36,15 @@ jobs:
           printf "ENVIRONMENT=development\n" >> .env
 
       - name: Setup CommandBox CLI
-        uses: Ortus-Solutions/setup-commandbox@main
+        uses: Ortus-Solutions/setup-commandbox@v2.0.1
 
       - name: Install Dependencies
         run: |
-          box install
-          cd test-harness && box install
+          box run-script install:dependencies
 
       - name: Start ${{ matrix.cfengine }} Server
         run: |
           box server start serverConfigFile="server-${{ matrix.cfengine }}.json" --noSaveSettings --debug
-          # Install Adobe 2021 cfpm modules
-          if [[ "${{ matrix.cfengine }}" == "adobe@2021" ]] ; then
-            box run-script install:2021
-          fi
           curl http://127.0.0.1:60299
 
       - name: Run Tests

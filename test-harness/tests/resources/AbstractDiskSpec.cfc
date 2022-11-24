@@ -43,9 +43,9 @@ component extends="coldbox.system.testing.BaseTestCase" {
 					then( "it should create the file", function(){
 						var path = "test.txt";
 						disk.create(
-							path    : path,
-							contents: "hola amigo!",
-							metadata: {},
+							path     : path,
+							contents : "hola amigo!",
+							metadata : {},
 							overwrite: true
 						);
 						expect( disk.get( path ) ).toBe( "hola amigo!" );
@@ -184,7 +184,11 @@ component extends="coldbox.system.testing.BaseTestCase" {
 							contents  = "my contents",
 							overwrite = true
 						);
-						disk.copy( source=sourcePath, destination=destination, overwrite=true );
+						disk.copy(
+							source      = sourcePath,
+							destination = destination,
+							overwrite   = true
+						);
 						expect( disk.exists( destination ) ).toBeTrue();
 						expect( disk.exists( sourcePath ) ).toBeTrue();
 						expect( disk.get( destination ) ).toBe( disk.get( sourcePath ) );
@@ -203,7 +207,11 @@ component extends="coldbox.system.testing.BaseTestCase" {
 								contents  = "old stuff",
 								overwrite = true
 							);
-							disk.copy( source=sourcePath, destination=destination, overwrite=true );
+							disk.copy(
+								source      = sourcePath,
+								destination = destination,
+								overwrite   = true
+							);
 							expect( disk.exists( destination ) ).toBeTrue();
 							expect( disk.exists( sourcePath ) ).toBeTrue();
 							expect( disk.get( destination ) ).toBe( disk.get( sourcePath ) );
@@ -223,7 +231,11 @@ component extends="coldbox.system.testing.BaseTestCase" {
 							);
 
 							expect( function(){
-								disk.copy( source=sourcePath, destination=destination, overwrite=false );
+								disk.copy(
+									source      = sourcePath,
+									destination = destination,
+									overwrite   = false
+								);
 							} ).toThrow( "cbfs.FileOverrideException" );
 						} );
 					} );
@@ -231,7 +243,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 				given( "A non-existent source", function(){
 					it( "it should throw an FileNotFoundException", function(){
 						expect( function(){
-							disk.copy( source=sourcePath, destination=destination );
+							disk.copy( source = sourcePath, destination = destination );
 						} ).toThrow( "cbfs.FileNotFoundException" );
 					} );
 				} );
@@ -270,7 +282,11 @@ component extends="coldbox.system.testing.BaseTestCase" {
 								contents  = "old stuff",
 								overwrite = true
 							);
-							disk.move( source=sourcePath, destination=destination, overwrite=true );
+							disk.move(
+								source      = sourcePath,
+								destination = destination,
+								overwrite   = true
+							);
 							expect( disk.exists( destination ) ).toBeTrue( "destination should exist" );
 							expect( disk.missing( sourcePath ) ).toBeTrue( "source should not exist" );
 							expect( disk.get( destination ) ).toBe( "my contents" );
@@ -320,8 +336,10 @@ component extends="coldbox.system.testing.BaseTestCase" {
 					it( "it can verify it", function(){
 						var filePath      = "one/test_file.txt";
 						var directoryPath = "one";
-						disk.deleteDirectory( directory="one", recurse=true );
-						expect( disk.directoryExists( directoryPath ) ).toBeFalse( "#directoryPath# should not exist" );
+						disk.deleteDirectory( directory = "one", recurse = true );
+						expect( disk.directoryExists( directoryPath ) ).toBeFalse(
+							"#directoryPath# should not exist"
+						);
 						disk.createDirectory( directoryPath );
 						disk.create( filePath, "my contents" );
 						expect( disk.directoryExists( directoryPath ) ).toBeTrue( "#directoryPath# should exist" );
@@ -333,7 +351,11 @@ component extends="coldbox.system.testing.BaseTestCase" {
 				given( "a file exists", function(){
 					then( "it should delete it", function(){
 						var path = "test_file.txt";
-						disk.create( path=path, contents="test", overwrite=true );
+						disk.create(
+							path      = path,
+							contents  = "test",
+							overwrite = true
+						);
 						expect( disk.exists( path ) ).toBeTrue();
 						disk.delete( path );
 						expect( disk.exists( path ) ).toBeFalse( "#path# should not exist" );
@@ -480,7 +502,9 @@ component extends="coldbox.system.testing.BaseTestCase" {
 					expect( before ).toBeDate();
 					sleep( 500 );
 					disk.touch( path );
-					expect( getEpochTimeFromLocal( disk.lastModified( path ) ) ).toBeGTE( getEpochTimeFromLocal( before ) );
+					expect( getEpochTimeFromLocal( disk.lastModified( path ) ) ).toBeGTE(
+						getEpochTimeFromLocal( before )
+					);
 				} );
 			} );
 
@@ -602,8 +626,8 @@ component extends="coldbox.system.testing.BaseTestCase" {
 					then( "it will throw a `cbfs.FileNotFoundException`", function(){
 						var path = "does_not_exist.txt";
 
-						expect( function() {
-							disk.delete( path=path, throwOnMissing=true  );
+						expect( function(){
+							disk.delete( path = path, throwOnMissing = true );
 						} ).toThrow( "cbfs.FileNotFoundException" );
 
 						expect( disk.exists( path ) ).toBeFalse( "File should not exist" );
@@ -785,8 +809,12 @@ component extends="coldbox.system.testing.BaseTestCase" {
 						expect( disk.deleteDirectory( path ) ).toBeTrue();
 						expect( disk.directoryExists( path ) ).toBeFalse( "#path# should not exist" );
 						expect( disk.exists( path & "/test.txt" ) ).toBeFalse( "test.txt should not exist" );
-						expect( disk.directoryExists( path & "/embedded" ) ).toBeFalse( "embedded directory should not exist" );
-						expect( disk.exists( path & "/embedded/test.txt" ) ).toBeFalse( "embedded test.txt should not exist" );
+						expect( disk.directoryExists( path & "/embedded" ) ).toBeFalse(
+							"embedded directory should not exist"
+						);
+						expect( disk.exists( path & "/embedded/test.txt" ) ).toBeFalse(
+							"embedded test.txt should not exist"
+						);
 					} );
 				} );
 				given( "a valid directory and recurse = false", function(){
@@ -805,7 +833,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 							overwrite = true
 						);
 
-						expect( disk.deleteDirectory( directory=path, recurse=false ) ).toBeFalse();
+						expect( disk.deleteDirectory( directory = path, recurse = false ) ).toBeFalse();
 						expect( disk.directoryExists( path ) ).toBeTrue();
 						expect( disk.exists( path & "/test.txt" ) ).toBeFalse();
 						expect( disk.directoryExists( path & "/embedded" ) ).toBeTrue();
@@ -867,13 +895,21 @@ component extends="coldbox.system.testing.BaseTestCase" {
 						disk.createDirectory( sourcePath );
 						disk.create( sourcePath & "/luis.txt", "hello mi amigo" );
 						disk.create( sourcePath & "/embedded/luis.txt", "hola" );
-						expect( disk.directoryExists( destinationPath ) ).toBeFalse( "#destinationPath# should not exist" );
+						expect( disk.directoryExists( destinationPath ) ).toBeFalse(
+							"#destinationPath# should not exist"
+						);
 						expect( disk.directoryExists( sourcePath ) ).toBeTrue( "#sourcePath# should exist" );
 						disk.copyDirectory( sourcePath, destinationPath );
 						expect( disk.directoryExists( sourcePath ) ).toBeTrue( "#sourcePath# should still exist" );
-						expect( disk.directoryExists( destinationPath ) ).toBeTrue( "#destinationPath# should exist" );
-						expect( disk.exists( "#destinationPath#/luis.txt" ) ).toBeTrue( " first level file should exist" );
-						expect( disk.exists( "#destinationPath#/embedded/luis.txt" ) ).toBeFalse( "embedded should have been skipped" );
+						expect( disk.directoryExists( destinationPath ) ).toBeTrue(
+							"#destinationPath# should exist"
+						);
+						expect( disk.exists( "#destinationPath#/luis.txt" ) ).toBeTrue(
+							" first level file should exist"
+						);
+						expect( disk.exists( "#destinationPath#/embedded/luis.txt" ) ).toBeFalse(
+							"embedded should have been skipped"
+						);
 					} );
 				} );
 
@@ -882,18 +918,26 @@ component extends="coldbox.system.testing.BaseTestCase" {
 						disk.createDirectory( sourcePath );
 						disk.create( sourcePath & "/luis.txt", "hello mi amigo" );
 						disk.create( sourcePath & "/embedded/luis.txt", "hola" );
-						expect( disk.directoryExists( destinationPath ) ).toBeFalse( "#destinationPath# should not exist" );
+						expect( disk.directoryExists( destinationPath ) ).toBeFalse(
+							"#destinationPath# should not exist"
+						);
 						expect( disk.directoryExists( sourcePath ) ).toBeTrue( "#sourcePath# should exist" );
 						disk.copyDirectory(
 							source      = sourcePath,
 							destination = destinationPath,
 							recurse     = true
 						);
-							
+
 						expect( disk.directoryExists( sourcePath ) ).toBeTrue( "#sourcePath# should still exist" );
-						expect( disk.directoryExists( destinationPath ) ).toBeTrue( "#destinationPath# should exist" );
-						expect( disk.exists( "#destinationPath#/luis.txt" ) ).toBeTrue( " first level file should exist" );
-						expect( disk.exists( "#destinationPath#/embedded/luis.txt" ) ).toBeTrue( "embedded should exist" );
+						expect( disk.directoryExists( destinationPath ) ).toBeTrue(
+							"#destinationPath# should exist"
+						);
+						expect( disk.exists( "#destinationPath#/luis.txt" ) ).toBeTrue(
+							" first level file should exist"
+						);
+						expect( disk.exists( "#destinationPath#/embedded/luis.txt" ) ).toBeTrue(
+							"embedded should exist"
+						);
 					} );
 				} );
 
@@ -903,7 +947,9 @@ component extends="coldbox.system.testing.BaseTestCase" {
 						disk.create( sourcePath & "/luis.cfc", "component{}" );
 						disk.create( sourcePath & "/embedded/luis.txt", "hola" );
 
-						expect( disk.directoryExists( destinationPath ) ).toBeFalse( "#destinationPath# should not exist" );
+						expect( disk.directoryExists( destinationPath ) ).toBeFalse(
+							"#destinationPath# should not exist"
+						);
 						expect( disk.directoryExists( sourcePath ) ).toBeTrue( "#sourcePath# should exist" );
 						disk.copyDirectory(
 							source      = sourcePath,
@@ -913,9 +959,15 @@ component extends="coldbox.system.testing.BaseTestCase" {
 						);
 
 						expect( disk.directoryExists( sourcePath ) ).toBeTrue( "#sourcePath# should still exist" );
-						expect( disk.directoryExists( destinationPath ) ).toBeTrue( "#destinationPath# should exist" );
-						expect( disk.exists( "#destinationPath#/luis.cfc" ) ).toBeTrue( "non-filtered file should exist" );
-						expect( disk.exists( "#destinationPath#/embedded/luis.txt" ) ).toBeFalse( "filtered file should NOT exist" );
+						expect( disk.directoryExists( destinationPath ) ).toBeTrue(
+							"#destinationPath# should exist"
+						);
+						expect( disk.exists( "#destinationPath#/luis.cfc" ) ).toBeTrue(
+							"non-filtered file should exist"
+						);
+						expect( disk.exists( "#destinationPath#/embedded/luis.txt" ) ).toBeFalse(
+							"filtered file should NOT exist"
+						);
 					} );
 				} );
 
@@ -927,8 +979,10 @@ component extends="coldbox.system.testing.BaseTestCase" {
 							disk.createDirectory( sourcePath );
 							disk.create( sourcePath & "/luis.cfc", "component{}" );
 							disk.create( sourcePath & "/embedded/luis.txt", "hola" );
-							
-							expect( disk.directoryExists( destinationPath ) ).toBeFalse( "#destinationPath# should not exist" );
+
+							expect( disk.directoryExists( destinationPath ) ).toBeFalse(
+								"#destinationPath# should not exist"
+							);
 							expect( disk.directoryExists( sourcePath ) ).toBeTrue( "#sourcePath# should exist" );
 
 							disk.copyDirectory(
@@ -940,10 +994,18 @@ component extends="coldbox.system.testing.BaseTestCase" {
 								}
 							);
 
-							expect( disk.directoryExists( sourcePath ) ).toBeTrue( "#sourcePath# should still exist" );
-							expect( disk.directoryExists( destinationPath ) ).toBeTrue( "#destinationPath# should exist" );
-							expect( disk.exists( "#destinationPath#/luis.cfc" ) ).toBeTrue( "non-filtered file should exist" );
-							expect( disk.exists( "#destinationPath#/embedded/luis.txt" ) ).toBeFalse( "filtered file should NOT exist" );
+							expect( disk.directoryExists( sourcePath ) ).toBeTrue(
+								"#sourcePath# should still exist"
+							);
+							expect( disk.directoryExists( destinationPath ) ).toBeTrue(
+								"#destinationPath# should exist"
+							);
+							expect( disk.exists( "#destinationPath#/luis.cfc" ) ).toBeTrue(
+								"non-filtered file should exist"
+							);
+							expect( disk.exists( "#destinationPath#/embedded/luis.txt" ) ).toBeFalse(
+								"filtered file should NOT exist"
+							);
 						} );
 					}
 				);
@@ -1140,10 +1202,22 @@ component extends="coldbox.system.testing.BaseTestCase" {
 					then( "it can get a recursive file content map structure", function(){
 						var dirPath = "bddtests/";
 						disk.createDirectory( dirPath );
-						disk.create( path=dirPath & "luis.txt", contents="hello mi amigo", overwrite=true);
-						disk.create( path=dirPath & "Test.cfc", contents="component{}", overwrite=true );
-						disk.create( path=dirPath & "embedded/luis.txt", contents="hello mi amigo", overwrite=true );
-						var start = getTickCount();
+						disk.create(
+							path      = dirPath & "luis.txt",
+							contents  = "hello mi amigo",
+							overwrite = true
+						);
+						disk.create(
+							path      = dirPath & "Test.cfc",
+							contents  = "component{}",
+							overwrite = true
+						);
+						disk.create(
+							path      = dirPath & "embedded/luis.txt",
+							contents  = "hello mi amigo",
+							overwrite = true
+						);
+						var start   = getTickCount();
 						var results = disk.allContentsMap( dirPath );
 						expect( results.len() ).toBe( 3 );
 						expect( results[ 1 ].contents ).notToBeEmpty();
