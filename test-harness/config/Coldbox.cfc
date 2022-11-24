@@ -51,7 +51,6 @@
 							"signatureType": getSystemSetting( "AWS_S3_SIGNATURE_TYPE", "v4" )
 						}
 					}
-
 				}
 			}
 		};
