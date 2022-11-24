@@ -162,7 +162,10 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 			return this;
 		}
 		// Others
-		fileSetAccessMode( buildDiskPath( arguments.path ), variables.PERMISSIONS.file[ arguments.visibility ] );
+		fileSetAccessMode(
+			buildDiskPath( arguments.path ),
+			variables.PERMISSIONS.file[ arguments.visibility ]
+		);
 		return this;
 	};
 
@@ -1111,9 +1114,10 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		boolean recurse  = false,
 		boolean extended = false
 	){
-		return files( argumentCollection = arguments ).map( function( item ){
-			return extended ? extendedInfo( arguments.item ) : info( arguments.item );
-		} );
+		return files( argumentCollection = arguments )
+			.map( function( item ){
+				return extended ? extendedInfo( arguments.item ) : info( arguments.item );
+			} );
 	};
 
 	/**
@@ -1159,13 +1163,14 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		sort,
 		boolean recurse = false
 	){
-		return files( argumentCollection = arguments ).map( function( item ){
-			return {
-				"path"     : arguments.item,
-				"contents" : get( arguments.item ),
-				"size"     : size( arguments.item )
-			};
-		} );
+		return files( argumentCollection = arguments )
+			.map( function( item ){
+				return {
+					"path"     : arguments.item,
+					"contents" : get( arguments.item ),
+					"size"     : size( arguments.item )
+				};
+			} );
 	};
 
 	/**
@@ -1265,7 +1270,11 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @path The path to be checked
 	 */
 	private function isDirectoryPath( required path ){
-		if ( !len( getFileFromPath( buildPath( arguments.path ) ) ) && !!len( extension( arguments.path ) ) ) {
+		if (
+			!len( getFileFromPath( buildPath( arguments.path ) ) ) && !!len(
+				extension( arguments.path )
+			)
+		) {
 			return true;
 		}
 		return false;

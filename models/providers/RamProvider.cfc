@@ -32,7 +32,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		variables.name       = arguments.name;
 		variables.properties = arguments.properties;
 		variables.started    = true;
-		variables.files      = {};
+		variables.fileStorage      = {};
 		return this;
 	}
 
@@ -43,7 +43,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @return cbfs.models.IDisk
 	 */
 	any function shutdown(){
-		variables.files   = {};
+		variables.fileStorage   = {};
 		variables.started = false;
 		return this;
 	}
@@ -86,7 +86,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		}
 
 		var fileName                      = this.name( arguments.path );
-		variables.files[ arguments.path ] = {
+		variables.fileStorage[ arguments.path ] = {
 			"path"         : arguments.path,
 			"contents"     : arguments.contents,
 			"checksum"     : hash( arguments.contents ),
@@ -125,7 +125,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 */
 	function setVisibility( required string path, required string visibility ){
 		if ( exists( arguments.path ) ) {
-			variables.files[ arguments.path ].visibility = arguments.visibility;
+			variables.fileStorage[ arguments.path ].visibility = arguments.visibility;
 		} else {
 			throw(
 				message: "The file requested (#arguments.path#) doesn't exist",
@@ -146,7 +146,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 */
 	public string function visibility( required string path ){
 		if ( exists( arguments.path ) ) {
-			return variables.files[ arguments.path ].visibility;
+			return variables.fileStorage[ arguments.path ].visibility;
 		} else {
 			throw(
 				message: "The file requested (#arguments.path#) doesn't exist",
@@ -184,8 +184,8 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 				metadata = arguments.metadata
 			);
 		}
-		variables.files[ arguments.path ].contents = arguments.contents & variables.files[ arguments.path ].contents;
-		variables.files[ arguments.path ].metadata.append( arguments.metadata, true );
+		variables.fileStorage[ arguments.path ].contents = arguments.contents & variables.fileStorage[ arguments.path ].contents;
+		variables.fileStorage[ arguments.path ].metadata.append( arguments.metadata, true );
 		return this;
 	}
 
@@ -218,8 +218,8 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 				metadata = arguments.metadata
 			);
 		}
-		variables.files[ arguments.path ].contents = variables.files[ arguments.path ].contents & arguments.contents;
-		variables.files[ arguments.path ].metadata.append( arguments.metadata, true );
+		variables.fileStorage[ arguments.path ].contents = variables.fileStorage[ arguments.path ].contents & arguments.contents;
+		variables.fileStorage[ arguments.path ].metadata.append( arguments.metadata, true );
 		return this;
 	}
 
@@ -302,7 +302,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 */
 	boolean function exists( required string path ){
 		arguments.path = normalizePath( arguments.path );
-		for ( var existingPath in variables.files.keyArray() ) {
+		for ( var existingPath in variables.fileStorage.keyArray() ) {
 			if ( find( arguments.path, existingPath ) == 1 ) {
 				return true;
 			}
@@ -316,7 +316,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @path The directory path to verify
 	 */
 	boolean function directoryExists( required string path ){
-		return structKeyExists( variables.files, path ) && variables.files[ path ].type == "Directory";
+		return structKeyExists( variables.fileStorage, path ) && variables.fileStorage[ path ].type == "Directory";
 	}
 
 	/**
@@ -337,7 +337,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 			}
 			return false;
 		}
-		variables.files.delete( arguments.path );
+		variables.fileStorage.delete( arguments.path );
 		return true;
 	}
 
@@ -353,7 +353,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 */
 	function touch( required path, boolean createPath = true ){
 		if ( exists( arguments.path ) ) {
-			variables.files[ arguments.path ].lastModified = now();
+			variables.fileStorage[ arguments.path ].lastModified = now();
 			return this;
 		}
 		if ( !arguments.createPath ) {
@@ -487,7 +487,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @throws UnsupportedOperationException - if the implementation does not support symbolic links
 	 */
 	function createSymbolicLink( required link, required target ){
-		variables.files[ arguments.link ] = ensureRecordExists( arguments.target )
+		variables.fileStorage[ arguments.link ] = ensureRecordExists( arguments.target )
 			.duplicate()
 			.append( { symbolicLink : true } );
 		return this;
@@ -502,7 +502,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 */
 	boolean function isFile( required path ){
 		arguments.path = normalizePath( arguments.path );
-		return missing( arguments.path ) ? false : variables.files[ arguments.path ].type == "File";
+		return missing( arguments.path ) ? false : variables.fileStorage[ arguments.path ].type == "File";
 	}
 
 	/**
@@ -569,7 +569,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 */
 	boolean function isDirectory( required path ){
 		arguments.path = normalizePath( arguments.path );
-		return missing( arguments.path ) ? false : variables.files[ arguments.path ].type == "Directory";
+		return missing( arguments.path ) ? false : variables.fileStorage[ arguments.path ].type == "Directory";
 	}
 
 	/**
@@ -598,7 +598,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 			);
 		}
 
-		variables.files[ arguments.directory ] = {
+		variables.fileStorage[ arguments.directory ] = {
 			"path"         : arguments.directory,
 			"contents"     : "",
 			"checksum"     : "",
@@ -656,13 +656,13 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		}
 
 		// Copy directory record
-		variables.files[ arguments.destination ] = duplicate( sourceRecord ).append( {
+		variables.fileStorage[ arguments.destination ] = duplicate( sourceRecord ).append( {
 			path : arguments.destination,
 			name : listLast( arguments.destination, "/\" )
 		} );
 
 		// Now copy all the embedded files/directories
-		variables.files
+		variables.fileStorage
 			// Get all directory contents
 			.keyArray()
 			// Filter out the source
@@ -691,9 +691,9 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 			// Copy to new location
 			.each( function( item ){
 				var newKey                = arguments.item.replaceNoCase( source, destination );
-				variables.files[ newKey ] = duplicate( variables.files[ item ] );
+				variables.fileStorage[ newKey ] = duplicate( variables.fileStorage[ item ] );
 				// Update pointers
-				variables.files[ newKey ].path = newKey;
+				variables.fileStorage[ newKey ].path = newKey;
 			} );
 
 		return this;
@@ -729,11 +729,11 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		// Store new record with the previous data and new name/path
 		oldRecord.path                           = arguments.destination;
 		oldRecord.name                           = listLast( arguments.destination, "/\" );
-		variables.files[ arguments.destination ] = duplicate( oldRecord );
+		variables.fileStorage[ arguments.destination ] = duplicate( oldRecord );
 		// wipe out the old one
-		variables.files.delete( arguments.source );
+		variables.fileStorage.delete( arguments.source );
 		// Now move all the records from the previous old path to the new path
-		variables.files
+		variables.fileStorage
 			// Get all directory contents
 			.keyArray()
 			.filter( function( item ){
@@ -742,10 +742,10 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 			// Move old to new location
 			.each( function( oldItemPath ){
 				var newKey                = arguments.oldItemPath.replaceNoCase( source, destination );
-				variables.files[ newKey ] = duplicate( variables.files[ oldItemPath ] );
+				variables.fileStorage[ newKey ] = duplicate( variables.fileStorage[ oldItemPath ] );
 				// Update pointers
-				variables.files[ newKey ].path = newKey;
-				variables.files.delete( arguments.oldItemPath );
+				variables.fileStorage[ newKey ].path = newKey;
+				variables.fileStorage.delete( arguments.oldItemPath );
 			} );
 
 		return this;
@@ -782,18 +782,18 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 
 		// Discover the directories in memory that start with this directory path and wipe them
 		if ( arguments.recurse == true ) {
-			var aDeleted = variables.files
+			var aDeleted = variables.fileStorage
 				.keyArray()
 				.filter( function( filePath ){
 					return arguments.filePath.startsWith( directory );
 				} )
 				.each( function( filePath ){
-					variables.files.delete( arguments.filepath );
+					variables.fileStorage.delete( arguments.filepath );
 				} );
 
 			return isNull( aDeleted ) ? true : aDeleted.len() > 0 ? true : false;
 		} else {
-			this.files( arguments.directory )
+			files( arguments.directory )
 				.each( function( file ){
 					delete( file );
 				} );
@@ -825,7 +825,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 			return false;
 		}
 
-		variables.files
+		variables.fileStorage
 			.keyArray()
 			// exclude yourself
 			.filter( function( filepath ){
@@ -836,7 +836,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 				return arguments.filePath.startsWith( directory );
 			} )
 			.each( function( filePath ){
-				variables.files.delete( arguments.filepath );
+				variables.fileStorage.delete( arguments.filepath );
 			} );
 	}
 
@@ -871,7 +871,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		}
 
 		// Return results
-		return variables.files
+		return variables.fileStorage
 			.keyArray()
 			// Filter out the source
 			.filter( function( item ){
@@ -900,9 +900,9 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 			.filter( function( item ){
 				if ( type == "all" ) {
 					return true;
-				} else if ( listFindNoCase( "file,files", type ) && variables.files[ item ].type == "file" ) {
+				} else if ( listFindNoCase( "file,files", type ) && variables.fileStorage[ item ].type == "file" ) {
 					return true;
-				} else if ( listFindNoCase( "dir,directory", type ) && variables.files[ item ].type == "Directory" ) {
+				} else if ( listFindNoCase( "dir,directory", type ) && variables.fileStorage[ item ].type == "Directory" ) {
 					return true;
 				}
 				return false;
@@ -1036,7 +1036,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		}
 
 		// Return results
-		return variables.files
+		return variables.fileStorage
 			.keyArray()
 			// Filter out the source
 			.filter( function( item ){
@@ -1048,7 +1048,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 			} )
 			// Filter out only files in the directory
 			.filter( function( item ){
-				return variables.files[ item ].type == "file";
+				return variables.fileStorage[ item ].type == "file";
 			} )
 			// Passed String Filter
 			.filter( function( item ){
@@ -1066,7 +1066,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 				return ( !recurse ? reFindNoCase( "#directory#(\/|\\)[^\\//]*$", item ) : true );
 			} )
 			.map( function( item ){
-				return variables.files[ item ];
+				return variables.fileStorage[ item ];
 			} );
 	}
 
@@ -1121,7 +1121,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		}
 
 		// Return results
-		return variables.files
+		return variables.fileStorage
 			.keyArray()
 			// Filter out the source
 			.filter( function( item ){
@@ -1133,7 +1133,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 			} )
 			// Filter out only files in the directory
 			.filter( function( item ){
-				return variables.files[ item ].type == "file";
+				return variables.fileStorage[ item ].type == "file";
 			} )
 			// Passed String Filter
 			.filter( function( item ){
@@ -1152,9 +1152,9 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 			} )
 			.map( function( item ){
 				return {
-					"contents" : variables.files[ item ].contents,
+					"contents" : variables.fileStorage[ item ].contents,
 					"path"     : item,
-					"size"     : variables.files[ item ].size
+					"size"     : variables.fileStorage[ item ].size
 				};
 			} );
 	}
@@ -1235,7 +1235,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		if ( missing( arguments.path ) ) {
 			throw( type = "cbfs.FileNotFoundException", message = "File [#arguments.path#] not found." );
 		}
-		return variables.files[ arguments.path ];
+		return variables.fileStorage[ arguments.path ];
 	}
 
 }
