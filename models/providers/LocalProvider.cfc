@@ -127,12 +127,19 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 			ensureDirectoryExists( containerDirectory );
 		}
 
-		// Write it
-		variables.jFiles.write(
-			buildJavaDiskPath( arguments.path ),
-			arguments.contents.getBytes(),
-			[]
-		);
+		// Use native method if binary, as it's less verbose than creating an input stream and getting the bytes
+		if( isBinary( arguments.contents ) ){
+			fileWrite(
+				arguments.path,
+				arguments.contents
+			);
+		} else {
+			variables.jFiles.write(
+				buildJavaDiskPath( arguments.path ),
+				arguments.contents.getBytes(),
+				[]
+			);
+		}
 
 		// Set visibility or mode
 		if ( isWindows() ) {
