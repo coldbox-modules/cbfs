@@ -128,11 +128,8 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		}
 
 		// Use native method if binary, as it's less verbose than creating an input stream and getting the bytes
-		if( isBinary( arguments.contents ) ){
-			fileWrite(
-				arguments.path,
-				arguments.contents
-			);
+		if ( isBinary( arguments.contents ) ) {
+			fileWrite( arguments.path, arguments.contents );
 		} else {
 			variables.jFiles.write(
 				buildJavaDiskPath( arguments.path ),
