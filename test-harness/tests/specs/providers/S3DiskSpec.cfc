@@ -1,4 +1,4 @@
-component extends="coldbox.system.testing.BaseTestCase" {
+component extends="tests.resources.AbstractDiskSpec" {
 
 	// Load and do not unload ColdBox, for performance
 	this.loadColdbox   = true;
@@ -17,6 +17,9 @@ component extends="coldbox.system.testing.BaseTestCase" {
 	}
 
 	function run(){
+
+		super.run();
+
 		describe( "#variables.providerName# Abstract Specs", function(){
 			beforeEach( function( currentSpec ){
 				disk = getDisk();
