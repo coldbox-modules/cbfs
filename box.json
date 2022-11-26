@@ -23,7 +23,7 @@
     "contributors":[],
     "dependencies":{
         "cbstreams":"^2.0",
-        "s3sdk":"^5.0.0+45"
+        "s3sdk":"^5.1.2"
     },
     "devDependencies":{
         "commandbox-cfformat":"*",
@@ -50,6 +50,6 @@
         "format":"cfformat run models,test-harness/**/*.cfc,ModuleConfig.cfc --overwrite",
         "format:watch":"cfformat watch models,test-harness/**/*.cfc,ModuleConfig.cfc ./.cfformat.json",
         "format:check":"cfformat check models,test-harness/**/*.cfc,ModuleConfig.cfc",
-        "install:dependencies":"install && cd test-harness && install"
+        "install:dependencies":"install --force && cd test-harness && install --force"
     }
 }

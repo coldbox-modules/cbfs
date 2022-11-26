@@ -56,6 +56,8 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 			);
 		}
 
+		param arguments.properties.publicDomain        = variables.s3.getURLEndpointHostname();
+
 		if ( !arguments.properties.keyExists( "bucketName" ) ) {
 			arguments.properties.bucketName = variables.s3.getDefaultBucketName();
 		}
@@ -438,7 +440,9 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @throws cbfs.FileNotFoundException
 	 */
 	string function url( required string path ){
-		return temporaryURL( path = arguments.path );
+		return arguments.properties.visibility = "public"
+				?  publicUrl( variables.s3.buildUrlEndpoint() & "/" & arguments.path )
+				: temporaryURL( path = arguments.path );
 	}
 
 	/**
@@ -477,11 +481,11 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 */
 	string function temporaryURL( required path, numeric expiration = 1 ){
 		ensureFileExists( arguments.path );
-		return variables.s3.getAuthenticatedURL(
+		return  publicUrl( variables.s3.getAuthenticatedURL(
 			bucketName   = variables.properties.bucketName,
 			uri          = buildPath( arguments.path ),
 			minutesValid = arguments.expiration
-		);
+		) );
 	}
 
 	/**
@@ -1336,6 +1340,13 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 */
 	private function throwFileNotFoundException( path ){
 		throw( type = "cbfs.FileNotFoundException", message = "File [#arguments.path#] not found." );
+	}
+
+	/**
+	 * Builds a public URL for the resource
+	 */
+	function publicUrl( required string url ){
+		return replaceNoCase( arguments.url, variables.s3.getURLEndpointHostname(), variables.properties.publicDomain, "one" );
 	}
 
 }
