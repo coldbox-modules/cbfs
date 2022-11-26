@@ -380,6 +380,18 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		return ensureRecordExists( arguments.path ).path;
 	}
 
+
+	/**
+	 * Get the url for the given file - for this provider it is the same as the URI
+	 *
+	 * @path The file path to build the uri for
+	 *
+	 * @throws cbfs.FileNotFoundException
+	 */
+	string function url( required string path ){
+		return uri( argumentCollection=arguments );
+	}
+
 	/**
 	 * Get a temporary uri for the given file
 	 *

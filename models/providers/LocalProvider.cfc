@@ -488,6 +488,23 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	}
 
 	/**
+	 * Get the full url for the given file
+	 *
+	 * @path The file path to build the uri for
+	 *
+	 * @throws cbfs.FileNotFoundException
+	 */
+	string function url( required string path ){
+		var baseUrl = variables.wirebox.getInstance( "RequestService@coldbox" ).getContext().getHTMLBaseURL();
+		return baseURL
+				& listToArray(
+					arguments.properties.visibility = "public"
+						? uri( argumentCollection=arguments )
+						: temporaryUri( argumentCollection=arguments )
+				, "/" ).toList( "/" );
+	}
+
+	/**
 	 * Get a temporary uri for the given file
 	 *
 	 * @path       The file path to build the uri for
