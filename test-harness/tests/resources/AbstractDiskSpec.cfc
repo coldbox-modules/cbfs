@@ -39,6 +39,19 @@ component extends="coldbox.system.testing.BaseTestCase" {
 			} );
 
 			story( "The disk can create files", function(){
+				given( "a binary file", function(){
+					then( "it should create the file", function(){
+						var path = "space_ninja.png";
+						var binaryContents = fileReadBinary( expandPath( "/tests/resources/storage/binary_file.png" ) );
+						disk.create(
+							path     : path,
+							contents : binaryContents,
+							metadata : {},
+							overwrite: true
+						);
+						expect( disk.get( path ) ).toBe( binaryContents );
+					} );
+				} );
 				given( "a new file content", function(){
 					then( "it should create the file", function(){
 						var path = "test.txt";
