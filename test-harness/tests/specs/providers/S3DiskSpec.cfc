@@ -6,7 +6,6 @@ component extends="tests.resources.AbstractDiskSpec" {
 	variables.testFeatures = { symbolicLink : false };
 
 	function run(){
-
 		super.run();
 
 		describe( "#variables.providerName# Provider Extended Specs", function(){
