@@ -5,7 +5,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 
 	// Load and do not unload COldBOx, for performance
 	this.loadColdbox   = true;
-	this.unLoadColdBox = false;
+	this.unLoadColdBox = true;
 
 	/*********************************** LIFE CYCLE Methods ***********************************/
 
