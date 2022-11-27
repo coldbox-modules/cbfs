@@ -1310,7 +1310,9 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	}
 
 	/**
-	 * Converts a CF Binary object in to its numeric representation
+	 * Converts a CF Binary object in to its numeric bit representation
+	 *
+	 * @input the binary object to parse
 	 */
 	function binaryValues( required binary input ){
 		var byteBuffer = createObject( "java", "java.nio.ByteBuffer" ).allocate( javaCast( "int", 4 ) );
