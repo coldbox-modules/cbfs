@@ -3,7 +3,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	property name="name"       type="string";
 	property name="properties" type="struct";
 
-	property name="wirebox"       inject="wirebox";
+	property name="wirebox" inject="wirebox";
 
 	property name="streamBuilder" inject="StreamBuilder@cbstreams";
 	property name="templateCache" inject="cachebox:template";
@@ -58,7 +58,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 			);
 		}
 
-		param arguments.properties.publicDomain        = variables.s3.getURLEndpointHostname();
+		param arguments.properties.publicDomain = variables.s3.getURLEndpointHostname();
 
 		if ( !arguments.properties.keyExists( "bucketName" ) ) {
 			arguments.properties.bucketName = variables.s3.getDefaultBucketName();
@@ -344,7 +344,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 			}
 		}
 
-		arguments.source = buildPath( arguments.source );
+		arguments.source      = buildPath( arguments.source );
 		argunents.destination = buildPath( arguments.destination );
 
 		variables.s3.copyObject(
@@ -425,12 +425,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 */
 	boolean function exists( required string path ){
 		arguments.path = buildPath( arguments.path );
-		return variables.templateCache.getOrSet(
-			"s3fs_path_exists_#hash( arguments.path )#",
-			() =>  variables.s3.objectExists(
-				bucketName = variables.properties.bucketName,
-				uri        = path
-			) );
+		return variables.templateCache.getOrSet( "s3fs_path_exists_#hash( arguments.path )#", () => variables.s3.objectExists( bucketName = variables.properties.bucketName, uri = path ) );
 	}
 
 	/**
@@ -439,15 +434,15 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @path The directory to verify
 	 */
 	boolean function directoryExists( required string path ){
-
 		arguments.path = buildDirectoryPath( arguments.path );
 
-		return !! variables.s3.getBucket(
+		return !!variables.s3
+			.getBucket(
 				bucketName = variables.properties.bucketName,
 				prefix     = path,
 				maxKeys    = 1
-			).len();
-
+			)
+			.len();
 	}
 
 	/**
@@ -459,8 +454,8 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 */
 	string function url( required string path ){
 		return variables.properties.visibility == "public"
-				?  publicUrl( variables.s3.getUrlEndpoint() & "/" & arguments.path )
-				: temporaryURL( path = arguments.path );
+		 ? publicUrl( variables.s3.getUrlEndpoint() & "/" & arguments.path )
+		 : temporaryURL( path = arguments.path );
 	}
 
 	/**
@@ -499,11 +494,13 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 */
 	string function temporaryURL( required path, numeric expiration = 1 ){
 		ensureFileExists( arguments.path );
-		return  publicUrl( variables.s3.getAuthenticatedURL(
-			bucketName   = variables.properties.bucketName,
-			uri          = buildPath( arguments.path ),
-			minutesValid = arguments.expiration
-		) );
+		return publicUrl(
+			variables.s3.getAuthenticatedURL(
+				bucketName   = variables.properties.bucketName,
+				uri          = buildPath( arguments.path ),
+				minutesValid = arguments.expiration
+			)
+		);
 	}
 
 	/**
@@ -540,24 +537,18 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	/**
 	 * Deletes a file
 	 *
-	 * @path
+	 * @path          
 	 * @throwOnMissing When true an error will be thrown if the file does not exist
 	 */
 	boolean function delete( required any path, boolean throwOnMissing = false ){
 		if ( this.exists( arguments.path ) ) {
 			arguments.path = buildPath( arguments.path );
-			variables.s3.deleteObject(
-				bucketName = variables.properties.bucketName,
-				uri        = arguments.path
-			);
+			variables.s3.deleteObject( bucketName = variables.properties.bucketName, uri = arguments.path );
 			evictFromCache( arguments.path );
 			return true;
 		} else if ( this.directoryExists( arguments.path ) ) {
 			arguments.path = buildDirectoryPath( arguments.path );
-			variables.s3.deleteObject(
-				bucketName = variables.properties.bucketName,
-				uri        = arguments.path
-			);
+			variables.s3.deleteObject( bucketName = variables.properties.bucketName, uri = arguments.path );
 			evictFromCache( arguments.path );
 			return true;
 		} else {
@@ -868,7 +859,6 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 			evictFromCache( destinationPath );
 		} );
 		evictFromCache( sourcePath );
-
 	};
 
 	/**
@@ -1379,7 +1369,12 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * Builds a public URL for the resource
 	 */
 	function publicUrl( required string url ){
-		return replaceNoCase( arguments.url, variables.s3.getURLEndpointHostname(), variables.properties.publicDomain, "one" );
+		return replaceNoCase(
+			arguments.url,
+			variables.s3.getURLEndpointHostname(),
+			variables.properties.publicDomain,
+			"one"
+		);
 	}
 
 	/**
@@ -1388,14 +1383,13 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @paths an array or string list of paths
 	 */
 	private function evictFromCache( any paths ){
-		if( isSimpleValue( arguments.paths ) ){
+		if ( isSimpleValue( arguments.paths ) ) {
 			arguments.paths = listToArray( arguments.paths );
 		}
 
 		arguments.paths.each( ( path ) => variables.templateCache.clear( "s3fs_path_exists_#hash( path )#" ) );
 
 		return this;
-
 	}
 
 }

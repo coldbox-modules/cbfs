@@ -365,8 +365,8 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 */
 	any function get( required path ){
 		return listFirst( fileGetMimeType( arguments.path ), "/" ) == "text"
-				? variables.jFiles.readString( getJavaPath( ensureFileExists( arguments.path ) ) )
-				: fileReadBinary( buildDiskPath( ensureFileExists( arguments.path ) ) );
+		 ? variables.jFiles.readString( getJavaPath( ensureFileExists( arguments.path ) ) )
+		 : fileReadBinary( buildDiskPath( ensureFileExists( arguments.path ) ) );
 	}
 
 	/**
@@ -501,13 +501,17 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @throws cbfs.FileNotFoundException
 	 */
 	string function url( required string path ){
-		var baseUrl = variables.wirebox.getInstance( "RequestService@coldbox" ).getContext().getHTMLBaseURL();
+		var baseUrl = variables.wirebox
+			.getInstance( "RequestService@coldbox" )
+			.getContext()
+			.getHTMLBaseURL();
 		return baseURL
-				& listToArray(
-					arguments.properties.visibility == "public"
-						? uri( argumentCollection=arguments )
-						: temporaryUri( argumentCollection=arguments )
-				, "/" ).toList( "/" );
+		& listToArray(
+			arguments.properties.visibility == "public"
+			 ? uri( argumentCollection = arguments )
+			 : temporaryUri( argumentCollection = arguments ),
+			"/"
+		).toList( "/" );
 	}
 
 	/**
@@ -1315,16 +1319,15 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @input the binary object to parse
 	 */
 	function binaryValues( required binary input ){
-		var byteBuffer = createObject( "java", "java.nio.ByteBuffer" ).allocate( javaCast( "int", 4 ) );
+		var byteBuffer = createObject( "java", "java.nio.ByteBuffer" ).allocate( javacast( "int", 4 ) );
 
 		byteBuffer.put(
 			arguments.input,
-			javaCast( "int", 0 ),
-			javaCast( "int", 4 )
+			javacast( "int", 0 ),
+			javacast( "int", 4 )
 		);
 
-		return( byteBuffer.getInt( javaCast( "int", 0 ) ) );
-
+		return ( byteBuffer.getInt( javacast( "int", 0 ) ) );
 	}
 
 }
