@@ -10,7 +10,7 @@ on:
         required: true
       S3SDK_AWS_ACCESS_SECRET:
         required: true
-      S3SDK_S3SDK_AWS_BUCKET_NAME:
+      S3SDK_AWS_BUCKET_NAME:
         required: true
 
 jobs:
