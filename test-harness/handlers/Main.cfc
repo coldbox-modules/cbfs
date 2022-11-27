@@ -15,7 +15,7 @@
 	}
 
 	function testUpload( event, rc, prc ){
-		if( event.getHTTPMethod() == "POST" ){
+		if ( event.getHTTPMethod() == "POST" ) {
 			cbfs()
 				.getDisks()
 				.keyArray()

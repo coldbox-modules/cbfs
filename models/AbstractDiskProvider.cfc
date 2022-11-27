@@ -134,11 +134,10 @@ component accessors="true" {
 	/**
 	 * Uploads a file in to the disk
 	 *
-	 * @fieldName   The file field name
+	 * @fieldName The file field name
 	 * @directory the directory on disk to upload to
 	 */
 	function upload( required fieldName, required directory ){
-
 		var tmpDirectory = getTempDirectory();
 
 		var upload = fileUpload(
@@ -148,14 +147,14 @@ component accessors="true" {
 			"makeunique"
 		);
 
-		var tmpFile = tmpDirectory & upload.serverFile;
+		var tmpFile  = tmpDirectory & upload.serverFile;
 		var filePath = arguments.directory & "/" & upload.clientFile;
 
 		create(
-			path = filePath,
+			path     = filePath,
 			contents = listFirst( getMimeType( filePath ), "/" ) == "text"
-							? fileRead( tmpFile )
-							: fileReadBinary( tmpFile )
+			 ? fileRead( tmpFile )
+			 : fileReadBinary( tmpFile )
 		);
 
 		fileDelete( tmpFile );
