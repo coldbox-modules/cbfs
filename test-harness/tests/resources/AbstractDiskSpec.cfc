@@ -114,6 +114,12 @@ component extends="coldbox.system.testing.BaseTestCase" {
 				} );
 			} );
 
+			story( "Ensures the disk has an upload method", function(){
+				it( "has an upload method present", function(){
+					expect( disk ).toHaveKey( "upload" );
+				});
+			} );
+
 			story( "The disk should prepend contents for files", function(){
 				when( "the target file to prepend already exists", function(){
 					then( "it will prepend contents to the beginning of the file", function(){

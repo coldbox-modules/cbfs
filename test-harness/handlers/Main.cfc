@@ -14,4 +14,15 @@
 		// writeDump( var = prc.localDisk.getProperties(), label = "Local" );
 	}
 
+	function testUpload( event, rc, prc ){
+		if( event.getHTTPMethod() == "POST" ){
+			cbfs()
+				.getDisks()
+				.keyArray()
+				.each( function( disk ){
+					cbfs().get( disk ).upload( "uploadField", createUUID() )
+				} );
+		}
+	}
+
 }

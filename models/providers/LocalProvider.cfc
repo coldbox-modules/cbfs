@@ -149,6 +149,25 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	}
 
 	/**
+	 * Uploads a file in to the disk
+	 *
+	 * @fieldName   The file field name
+	 * @directory the directory on disk to upload to
+	 * @overload  We can overload the default because we can go directly to the disk with the file
+	 */
+	function upload( required fieldName, required directory ){
+
+		fileUpload(
+			buildDiskPath( arguments.directory ),
+			arguments.fieldName,
+			variables.properties.keyExists( "uploadMimeAccept" ) ? variables.properties.uploadMimeAccept : "*",
+			"error"
+		);
+
+		return this;
+	}
+
+	/**
 	 * Set the storage visibility of a file, available options are `public, private, readonly` or a custom data type the implemented driver can interpret
 	 *
 	 * @path       The target file

@@ -131,6 +131,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		return this;
 	}
 
+
 	/**
 	 * Set the storage visibility of a file, available options are `public, private, readonly` or a custom data type the implemented driver can interpret
 	 *

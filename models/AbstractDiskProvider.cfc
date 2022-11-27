@@ -131,6 +131,38 @@ component accessors="true" {
 		return !this.directoryExists( arguments.path );
 	}
 
+	/**
+	 * Uploads a file in to the disk
+	 *
+	 * @fieldName   The file field name
+	 * @directory the directory on disk to upload to
+	 */
+	function upload( required fieldName, required directory ){
+
+		var tmpDirectory = getTempDirectory();
+
+		var upload = fileUpload(
+			tmpDirectory,
+			arguments.fieldName,
+			variables.properties.keyExists( "uploadMimeAccept" ) ? variables.properties.uploadMimeAccept : "*",
+			"makeunique"
+		);
+
+		var tmpFile = tmpDirectory & upload.serverFile;
+		var filePath = arguments.directory & "/" & upload.clientFile;
+
+		create(
+			path = filePath,
+			contents = listFirst( getMimeType( filePath ), "/" ) == "text"
+							? fileRead( tmpFile )
+							: fileReadBinary( tmpFile )
+		);
+
+		fileDelete( tmpFile );
+
+		return this;
+	}
+
 	/************************* UTILITY METHODS *******************************/
 
 	/**
