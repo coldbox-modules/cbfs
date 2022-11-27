@@ -2,7 +2,6 @@ name: Pull Requests
 
 on:
   push:
-    if: github.event_name != 'pull_request'
     branches-ignore:
       - "main"
       - "master"
