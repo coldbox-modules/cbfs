@@ -1,23 +1,15 @@
 component extends="tests.resources.AbstractDiskSpec" {
 
-	// Load and do not unload ColdBox, for performance
-	this.loadColdbox   = true;
-	this.unLoadColdBox = false;
-
 	// The target provider name to test
 	variables.providerName = "S3";
 	// The concrete test must activate these in order for the tests to execute according to their disk features
 	variables.testFeatures = { symbolicLink : false };
 
-	function beforeAll(){
-		// Load ColdBox
-		super.beforeAll();
-		// Setup a request for testing.
-		setup();
-	}
-
 	function run(){
-		describe( "#variables.providerName# Custom Specs", function(){
+
+		super.run();
+
+		describe( "#variables.providerName# Provider Extended Specs", function(){
 			beforeEach( function( currentSpec ){
 				disk = getDisk();
 			} );
@@ -39,8 +31,6 @@ component extends="tests.resources.AbstractDiskSpec" {
 				} );
 			} )
 		} ); // end suite
-
-		super.run();
 	}
 
 	/**
