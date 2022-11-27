@@ -389,7 +389,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @throws cbfs.FileNotFoundException
 	 */
 	string function url( required string path ){
-		return uri( argumentCollection=arguments );
+		return uri( argumentCollection = arguments );
 	}
 
 	/**

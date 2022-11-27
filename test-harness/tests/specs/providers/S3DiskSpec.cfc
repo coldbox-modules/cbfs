@@ -17,7 +17,6 @@ component extends="tests.resources.AbstractDiskSpec" {
 	}
 
 	function run(){
-
 		describe( "#variables.providerName# Custom Specs", function(){
 			beforeEach( function( currentSpec ){
 				disk = getDisk();
@@ -37,9 +36,8 @@ component extends="tests.resources.AbstractDiskSpec" {
 						overwrite: true
 					);
 					expect( find( disk.getProperties().publicDomain, disk.url( path ) ) ).toBeTrue();
-				});
-			})
-
+				} );
+			} )
 		} ); // end suite
 
 		super.run();
