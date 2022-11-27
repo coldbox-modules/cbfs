@@ -22,8 +22,5 @@
     },
     "scripts":{
         "onServerInstall":"cfpm install zip,debugger"
-    },
-    "JVM":{
-        "javaVersion":"openjdk11"
     }
 }

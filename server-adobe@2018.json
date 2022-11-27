@@ -19,8 +19,5 @@
     "openBrowser":"false",
     "cfconfig":{
         "file":".cfconfig.json"
-    },
-    "JVM":{
-        "javaVersion":"openjdk11"
     }
 }
