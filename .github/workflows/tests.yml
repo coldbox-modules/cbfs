@@ -48,6 +48,13 @@ jobs:
           curl http://127.0.0.1:60299
 
       - name: Run Tests
+        env:
+          ENVIRONMENT: development
+          AWS_S3_ACCESS_KEY: ${{ secrets.S3SDK_AWS_ACCESS_KEY }}
+          AWS_S3_SECRET_KEY: ${{ secrets.S3SDK_AWS_ACCESS_SECRET }}
+          AWS_S3_DOMAIN: ${{ secrets.AWS_S3_DOMAIN }}
+          AWS_S3_REGION: ${{ secrets.AWS_S3_REGION }}
+          AWS_S3_BUCKET_NAME: ${{ secrets.AWS_S3_BUCKET_NAME }}
         run: |
           mkdir -p test-harness/tests/results
           box testbox run --verbose outputFile=test-harness/tests/results/test-results outputFormats=json,antjunit
