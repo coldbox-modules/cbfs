@@ -43,7 +43,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 					then( "it should create the file", function(){
 						var path           = "space_ninja.png";
 						var binaryContents = fileReadBinary(
-							expandPath( "/tests/resources/storage/binary_file.png" )
+							expandPath( "/tests/resources/assets/binary_file.png" )
 						);
 						disk.create(
 							path     : path,
