@@ -127,12 +127,16 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 			ensureDirectoryExists( containerDirectory );
 		}
 
-		// Write it
-		variables.jFiles.write(
-			buildJavaDiskPath( arguments.path ),
-			arguments.contents.getBytes(),
-			[]
-		);
+		// Use native method if binary, as it's less verbose than creating an input stream and getting the bytes
+		if ( isBinary( arguments.contents ) ) {
+			fileWrite( arguments.path, arguments.contents );
+		} else {
+			variables.jFiles.write(
+				buildJavaDiskPath( arguments.path ),
+				arguments.contents.getBytes(),
+				[]
+			);
+		}
 
 		// Set visibility or mode
 		if ( isWindows() ) {
@@ -360,7 +364,9 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @throws cbfs.FileNotFoundException
 	 */
 	any function get( required path ){
-		return variables.jFiles.readString( getJavaPath( ensureFileExists( arguments.path ) ) );
+		return listFirst( fileGetMimeType( arguments.path ), "/" ) == "text"
+				? variables.jFiles.readString( getJavaPath( ensureFileExists( arguments.path ) ) )
+				: fileReadBinary( buildDiskPath( ensureFileExists( arguments.path ) ) );
 	}
 
 	/**
@@ -498,7 +504,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		var baseUrl = variables.wirebox.getInstance( "RequestService@coldbox" ).getContext().getHTMLBaseURL();
 		return baseURL
 				& listToArray(
-					arguments.properties.visibility = "public"
+					arguments.properties.visibility == "public"
 						? uri( argumentCollection=arguments )
 						: temporaryUri( argumentCollection=arguments )
 				, "/" ).toList( "/" );
@@ -1301,6 +1307,22 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 			throw( type = "cbfs.FileNotFoundException", message = "File [#arguments.path#] not found." );
 		}
 		return arguments.path;
+	}
+
+	/**
+	 * Converts a CF Binary object in to its numeric representation
+	 */
+	function binaryValues( required binary input ){
+		var byteBuffer = createObject( "java", "java.nio.ByteBuffer" ).allocate( javaCast( "int", 4 ) );
+
+		byteBuffer.put(
+			arguments.input,
+			javaCast( "int", 0 ),
+			javaCast( "int", 4 )
+		);
+
+		return( byteBuffer.getInt( javaCast( "int", 0 ) ) );
+
 	}
 
 }
