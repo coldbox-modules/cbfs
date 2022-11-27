@@ -5,6 +5,9 @@ component extends="tests.resources.AbstractDiskSpec" {
 	// The concrete test must activate these in order for the tests to execute according to their disk features
 	variables.testFeatures = { symbolicLink : false };
 
+	// Path prefix for handling concurrency during workflow engine tests
+	variables.pathPrefix = createUUID() & "/";
+
 	function run(){
 		super.run();
 
