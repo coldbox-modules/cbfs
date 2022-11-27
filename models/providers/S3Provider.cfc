@@ -371,6 +371,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 */
 	any function get( required path ){
 		ensureFileExists( arguments.path );
+		arguments.path = buildPath( arguments.path );
 		// ACF will not allow us to read the file directly via URL
 		if ( server.coldfusion.productVersion.listFirst() >= 2018 ) {
 			var tempFileName = createUUID() & "." & extension( arguments.path );
@@ -387,31 +388,31 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 
 			variables.s3.downloadObject(
 				bucketName = variables.properties.bucketName,
-				uri        = buildPath( arguments.path ),
+				uri        = arguments.path,
 				filepath   = tempFilePath
 			);
 
-			var fileContents = listFirst( getMimeType( tempFilePath ), "/" ) == "text"
-			 ? fileRead( tempFilePath )
-			 : fileReadBinary( tempFilePath );
+			var fileContents = listFirst( getMimeType( arguments.path ), "/" ) == "text"
+									? fileRead( tempFilePath )
+									: fileReadBinary( tempFilePath );
 			fileDelete( tempFilePath );
 			return fileContents;
 		} else {
 			return listFirst( getMimeType( arguments.path ), "/" ) == "text"
-			 ? fileRead(
-				variables.s3.getAuthenticatedURL(
-					bucketName   = variables.properties.bucketName,
-					uri          = buildPath( arguments.path ),
-					minutesValid = 1
-				)
-			)
-			 : fileReadBinary(
-				variables.s3.getAuthenticatedURL(
-					bucketName   = variables.properties.bucketName,
-					uri          = buildPath( arguments.path ),
-					minutesValid = 1
-				)
-			);
+						? fileRead(
+							variables.s3.getAuthenticatedURL(
+								bucketName   = variables.properties.bucketName,
+								uri          = arguments.path,
+								minutesValid = 1
+							)
+						)
+						: fileReadBinary(
+							variables.s3.getAuthenticatedURL(
+								bucketName   = variables.properties.bucketName,
+								uri          = arguments.path,
+								minutesValid = 1
+							)
+						);
 		}
 	}
 
@@ -547,7 +548,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	/**
 	 * Deletes a file
 	 *
-	 * @path          
+	 * @path
 	 * @throwOnMissing When true an error will be thrown if the file does not exist
 	 */
 	boolean function delete( required any path, boolean throwOnMissing = false ){

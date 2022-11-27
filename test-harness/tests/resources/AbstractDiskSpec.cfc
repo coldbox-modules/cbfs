@@ -51,7 +51,8 @@ component extends="coldbox.system.testing.BaseTestCase" {
 							metadata : {},
 							overwrite: true
 						);
-						expect( disk.get( path ) ).toBe( binaryContents );
+						var blob = disk.get( path );
+						expect( isBinary( blob ) ).toBeTrue();
 					} );
 				} );
 				given( "a new file content", function(){
