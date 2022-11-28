@@ -13,7 +13,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	property name="wirebox" inject="wirebox";
 
 	// static lookups
-	variables.defaults    = { path : "", autoExpand : false };
+	variables.defaults    = { path : "", autoExpand : false, visibility : "public" };
 	// Java Helpers
 	// @see https://docs.oracle.com/javase/8/docs/api/java/nio/file/Paths.html#get-java.lang.String-java.lang.String...-
 	// @see https://docs.oracle.com/javase/8/docs/api/java/nio/file/Files.html
@@ -100,7 +100,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	function create(
 		required path,
 		required contents,
-		string visibility = "public",
+		string visibility = variables.properties.visibility,
 		struct metadata   = {},
 		boolean overwrite = true,
 		string mode
@@ -508,7 +508,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		if ( missing( arguments.path ) ) {
 			throw( type = "cbfs.FileNotFoundException", message = "File [#arguments.path#] not found." );
 		}
-		return buildDiskPath( arguments.path );
+		return replace( buildDiskPath( arguments.path ), variables.wirebox.getInstance( "coldbox" ).getSetting( "ApplicationPath" ), "" );
 	}
 
 	/**
@@ -520,12 +520,12 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 */
 	string function url( required string path ){
 		var baseUrl = variables.wirebox
-			.getInstance( "RequestService@coldbox" )
+			.getInstance( "coldbox:requestService" )
 			.getContext()
 			.getHTMLBaseURL();
 		return baseURL
 		& listToArray(
-			arguments.properties.visibility == "public"
+			variables.properties.visibility == "public"
 			 ? uri( argumentCollection = arguments )
 			 : temporaryUri( argumentCollection = arguments ),
 			"/"
