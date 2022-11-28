@@ -14,7 +14,18 @@ component extends="cbfs.models.testing.AbstractDiskSpec" {
 		describe( "#variables.providerName# Provider Extended Specs", function(){
 			beforeEach( function( currentSpec ){
 				disk = getDisk();
+				variables.publicDomain = disk.getProperties()[ "publicDomain" ];
 			} );
+
+			afterEach( function( currentSpec ){
+				structAppend(
+					disk.getProperties(),
+					{
+						"publicDomain" : variables.publicDomain
+					},
+					true
+				);
+			});
 
 			// /********************************************************/
 			// /** S3 Disk Custom Methods **/
@@ -29,6 +40,7 @@ component extends="cbfs.models.testing.AbstractDiskSpec" {
 						metadata : {},
 						overwrite: true
 					);
+					disk.getProperties()[ "publicDomain" ] = "cdn.cbfs-s3.com";
 					expect( find( disk.getProperties().publicDomain, disk.url( path ) ) ).toBeTrue();
 				} );
 			} )
