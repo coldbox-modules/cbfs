@@ -3,8 +3,8 @@
  */
 component extends="coldbox.system.testing.BaseTestCase" {
 
-	// Load and do not unload COldBOx, for performance
 	this.loadColdbox   = true;
+	// Unload Coldbox after this spec, since we are doing a shutdown of all disks
 	this.unLoadColdBox = true;
 
 	/*********************************** LIFE CYCLE Methods ***********************************/
