@@ -346,7 +346,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		}
 
 		arguments.source      = buildPath( arguments.source );
-		argunents.destination = buildPath( arguments.destination );
+		arguments.destination = buildPath( arguments.destination );
 
 		variables.s3.copyObject(
 			fromBucket = variables.properties.bucketName,
@@ -549,7 +549,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	/**
 	 * Deletes a file
 	 *
-	 * @path          
+	 * @path
 	 * @throwOnMissing When true an error will be thrown if the file does not exist
 	 */
 	boolean function delete( required any path, boolean throwOnMissing = false ){
