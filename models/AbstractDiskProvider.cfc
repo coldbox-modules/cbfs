@@ -165,12 +165,12 @@ component accessors="true" {
 	/************************* UTILITY METHODS *******************************/
 
 	/**
-	 * Normalize and cleanup file paths for consistency
+	 * Normalize and cleanup file paths for consistency and remove leading slashes
 	 *
 	 * @path The path to clean
 	 */
 	function normalizePath( path ){
-		return replace( arguments.path, "\", "/", "all" ).reReplace( "\/$", "" );
+		return listToArray( replace( arguments.path, "\", "/", "all" ).reReplace( "\/$", "" ) ).toList( "/" );
 	}
 
 	/**
