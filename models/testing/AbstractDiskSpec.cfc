@@ -467,6 +467,15 @@ component extends="coldbox.system.testing.BaseTestCase" {
 						);
 						validateUri( path, disk );
 					} );
+					then( "it can retrieve the full url for a file", function(){
+						var path = variables.pathPrefix & "dir/test_file.txt";
+						disk.create(
+							path      = path,
+							contents  = "my contents",
+							overwrite = true
+						);
+						validateURL( path, disk );
+					} );
 				} );
 				it( "throws an exception if the file does not exist", function(){
 					var path = variables.pathPrefix & "test_file.txt";
@@ -1272,6 +1281,21 @@ component extends="coldbox.system.testing.BaseTestCase" {
 	 */
 	function validateUri( required string path, required any disk ){
 		expect( disk.uri( arguments.path ) ).toInclude( arguments.path );
+	}
+
+
+	/**
+	 * This method should validate the creation of a uri to a file via the "uri()" method.
+	 * This implementation is a basic in and out.
+	 *
+	 * @path The target path
+	 * @disk The disk used
+	 */
+	function validateURL( required string path, required any disk ){
+		if( findNoCase( "RamProvider", getMetadata( disk ).name ) ) return;
+		var fileURL = disk.url( arguments.path );
+		expect( fileURL ).toInclude( disk.uri( arguments.path ) ).toInclude( "http" );
+		expect( fileRead( fileUrl ) ).toBe( disk.get( path ) );
 	}
 
 	/**
