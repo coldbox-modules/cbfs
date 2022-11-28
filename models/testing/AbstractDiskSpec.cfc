@@ -1292,7 +1292,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 	 * @disk The disk used
 	 */
 	function validateURL( required string path, required any disk ){
-		if( findNoCase( "RamProvider", getMetadata( disk ).name ) ) return;
+		if ( findNoCase( "RamProvider", getMetadata( disk ).name ) ) return;
 		var fileURL = disk.url( arguments.path );
 		expect( fileURL ).toInclude( disk.uri( arguments.path ) ).toInclude( "http" );
 		expect( fileRead( fileUrl ) ).toBe( disk.get( path ) );

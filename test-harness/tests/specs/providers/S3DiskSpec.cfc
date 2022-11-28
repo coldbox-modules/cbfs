@@ -13,19 +13,17 @@ component extends="cbfs.models.testing.AbstractDiskSpec" {
 
 		describe( "#variables.providerName# Provider Extended Specs", function(){
 			beforeEach( function( currentSpec ){
-				disk = getDisk();
+				disk                   = getDisk();
 				variables.publicDomain = disk.getProperties()[ "publicDomain" ];
 			} );
 
 			afterEach( function( currentSpec ){
 				structAppend(
 					disk.getProperties(),
-					{
-						"publicDomain" : variables.publicDomain
-					},
+					{ "publicDomain" : variables.publicDomain },
 					true
 				);
-			});
+			} );
 
 			// /********************************************************/
 			// /** S3 Disk Custom Methods **/

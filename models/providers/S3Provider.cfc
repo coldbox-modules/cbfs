@@ -1381,8 +1381,12 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * Builds a public URL for the resource
 	 */
 	function publicUrl( required string path ){
-		var uri = uri( path );
-		var urlEndpoint = replace( variables.s3.getUrlEndpoint(), variables.s3.getURLEndpointHostname(), variables.properties.publicDomain ) & "/";
+		var uri         = uri( path );
+		var urlEndpoint = replace(
+			variables.s3.getUrlEndpoint(),
+			variables.s3.getURLEndpointHostname(),
+			variables.properties.publicDomain
+		) & "/";
 		return urlEndpoint & uri;
 	}
 

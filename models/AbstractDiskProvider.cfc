@@ -170,7 +170,9 @@ component accessors="true" {
 	 * @path The path to clean
 	 */
 	function normalizePath( path ){
-		return listToArray( replace( arguments.path, "\", "/", "all" ).replace( "//", "/", "all" ).reReplace( "\/$", "" ) ).toList( "/" );
+		return listToArray(
+			replace( arguments.path, "\", "/", "all" ).replace( "//", "/", "all" ).reReplace( "\/$", "" )
+		).toList( "/" );
 	}
 
 	/**
