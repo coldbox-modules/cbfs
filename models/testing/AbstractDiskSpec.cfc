@@ -1280,7 +1280,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 	 * @disk The disk used
 	 */
 	function validateUri( required string path, required any disk ){
-		expect( disk.uri( arguments.path ) ).toInclude( arguments.path );
+		expect( disk.uri( arguments.path ) ).toInclude( disk.normalizePath( arguments.path ) );
 	}
 
 
@@ -1306,7 +1306,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 	 * @disk The disk used
 	 */
 	function validateTemporaryUri( required string path, required any disk ){
-		expect( disk.temporaryUri( arguments.path ) ).toInclude( arguments.path );
+		expect( disk.temporaryUri( arguments.path ) ).toInclude( disk.normalizePath( arguments.path ) );
 	}
 
 	/**
