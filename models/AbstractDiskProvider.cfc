@@ -144,7 +144,6 @@ component accessors="true" {
 		required directory,
 		string fileName,
 		string overwrite = false
-
 	){
 		var tmpDirectory = getTempDirectory();
 

@@ -155,7 +155,6 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @directory the directory on disk to upload to
 	 * @fileName  optional file name on the disk
 	 * @overwrite whether to overwrite ( defaults to false )
-	 *
 	 * @overload  We can overload the default because we can go directly to the disk with the file
 	 */
 	function upload(
@@ -163,9 +162,8 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		required directory,
 		string fileName,
 		string overwrite = false
-
 	){
-		if( !isNull( arguments.fileName ) ){
+		if ( !isNull( arguments.fileName ) ) {
 			// if we have a file name specified we need to perform this in two steps
 
 			var filePath = arguments.directory & "/" & arguments.fileName;
@@ -187,7 +185,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 				"makeunique"
 			);
 
-			var tmpFile  = tmpDirectory & upload.serverFile;
+			var tmpFile = tmpDirectory & upload.serverFile;
 
 			var filePath = buildDiskPath( filePath );
 			createDirectory( getDirectoryFromPath( filePath ) )
