@@ -211,7 +211,7 @@ component accessors="true" {
 		return variables.javaUrlConnection.guessContentTypeFromName( arguments.path );
 	}
 
-	boolean function isBinaryFile( target ) {
+	boolean function isBinaryFile( target ){
 		var type = getMimeType( arguments.target ) ?: "binary";
 		return type.listFirst( "/" ).findnocase( "text" ) ? false : true;
 	}

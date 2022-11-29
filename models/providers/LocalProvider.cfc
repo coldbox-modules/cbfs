@@ -191,7 +191,6 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 			createDirectory( getDirectoryFromPath( filePath ) )
 
 			fileMove( tmpFile, filePath );
-
 		} else {
 			// otherwise we can go directly to the directory
 			fileUpload(
