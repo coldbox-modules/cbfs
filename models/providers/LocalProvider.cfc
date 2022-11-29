@@ -192,14 +192,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 			var filePath = buildDiskPath( filePath );
 			createDirectory( getDirectoryFromPath( filePath ) )
 
-			try{
-				fileMove( tmpFile, filePath );
-			} catch( any e ){
-				writeDump( tmpFile );
-				writeDump( filePath );
-				writeDump( fileExists( tmpFile ) );
-				abort;
-			}
+			fileMove( tmpFile, filePath );
 
 		} else {
 			// otherwise we can go directly to the directory
