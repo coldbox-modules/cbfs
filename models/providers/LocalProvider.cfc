@@ -557,7 +557,11 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		if ( missing( arguments.path ) ) {
 			throw( type = "cbfs.FileNotFoundException", message = "File [#arguments.path#] not found." );
 		}
-		return replace( buildDiskPath( arguments.path ), variables.wirebox.getInstance( "coldbox" ).getSetting( "ApplicationPath" ), "" );
+		return replace(
+			buildDiskPath( arguments.path ),
+			variables.wirebox.getInstance( "coldbox" ).getSetting( "ApplicationPath" ),
+			""
+		);
 	}
 
 	/**
