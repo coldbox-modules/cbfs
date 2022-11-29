@@ -160,7 +160,7 @@ component accessors="true" {
 
 		create(
 			path     = filePath,
-			contents = listFirst( getMimeType( filePath ), "/" ) == "text"
+			contents = !isBinaryFile( tmpFile )
 			 ? fileRead( tmpFile )
 			 : fileReadBinary( tmpFile ),
 			overwrite = arguments.overwrite
@@ -210,6 +210,11 @@ component accessors="true" {
 	 */
 	function getMimeType( required path ){
 		return variables.javaUrlConnection.guessContentTypeFromName( arguments.path );
+	}
+
+	boolean function isBinaryFile( target ) {
+		var type = getMimeType( arguments.target ) ?: "binary";
+		return type.listFirst( "/" ).findnocase( "text" ) ? false : true;
 	}
 
 }

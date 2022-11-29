@@ -424,7 +424,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @throws cbfs.FileNotFoundException
 	 */
 	any function get( required path ){
-		return listFirst( getMimeType( arguments.path ), "/" ) == "text"
+		return !isBinaryFile( arguments.path )
 		 ? variables.jFiles.readString( getJavaPath( ensureFileExists( arguments.path ) ) )
 		 : fileReadBinary( buildDiskPath( ensureFileExists( arguments.path ) ) );
 	}

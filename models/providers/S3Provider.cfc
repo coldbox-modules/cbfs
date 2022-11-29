@@ -393,13 +393,13 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 				filepath   = tempFilePath
 			);
 
-			var fileContents = listFirst( getMimeType( arguments.path ), "/" ) == "text"
+			var fileContents = !isBinaryFile( arguments.path )
 			 ? fileRead( tempFilePath )
 			 : fileReadBinary( tempFilePath );
 			fileDelete( tempFilePath );
 			return fileContents;
 		} else {
-			return listFirst( getMimeType( arguments.path ), "/" ) == "text"
+			return !isBinaryFile( arguments.path )
 			 ? fileRead(
 				variables.s3.getAuthenticatedURL(
 					bucketName   = variables.properties.bucketName,
@@ -549,7 +549,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	/**
 	 * Deletes a file
 	 *
-	 * @path          
+	 * @path
 	 * @throwOnMissing When true an error will be thrown if the file does not exist
 	 */
 	boolean function delete( required any path, boolean throwOnMissing = false ){
