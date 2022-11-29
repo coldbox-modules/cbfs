@@ -136,8 +136,16 @@ component accessors="true" {
 	 *
 	 * @fieldName The file field name
 	 * @directory the directory on disk to upload to
+	 * @fileName  optional file name on the disk
+	 * @overwrite whether to overwrite ( defaults to false )
 	 */
-	function upload( required fieldName, required directory ){
+	function upload(
+		required fieldName,
+		required directory,
+		string fileName,
+		string overwrite = false
+
+	){
 		var tmpDirectory = getTempDirectory();
 
 		var upload = fileUpload(
@@ -148,13 +156,14 @@ component accessors="true" {
 		);
 
 		var tmpFile  = tmpDirectory & upload.serverFile;
-		var filePath = arguments.directory & "/" & upload.clientFile;
+		var filePath = arguments.directory & "/" & ( arguments.fileName ?: upload.clientFile );
 
 		create(
 			path     = filePath,
 			contents = listFirst( getMimeType( filePath ), "/" ) == "text"
 			 ? fileRead( tmpFile )
-			 : fileReadBinary( tmpFile )
+			 : fileReadBinary( tmpFile ),
+			overwrite = arguments.overwrite
 		);
 
 		fileDelete( tmpFile );

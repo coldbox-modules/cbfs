@@ -153,15 +153,64 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 *
 	 * @fieldName The file field name
 	 * @directory the directory on disk to upload to
+	 * @fileName  optional file name on the disk
+	 * @overwrite whether to overwrite ( defaults to false )
+	 *
 	 * @overload  We can overload the default because we can go directly to the disk with the file
 	 */
-	function upload( required fieldName, required directory ){
-		fileUpload(
-			buildDiskPath( arguments.directory ),
-			arguments.fieldName,
-			variables.properties.keyExists( "uploadMimeAccept" ) ? variables.properties.uploadMimeAccept : "*",
-			"error"
-		);
+	function upload(
+		required fieldName,
+		required directory,
+		string fileName,
+		string overwrite = false
+
+	){
+		if( !isNull( arguments.fileName ) ){
+			// if we have a file name specified we need to perform this in two steps
+
+			var filePath = arguments.directory & "/" & arguments.fileName;
+
+			// Overwrite checks for destination
+			if ( !arguments.overwrite && exists( filePath ) ) {
+				throw(
+					type    = "cbfs.FileOverrideException",
+					message = "Cannot upload file. Destination already exists [#filePath#] and overwrite is false"
+				);
+			}
+
+			var tmpDirectory = getTempDirectory();
+
+			var upload = fileUpload(
+				tmpDirectory,
+				arguments.fieldName,
+				variables.properties.keyExists( "uploadMimeAccept" ) ? variables.properties.uploadMimeAccept : "*",
+				"makeunique"
+			);
+
+			var tmpFile  = tmpDirectory & upload.serverFile;
+
+			var filePath = buildDiskPath( filePath );
+			createDirectory( getDirectoryFromPath( filePath ) )
+
+			try{
+				fileMove( tmpFile, filePath );
+			} catch( any e ){
+				writeDump( tmpFile );
+				writeDump( filePath );
+				writeDump( fileExists( tmpFile ) );
+				abort;
+			}
+
+		} else {
+			// otherwise we can go directly to the directory
+			fileUpload(
+				buildDiskPath( arguments.directory ),
+				arguments.fieldName,
+				variables.properties.keyExists( "uploadMimeAccept" ) ? variables.properties.uploadMimeAccept : "*",
+				arguments.overwrite ? "overwrite" : "error"
+			);
+		}
+
 
 		return this;
 	}
