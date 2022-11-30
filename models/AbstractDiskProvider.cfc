@@ -157,15 +157,17 @@ component accessors="true" {
 		var tmpFile  = tmpDirectory & upload.serverFile;
 		var filePath = arguments.directory & "/" & ( arguments.fileName ?: upload.clientFile );
 
-		create(
-			path     = filePath,
-			contents = !isBinaryFile( tmpFile )
-			 ? fileRead( tmpFile )
-			 : fileReadBinary( tmpFile ),
-			overwrite = arguments.overwrite
-		);
-
-		fileDelete( tmpFile );
+		try {
+			create(
+				path     = filePath,
+				contents = !isBinaryFile( tmpFile )
+				 ? fileRead( tmpFile )
+				 : fileReadBinary( tmpFile ),
+				overwrite = arguments.overwrite
+			);
+		} finally {
+			fileDelete( tmpFile );
+		}
 
 		return this;
 	}
@@ -206,13 +208,20 @@ component accessors="true" {
 
 	/**
 	 * Find out the mime type of a path
+	 *
+	 * @path The file path to check
 	 */
 	function getMimeType( required path ){
 		return variables.javaUrlConnection.guessContentTypeFromName( arguments.path );
 	}
 
-	boolean function isBinaryFile( target ){
-		var type = getMimeType( arguments.target ) ?: "binary";
+	/**
+	 * Verify if a file path is binary file or not
+	 *
+	 * @path The file path to check
+	 */
+	boolean function isBinaryFile( required path ){
+		var type = getMimeType( arguments.path ) ?: "binary";
 		return type.listFirst( "/" ).findnocase( "text" ) ? false : true;
 	}
 
