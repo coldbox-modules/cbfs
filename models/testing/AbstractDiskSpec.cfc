@@ -22,6 +22,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 	}
 
 	function run(){
+		param variables.pathPrefix = "";
 		describe( "#variables.providerName# Abstract Specs", function(){
 			beforeEach( function( currentSpec ){
 				disk = getDisk();
@@ -39,9 +40,25 @@ component extends="coldbox.system.testing.BaseTestCase" {
 			} );
 
 			story( "The disk can create files", function(){
+				given( "a binary file", function(){
+					then( "it should create the file", function(){
+						var path           = "space_ninja.png";
+						var binaryContents = fileReadBinary(
+							expandPath( "/tests/resources/assets/binary_file.png" )
+						);
+						disk.create(
+							path     : path,
+							contents : binaryContents,
+							metadata : {},
+							overwrite: true
+						);
+						var blob = disk.get( path );
+						expect( isBinary( blob ) ).toBeTrue();
+					} );
+				} );
 				given( "a new file content", function(){
 					then( "it should create the file", function(){
-						var path = "test.txt";
+						var path = variables.pathPrefix & "test.txt";
 						disk.create(
 							path     : path,
 							contents : "hola amigo!",
@@ -56,7 +73,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 						var disk = getDisk();
 
 						// Make sure file doesn't exist
-						var path = "test_file.txt";
+						var path = variables.pathPrefix & "test_file.txt";
 						disk.delete( path );
 
 						// Create it
@@ -81,7 +98,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 						var disk = getDisk();
 
 						// Make sure file doesn't exist
-						var path = "test_file.txt";
+						var path = variables.pathPrefix & "test_file.txt";
 						disk.delete( path );
 
 						// Create it
@@ -98,10 +115,16 @@ component extends="coldbox.system.testing.BaseTestCase" {
 				} );
 			} );
 
+			story( "Ensures the disk has an upload method", function(){
+				it( "has an upload method present", function(){
+					expect( disk ).toHaveKey( "upload" );
+				} );
+			} );
+
 			story( "The disk should prepend contents for files", function(){
 				when( "the target file to prepend already exists", function(){
 					then( "it will prepend contents to the beginning of the file", function(){
-						var path = "test_file.txt";
+						var path = variables.pathPrefix & "test_file.txt";
 						disk.create(
 							path      = path,
 							contents  = "my contents",
@@ -113,7 +136,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 				} );
 				when( "the target file doesn't exist and throwOnMissing is false", function(){
 					then( "it will create a new file with the contents", function(){
-						var path = "test_file.txt";
+						var path = variables.pathPrefix & "test_file.txt";
 						disk.delete( path );
 						disk.prepend( path, "prepended contents" );
 						expect( disk.get( path ) ).toBe( "prepended contents" );
@@ -121,7 +144,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 				} );
 				when( "the target file doesn't exist and throwOnMissing is true", function(){
 					then( "it should throw a FileNotFoundException exception ", function(){
-						var path = "test_file.txt";
+						var path = variables.pathPrefix & "test_file.txt";
 						disk.delete( path );
 						expect( function(){
 							disk.prepend(
@@ -137,7 +160,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 			story( "The disk should append contents for files", function(){
 				when( "the target file to append already exists", function(){
 					then( "it will append contents to the end of the file", function(){
-						var path = "test_file.txt";
+						var path = variables.pathPrefix & "test_file.txt";
 						disk.create(
 							path      = path,
 							contents  = "my contents",
@@ -149,7 +172,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 				} );
 				when( "the target file doesn't exist and throwOnMissing is false", function(){
 					then( "it will create a new file with the contents", function(){
-						var path = "test_file.txt";
+						var path = variables.pathPrefix & "test_file.txt";
 						disk.delete( path );
 						disk.append( path, "appended contents" );
 						expect( disk.get( path ) ).toBe( "appended contents" );
@@ -157,7 +180,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 				} );
 				when( "the target file doesn't exist and throwOnMissing is true", function(){
 					then( "it should throw a FileNotFoundException exception ", function(){
-						var path = "test_file.txt";
+						var path = variables.pathPrefix & "test_file.txt";
 						disk.delete( path );
 						expect( function(){
 							disk.append(
@@ -172,8 +195,8 @@ component extends="coldbox.system.testing.BaseTestCase" {
 
 			story( "The disk can copy files", function(){
 				beforeEach( function( currentSpec ){
-					sourcePath  = "test_file.txt";
-					destination = "test_file_two.txt";
+					sourcePath  = variables.pathPrefix & "test_file.txt";
+					destination = variables.pathPrefix & "test_file_two.txt";
 					disk.delete( sourcePath );
 					disk.delete( destination );
 				} );
@@ -251,8 +274,8 @@ component extends="coldbox.system.testing.BaseTestCase" {
 
 			story( "The disk can move files", function(){
 				beforeEach( function( currentSpec ){
-					sourcePath  = "test_file.txt";
-					destination = "test_file_two.txt";
+					sourcePath  = variables.pathPrefix & "test_file.txt";
+					destination = variables.pathPrefix & "test_file_two.txt";
 					disk.delete( sourcePath );
 					disk.delete( destination );
 				} );
@@ -325,7 +348,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 			story( "The disk can check for existence", function(){
 				given( "a file that exists", function(){
 					it( "it can verify it", function(){
-						var path = "test_file.txt";
+						var path = variables.pathPrefix & "test_file.txt";
 						disk.delete( path );
 						expect( disk.exists( path ) ).toBeFalse( "#path# should not exist" );
 						disk.create( path, "my contents" );
@@ -334,8 +357,8 @@ component extends="coldbox.system.testing.BaseTestCase" {
 				} );
 				given( "a directory that exists", function(){
 					it( "it can verify it", function(){
-						var filePath      = "one/test_file.txt";
-						var directoryPath = "one";
+						var filePath      = variables.pathPrefix & "one/test_file.txt";
+						var directoryPath = variables.pathPrefix & "one";
 						disk.deleteDirectory( directory = "one", recurse = true );
 						expect( disk.directoryExists( directoryPath ) ).toBeFalse(
 							"#directoryPath# should not exist"
@@ -350,7 +373,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 			story( "The disk can delete files", function(){
 				given( "a file exists", function(){
 					then( "it should delete it", function(){
-						var path = "test_file.txt";
+						var path = variables.pathPrefix & "test_file.txt";
 						disk.create(
 							path      = path,
 							contents  = "test",
@@ -367,14 +390,14 @@ component extends="coldbox.system.testing.BaseTestCase" {
 				} );
 				given( "a file doesn't exist and throwOnMissing is false", function(){
 					then( "it should ignore it and return false", function(){
-						var path = "test_file.txt";
+						var path = variables.pathPrefix & "test_file.txt";
 						// Make sure it doesn't exist
 						expect( disk.delete( path ) ).toBeFalse( "delete() should ignore it" );
 					} );
 				} );
 				given( "a file doesn't exist and throwOnMissing is true", function(){
 					then( "it should throw a FileNotFoundException", function(){
-						var path = "test_file.txt";
+						var path = variables.pathPrefix & "test_file.txt";
 						// Make sure it doesn't exist
 						disk.delete( path );
 						expect( function(){
@@ -387,7 +410,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 			story( "The disk can touch files", function(){
 				given( "a file that doesn't exist", function(){
 					then( "it should touch it", function(){
-						var path = "test_file.txt";
+						var path = variables.pathPrefix & "test_file.txt";
 						disk.delete( path );
 						disk.touch( path );
 						expect( disk.exists( path ) ).toBeTrue( "[#path#] should exist" );
@@ -396,7 +419,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 				} );
 				given( "a file that does exist", function(){
 					then( "it should touch it by modified the lastmodified timestamp", function(){
-						var path = "test_file.txt";
+						var path = variables.pathPrefix & "test_file.txt";
 						disk.delete( path );
 						disk.create( path, "hello" );
 						var before = disk.lastModified( path );
@@ -410,7 +433,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 				} );
 				given( "a file that doesn't exist and it has a nested path", function(){
 					then( "it should create the nested directories and create it", function(){
-						var path = "/one/two/test_file.txt";
+						var path = variables.pathPrefix & "/one/two/test_file.txt";
 						disk.delete( path );
 						disk.touch( path );
 						expect( disk.exists( path ) ).toBeTrue( "[#path#] should exist" );
@@ -419,8 +442,8 @@ component extends="coldbox.system.testing.BaseTestCase" {
 				} );
 				given( "A file that doesn't exist and `createPath` is false", function(){
 					then( "It should throw a `cbfs.PathNotFoundException`", function(){
-						var path = "/one/two/test_file.txt";
-						disk.deleteDirectory( "/one/two" );
+						var path = variables.pathPrefix & "/one/two/test_file.txt";
+						disk.deleteDirectory( variables.pathPrefix & "/one/two" );
 						expect( disk.exists( path ) ).toBeFalse( "[#path#] should not exist" );
 						expect( function(){
 							disk.touch( path = path, createPath = false );
@@ -436,7 +459,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 			story( "The disk can get a URI for the given file", function(){
 				given( "a valid file", function(){
 					then( "it can retrieve the uri for a file", function(){
-						var path = "/dir/test_file.txt";
+						var path = variables.pathPrefix & "/dir/test_file.txt";
 						disk.create(
 							path      = path,
 							contents  = "my contents",
@@ -444,9 +467,18 @@ component extends="coldbox.system.testing.BaseTestCase" {
 						);
 						validateUri( path, disk );
 					} );
+					then( "it can retrieve the full url for a file", function(){
+						var path = variables.pathPrefix & "dir/test_file.txt";
+						disk.create(
+							path      = path,
+							contents  = "my contents",
+							overwrite = true
+						);
+						validateURL( path, disk );
+					} );
 				} );
 				it( "throws an exception if the file does not exist", function(){
-					var path = "test_file.txt";
+					var path = variables.pathPrefix & "test_file.txt";
 					disk.delete( path );
 					expect( disk.exists( path ) ).toBeFalse( "[#path#] should not exist." );
 					expect( function(){
@@ -457,7 +489,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 
 			story( "The disk can get temporary uris for a given file", function(){
 				it( "can retrieve the temporary uri for a file", function(){
-					var path = "/dir/test_file.txt";
+					var path = variables.pathPrefix & "/dir/test_file.txt";
 					disk.create(
 						path      = path,
 						contents  = "my contents",
@@ -467,7 +499,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 				} );
 
 				it( "throws an exception if the file does not exist", function(){
-					var path = "test_file.txt";
+					var path = variables.pathPrefix & "test_file.txt";
 					disk.delete( path );
 					expect( disk.exists( path ) ).toBeFalse( "[#path#] should not exist." );
 					expect( function(){
@@ -478,8 +510,8 @@ component extends="coldbox.system.testing.BaseTestCase" {
 
 			story( "The disk can get file sizes in bytes", function(){
 				it( "can retrieve the size of a file", function(){
-					var path     = "test_file.txt";
-					var contents = "my contents";
+					var path     = variables.pathPrefix & "test_file.txt";
+					var contents = variables.pathPrefix & "my contents";
 					disk.create(
 						path      = path,
 						contents  = contents,
@@ -492,7 +524,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 
 			story( "The disk can get the lastModified property of a file", function(){
 				it( "can retrieve the last modified date of a file", function(){
-					var path = "test_file.txt";
+					var path = variables.pathPrefix & "test_file.txt";
 					disk.create(
 						path      = path,
 						contents  = "hola amigo",
@@ -510,7 +542,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 
 			story( "The disk can get the mime type property of a file", function(){
 				it( "can retrieve the mimetype of a file", function(){
-					var path = "test_file.txt";
+					var path = variables.pathPrefix & "test_file.txt";
 					disk.create(
 						path      = path,
 						contents  = "hola amigo",
@@ -522,7 +554,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 
 			story( "The disk can return file information", function(){
 				it( "can retrieve an info struct about a file", function(){
-					var path = "test_file.txt";
+					var path = variables.pathPrefix & "test_file.txt";
 					disk.create(
 						path      = path,
 						contents  = "my contents",
@@ -536,8 +568,8 @@ component extends="coldbox.system.testing.BaseTestCase" {
 
 			story( "The disk can create file checksums", function(){
 				it( "can generate the checksum for a file", function(){
-					var path     = "test_file.txt";
-					var contents = "my contents";
+					var path     = variables.pathPrefix & "test_file.txt";
+					var contents = variables.pathPrefix & "my contents";
 					disk.create(
 						path      = path,
 						contents  = contents,
@@ -550,21 +582,21 @@ component extends="coldbox.system.testing.BaseTestCase" {
 
 			story( "The disk can get the name of a file", function(){
 				it( "can get the name of a file", function(){
-					var path = "/one/two/test_file.txt";
+					var path = variables.pathPrefix & "/one/two/test_file.txt";
 					expect( disk.name( path ) ).toBe( "test_file.txt" );
 				} );
 			} );
 
 			story( "The disk can get the extension of a file", function(){
 				it( "can get the extension of a file", function(){
-					var path = "/one/two/test_file.txt";
+					var path = variables.pathPrefix & "/one/two/test_file.txt";
 					expect( disk.extension( path ) ).toBe( "txt" );
 				} );
 			} );
 
 			story( "The disk can set the permissions of a file via chmod", function(){
 				it( "can set the permissions of a file via chmod", function(){
-					var path = "/one/two/test_file.txt";
+					var path = variables.pathPrefix & "/one/two/test_file.txt";
 					disk.create(
 						path      = path,
 						contents  = "Hello",
@@ -580,7 +612,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 				skip : !hasFeature( "symbolicLink" ),
 				body : function(){
 					it( "can create symbolic links", function(){
-						var path = "test_file.txt";
+						var path = variables.pathPrefix & "test_file.txt";
 						disk.create(
 							path      = path,
 							contents  = "I love symbolic links",
@@ -599,7 +631,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 			story( "The disk can verify if a path is a file", function(){
 				given( "A file exists", function(){
 					then( "it will verify it", function(){
-						var directoryPath = "/one/two";
+						var directoryPath = variables.pathPrefix & "/one/two";
 						var filePath      = "#directoryPath#/test_file.txt";
 						disk.create(
 							path      = filePath,
@@ -612,7 +644,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 				} );
 				given( "A directory", function(){
 					then( "it will verify that it's not a file", function(){
-						var directoryPath = "/one/two";
+						var directoryPath = variables.pathPrefix & "/one/two";
 						var filePath      = "#directoryPath#/test_file.txt";
 						disk.create(
 							path      = filePath,
@@ -624,7 +656,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 				} );
 				given( "a non-existent file", function(){
 					then( "it will throw a `cbfs.FileNotFoundException`", function(){
-						var path = "does_not_exist.txt";
+						var path = variables.pathPrefix & "does_not_exist.txt";
 
 						expect( function(){
 							disk.delete( path = path, throwOnMissing = true );
@@ -638,7 +670,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 
 			story( "The disk can verify if a file is writable", function(){
 				it( "it returns true for a writable path", function(){
-					var path = "/one/two/writeable.txt";
+					var path = variables.pathPrefix & "/one/two/writeable.txt";
 					disk.delete( path );
 					disk.create(
 						path       = path,
@@ -649,7 +681,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 					expect( disk.isWritable( path ) ).toBeTrue( "Path should be writable." );
 				} );
 				it( "returns false for a non-writable path", function(){
-					var path = "/one/two/non-writeable.txt";
+					var path = variables.pathPrefix & "/one/two/non-writeable.txt";
 					disk.delete( path );
 					disk.create(
 						path       = path,
@@ -664,7 +696,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 			story( "The disk can verify if a file is readable", function(){
 				given( "a public file", function(){
 					it( "should returns as readable", function(){
-						var path = "/one/two/readable.txt";
+						var path = variables.pathPrefix & "/one/two/readable.txt";
 						disk.delete( path );
 						disk.create(
 							path       = path,
@@ -677,7 +709,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 				} );
 				given( "a readonly file", function(){
 					it( "should returns as readable", function(){
-						var path = "/one/two/readable.txt";
+						var path = variables.pathPrefix & "/one/two/readable.txt";
 						disk.delete( path );
 						disk.create(
 							path       = path,
@@ -690,7 +722,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 				} );
 				given( "a private file", function(){
 					it( "should return false as readable", function(){
-						var path = "/one/two/non-writeable.txt";
+						var path = variables.pathPrefix & "/one/two/non-writeable.txt";
 						disk.delete( path );
 						disk.create(
 							path       = path,
@@ -709,7 +741,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 				body  = function(){
 					given( "a public file", function(){
 						it( "should returns false as hidden", function(){
-							var path = "/one/two/readable.txt";
+							var path = variables.pathPrefix & "/one/two/readable.txt";
 							disk.delete( path );
 							disk.create(
 								path       = path,
@@ -722,7 +754,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 					} );
 					given( "a readonly file", function(){
 						it( "should return false as hidden", function(){
-							var path = "/one/two/readable.txt";
+							var path = variables.pathPrefix & "/one/two/readable.txt";
 							disk.delete( path );
 							disk.create(
 								path       = path,
@@ -737,7 +769,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 					given( "a private file", function(){
 						it( "should return true as hidden", function(){
 							// Simply renaming the files to have a dot (“.”) as a first character of the file name will make the file hidden in Unix systems.
-							var path = "/one/two/.iam-hidden.txt";
+							var path = variables.pathPrefix & "/one/two/.iam-hidden.txt";
 							disk.delete( path );
 							disk.create(
 								path       = path,
@@ -758,7 +790,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 			story( "The disk can create and verify directories", function(){
 				given( "a non-existent directory", function(){
 					then( "it should create the directory", function(){
-						var path = "bddtests";
+						var path = variables.pathPrefix & "bddtests";
 						disk.deleteDirectory( path );
 						disk.createDirectory( path );
 						expect( disk.directoryExists( path ) ).toBeTrue( "#path# should exist" );
@@ -767,7 +799,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 				} );
 				given( "an existent directory and ignoreExists = true", function(){
 					then( "it should ignore the creation", function(){
-						var path = "bddtests";
+						var path = variables.pathPrefix & "bddtests";
 						disk.deleteDirectory( path );
 						disk.createDirectory( path );
 
@@ -778,7 +810,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 				} );
 				given( "an existent directory and ignoreExists = false", function(){
 					then( "it should throw a cbfs.DirectoryExistsException ", function(){
-						var path = "bddtests";
+						var path = variables.pathPrefix & "bddtests";
 						disk.deleteDirectory( path );
 						disk.createDirectory( path );
 
@@ -792,7 +824,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 			story( "The disk can delete directories", function(){
 				given( "a valid directory and recurse = true", function(){
 					then( "it should delete all the directories and recurse", function(){
-						var path = "deleteTests";
+						var path = variables.pathPrefix & "deleteTests";
 						disk.createDirectory( path );
 						disk.create(
 							path      = path & "/test.txt",
@@ -819,7 +851,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 				} );
 				given( "a valid directory and recurse = false", function(){
 					then( "it should delete only the top level files", function(){
-						var path = "deleteTests";
+						var path = variables.pathPrefix & "deleteTests";
 						disk.createDirectory( path );
 						disk.create(
 							path      = path & "/test.txt",
@@ -842,13 +874,13 @@ component extends="coldbox.system.testing.BaseTestCase" {
 				} );
 				given( "an non existent directory and throwOnMissing = false", function(){
 					then( "it should ignore the deletion ", function(){
-						var path = "bogus";
+						var path = variables.pathPrefix & "bogus";
 						expect( disk.deleteDirectory( path ) ).toBeFalse();
 					} );
 				} );
 				given( "an non existent directory and throwOnMissing = true", function(){
 					then( "it should throw a cbfs.DirectoryNotFoundException", function(){
-						var path = "bogus";
+						var path = variables.pathPrefix & "bogus";
 						expect( function(){
 							disk.deleteDirectory( directory = path, throwOnMissing = true );
 						} ).toThrow( "cbfs.DirectoryNotFoundException" );
@@ -859,7 +891,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 			story( "The disk can move directories", function(){
 				given( "a valid old path", function(){
 					then( "it should move the directory", function(){
-						var dirPath = "bddtests";
+						var dirPath = variables.pathPrefix & "bddtests";
 						disk.deleteDirectory( dirPath );
 						disk.createDirectory( dirPath );
 						expect( disk.directoryExists( dirPath ) ).toBeTrue( "#dirPath# should exist" );
@@ -872,7 +904,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 				} );
 				given( "an invalid old path", function(){
 					then( "it should throw a cbfs.DirectoryNotFoundException", function(){
-						var dirPath = "bddtests";
+						var dirPath = variables.pathPrefix & "bddtests";
 						disk.deleteDirectory( dirPath );
 
 						expect( function(){
@@ -884,8 +916,8 @@ component extends="coldbox.system.testing.BaseTestCase" {
 
 			story( "The disk can copy directories", function(){
 				beforeEach( function( currentSpec ){
-					sourcePath      = "bddtests";
-					destinationPath = "tddtests";
+					sourcePath      = variables.pathPrefix & "bddtests";
+					destinationPath = variables.pathPrefix & "tddtests";
 					disk.deleteDirectory( sourcePath );
 					disk.deleteDirectory( destinationPath );
 				} );
@@ -1012,7 +1044,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 
 				given( "an invalid source", function(){
 					then( "it should throw a cbfs.DirectoryNotFoundException", function(){
-						var dirPath = "bddtests";
+						var dirPath = variables.pathPrefix & "bddtests";
 						disk.deleteDirectory( dirPath );
 						expect( function(){
 							disk.moveDirectory( dirPath, "oldTests" );
@@ -1024,7 +1056,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 			story( "The disk can clean directories", function(){
 				given( "a valid directory", function(){
 					then( "it will clean the directory", function(){
-						var dirPath = "bddtests";
+						var dirPath = variables.pathPrefix & "bddtests";
 
 						disk.createDirectory( dirPath );
 						disk.create( dirPath & "/luis.txt", "hello mi amigo" );
@@ -1039,7 +1071,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 				} );
 				given( "an invalid directory", function(){
 					then( "it should throw a cbfs.DirectoryNotFoundException duh", function(){
-						var dirPath = "boguspath";
+						var dirPath = variables.pathPrefix & "boguspath";
 						expect( function(){
 							disk.cleanDirectory( directory = dirPath, throwOnMissing = true );
 						} ).toThrow( "cbfs.DirectoryNotFoundException" );
@@ -1049,11 +1081,11 @@ component extends="coldbox.system.testing.BaseTestCase" {
 
 			story( "The disk can get the contents of a directory", function(){
 				beforeEach( function( currentSpec ){
-					disk.deleteDirectory( "bddtests" );
+					disk.deleteDirectory( variables.pathPrefix & "bddtests" );
 				} );
 				given( "a valid directory", function(){
 					then( "it will list the directory", function(){
-						var dirPath = "bddtests";
+						var dirPath = variables.pathPrefix & "bddtests";
 
 						disk.createDirectory( dirPath );
 						disk.create( dirPath & "/luis.txt", "hello mi amigo" );
@@ -1066,7 +1098,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 				} );
 				given( "a valid directory and recurse = true", function(){
 					then( "it will list the directory recursively", function(){
-						var dirPath = "bddtests";
+						var dirPath = variables.pathPrefix & "bddtests";
 
 						disk.createDirectory( dirPath );
 						disk.create( dirPath & "/luis.txt", "hello mi amigo" );
@@ -1078,7 +1110,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 				} );
 				given( "a valid directory using allContents()", function(){
 					then( "it will list the directory recursively", function(){
-						var dirPath = "bddtests";
+						var dirPath = variables.pathPrefix & "bddtests";
 
 						disk.createDirectory( dirPath );
 						disk.create( dirPath & "/luis.txt", "hello mi amigo" );
@@ -1090,7 +1122,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 				} );
 				given( "a valid directory with type of 'file'", function(){
 					then( "it will list the directory for files only", function(){
-						var dirPath = "bddtests";
+						var dirPath = variables.pathPrefix & "bddtests";
 
 						disk.createDirectory( dirPath );
 						disk.create( dirPath & "/luis.txt", "hello mi amigo" );
@@ -1102,7 +1134,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 				} );
 				given( "a valid directory with a files() call", function(){
 					then( "it will list the directory for files only", function(){
-						var dirPath = "bddtests";
+						var dirPath = variables.pathPrefix & "bddtests";
 
 						disk.createDirectory( dirPath );
 						disk.create( dirPath & "/luis.txt", "hello mi amigo" );
@@ -1114,7 +1146,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 				} );
 				given( "a valid directory with type of 'dir'", function(){
 					then( "it will list the directory for directories only", function(){
-						var dirPath = "bddtests";
+						var dirPath = variables.pathPrefix & "bddtests";
 
 						disk.createDirectory( dirPath );
 						disk.create( dirPath & "/luis.txt", "hello mi amigo" );
@@ -1126,7 +1158,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 				} );
 				given( "a valid directory with a directories() call", function(){
 					then( "it will list the directory for directories only", function(){
-						var dirPath = "bddtests";
+						var dirPath = variables.pathPrefix & "bddtests";
 
 						disk.createDirectory( dirPath );
 						disk.create( dirPath & "/luis.txt", "hello mi amigo" );
@@ -1138,7 +1170,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 				} );
 				given( "an invalid directory", function(){
 					then( "it should throw a cbfs.DirectoryNotFoundException sdfsadfsd", function(){
-						var dirPath = "boguspath";
+						var dirPath = variables.pathPrefix & "boguspath";
 						expect( function(){
 							disk.contents( dirPath );
 						} ).toThrow( "cbfs.DirectoryNotFoundException" );
@@ -1148,11 +1180,11 @@ component extends="coldbox.system.testing.BaseTestCase" {
 
 			story( "The disk can get file information maps", function(){
 				beforeEach( function( currentSpec ){
-					disk.deleteDirectory( "bddtests" );
+					disk.deleteDirectory( variables.pathPrefix & "bddtests" );
 				} );
 				given( "a valid directory", function(){
 					then( "it can get a file map structure", function(){
-						var dirPath = "bddtests";
+						var dirPath = variables.pathPrefix & "bddtests";
 
 						disk.createDirectory( dirPath );
 						disk.create( dirPath & "/luis.txt", "hello mi amigo" );
@@ -1165,7 +1197,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 				} );
 				given( "a valid directory with recurse = true", function(){
 					then( "it can get a recursive file map structure", function(){
-						var dirPath = "bddtests";
+						var dirPath = variables.pathPrefix & "bddtests";
 
 						disk.createDirectory( dirPath );
 						disk.create( dirPath & "/luis.txt", "hello mi amigo" );
@@ -1180,11 +1212,11 @@ component extends="coldbox.system.testing.BaseTestCase" {
 
 			story( "The disk can get multiple file content maps", function(){
 				beforeEach( function( currentSpec ){
-					disk.deleteDirectory( "bddtests" );
+					disk.deleteDirectory( variables.pathPrefix & "bddtests" );
 				} );
 				given( "a valid directory", function(){
 					then( "it can get a file content map structure", function(){
-						var dirPath = "bddtests";
+						var dirPath = variables.pathPrefix & "bddtests";
 
 						disk.createDirectory( dirPath );
 						disk.create( dirPath & "/luis.txt", "hello mi amigo" );
@@ -1200,7 +1232,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 				} );
 				given( "a valid directory with recurse = true", function(){
 					then( "it can get a recursive file content map structure", function(){
-						var dirPath = "bddtests/";
+						var dirPath = variables.pathPrefix & "bddtests/";
 						disk.createDirectory( dirPath );
 						disk.create(
 							path      = dirPath & "luis.txt",
@@ -1248,7 +1280,22 @@ component extends="coldbox.system.testing.BaseTestCase" {
 	 * @disk The disk used
 	 */
 	function validateUri( required string path, required any disk ){
-		expect( disk.uri( arguments.path ) ).toInclude( arguments.path );
+		expect( disk.uri( arguments.path ) ).toInclude( disk.normalizePath( arguments.path ) );
+	}
+
+
+	/**
+	 * This method should validate the creation of a uri to a file via the "uri()" method.
+	 * This implementation is a basic in and out.
+	 *
+	 * @path The target path
+	 * @disk The disk used
+	 */
+	function validateURL( required string path, required any disk ){
+		if ( findNoCase( "RamProvider", getMetadata( disk ).name ) ) return;
+		var fileURL = disk.url( arguments.path );
+		expect( fileURL ).toInclude( disk.uri( arguments.path ) ).toInclude( "http" );
+		expect( fileRead( fileUrl ) ).toBe( disk.get( path ) );
 	}
 
 	/**
@@ -1259,7 +1306,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 	 * @disk The disk used
 	 */
 	function validateTemporaryUri( required string path, required any disk ){
-		expect( disk.temporaryUri( arguments.path ) ).toInclude( arguments.path );
+		expect( disk.temporaryUri( arguments.path ) ).toInclude( disk.normalizePath( arguments.path ) );
 	}
 
 	/**

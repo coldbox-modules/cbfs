@@ -13,7 +13,8 @@
         },
         "webroot":"test-harness",
         "aliases":{
-            "/moduleroot/cbfs":"../"
+            "/moduleroot/cbfs":"../",
+            "/root":"./test-harness"
         }
     },
     "openBrowser":"false",
@@ -22,8 +23,5 @@
     },
     "scripts":{
         "onServerInstall":"cfpm install zip,debugger"
-    },
-    "JVM":{
-        "javaVersion":"openjdk11"
     }
 }

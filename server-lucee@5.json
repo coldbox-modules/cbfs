@@ -13,14 +13,12 @@
         },
         "webroot":"test-harness",
         "aliases":{
-            "/moduleroot/cbfs":"./"
+            "/moduleroot/cbfs":"./",
+            "/root":"./test-harness"
         }
     },
     "openBrowser":"false",
     "cfconfig":{
         "file":".cfconfig.json"
-    },
-    "JVM":{
-        "javaVersion":"openjdk11"
     }
 }

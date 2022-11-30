@@ -14,4 +14,47 @@
 		// writeDump( var = prc.localDisk.getProperties(), label = "Local" );
 	}
 
+	function testUpload( event, rc, prc ){
+		if ( event.getHTTPMethod() == "POST" ) {
+			cbfs()
+				.getDisks()
+				.keyArray()
+				.each( function( disk ){
+					var activeDisk    = cbfs().get( disk );
+					var fileExtension = activeDisk.extension(
+						getPageContext()
+							.formScope()
+							.getUploadResource( "uploadField" )
+							.getName()
+					);
+					// test direct upload
+					activeDisk.upload( "uploadField", createUUID() );
+					// test with custom file name
+					var overwriteDirectory = createUUID();
+					activeDisk.upload(
+						"uploadField",
+						overwriteDirectory,
+						"myFile.#fileExtension#"
+					);
+					// test with overwrite
+					activeDisk.upload(
+						"uploadField",
+						overwriteDirectory,
+						"myFile.#fileExtension#",
+						true
+					);
+					// test the error handling
+					try {
+						activeDisk.upload(
+							"uploadField",
+							overwriteDirectory,
+							"myFile.#fileExtension#",
+							false
+						);
+					} catch ( cbfs.FileOverrideException e ) {
+					}
+				} );
+		}
+	}
+
 }

@@ -13,7 +13,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	property name="wirebox" inject="wirebox";
 
 	// static lookups
-	variables.defaults    = { path : "", autoExpand : false };
+	variables.defaults    = { path : "", autoExpand : false, visibility : "public" };
 	// Java Helpers
 	// @see https://docs.oracle.com/javase/8/docs/api/java/nio/file/Paths.html#get-java.lang.String-java.lang.String...-
 	// @see https://docs.oracle.com/javase/8/docs/api/java/nio/file/Files.html
@@ -100,7 +100,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	function create(
 		required path,
 		required contents,
-		string visibility = "public",
+		string visibility = variables.properties.visibility,
 		struct metadata   = {},
 		boolean overwrite = true,
 		string mode
@@ -127,12 +127,16 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 			ensureDirectoryExists( containerDirectory );
 		}
 
-		// Write it
-		variables.jFiles.write(
-			buildJavaDiskPath( arguments.path ),
-			arguments.contents.getBytes(),
-			[]
-		);
+		// Use native method if binary, as it's less verbose than creating an input stream and getting the bytes
+		if ( isBinary( arguments.contents ) ) {
+			fileWrite( arguments.path, arguments.contents );
+		} else {
+			variables.jFiles.write(
+				buildJavaDiskPath( arguments.path ),
+				arguments.contents.getBytes(),
+				[]
+			);
+		}
 
 		// Set visibility or mode
 		if ( isWindows() ) {
@@ -140,6 +144,63 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		} else {
 			fileSetAccessMode( arguments.path, arguments.mode );
 		}
+
+		return this;
+	}
+
+	/**
+	 * Uploads a file in to the disk
+	 *
+	 * @fieldName The file field name
+	 * @directory the directory on disk to upload to
+	 * @fileName  optional file name on the disk
+	 * @overwrite whether to overwrite ( defaults to false )
+	 * @overload  We can overload the default because we can go directly to the disk with the file
+	 */
+	function upload(
+		required fieldName,
+		required directory,
+		string fileName,
+		string overwrite = false
+	){
+		if ( !isNull( arguments.fileName ) ) {
+			// if we have a file name specified we need to perform this in two steps
+
+			var filePath = arguments.directory & "/" & arguments.fileName;
+
+			// Overwrite checks for destination
+			if ( !arguments.overwrite && exists( filePath ) ) {
+				throw(
+					type    = "cbfs.FileOverrideException",
+					message = "Cannot upload file. Destination already exists [#filePath#] and overwrite is false"
+				);
+			}
+
+			var tmpDirectory = getTempDirectory();
+
+			var upload = fileUpload(
+				tmpDirectory,
+				arguments.fieldName,
+				variables.properties.keyExists( "uploadMimeAccept" ) ? variables.properties.uploadMimeAccept : "*",
+				"makeunique"
+			);
+
+			var tmpFile = tmpDirectory & upload.serverFile;
+
+			var filePath = buildDiskPath( filePath );
+			createDirectory( getDirectoryFromPath( filePath ) )
+
+			fileMove( tmpFile, filePath );
+		} else {
+			// otherwise we can go directly to the directory
+			fileUpload(
+				buildDiskPath( arguments.directory ),
+				arguments.fieldName,
+				variables.properties.keyExists( "uploadMimeAccept" ) ? variables.properties.uploadMimeAccept : "*",
+				arguments.overwrite ? "overwrite" : "error"
+			);
+		}
+
 
 		return this;
 	}
@@ -360,7 +421,9 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @throws cbfs.FileNotFoundException
 	 */
 	any function get( required path ){
-		return variables.jFiles.readString( getJavaPath( ensureFileExists( arguments.path ) ) );
+		return !isBinaryFile( arguments.path )
+		 ? variables.jFiles.readString( getJavaPath( ensureFileExists( arguments.path ) ) )
+		 : fileReadBinary( buildDiskPath( ensureFileExists( arguments.path ) ) );
 	}
 
 	/**
@@ -484,7 +547,32 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		if ( missing( arguments.path ) ) {
 			throw( type = "cbfs.FileNotFoundException", message = "File [#arguments.path#] not found." );
 		}
-		return buildDiskPath( arguments.path );
+		return replace(
+			buildDiskPath( arguments.path ),
+			variables.wirebox.getInstance( "coldbox" ).getSetting( "ApplicationPath" ),
+			""
+		);
+	}
+
+	/**
+	 * Get the full url for the given file
+	 *
+	 * @path The file path to build the uri for
+	 *
+	 * @throws cbfs.FileNotFoundException
+	 */
+	string function url( required string path ){
+		var baseUrl = variables.wirebox
+			.getInstance( "coldbox:requestService" )
+			.getContext()
+			.getHTMLBaseURL();
+		return baseURL
+		& listToArray(
+			variables.properties.visibility == "public"
+			 ? uri( argumentCollection = arguments )
+			 : temporaryUri( argumentCollection = arguments ),
+			"/"
+		).toList( "/" );
 	}
 
 	/**
@@ -1284,6 +1372,23 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 			throw( type = "cbfs.FileNotFoundException", message = "File [#arguments.path#] not found." );
 		}
 		return arguments.path;
+	}
+
+	/**
+	 * Converts a CF Binary object in to its numeric bit representation
+	 *
+	 * @input the binary object to parse
+	 */
+	function binaryValues( required binary input ){
+		var byteBuffer = createObject( "java", "java.nio.ByteBuffer" ).allocate( javacast( "int", 4 ) );
+
+		byteBuffer.put(
+			arguments.input,
+			javacast( "int", 0 ),
+			javacast( "int", 4 )
+		);
+
+		return ( byteBuffer.getInt( javacast( "int", 0 ) ) );
 	}
 
 }

@@ -131,15 +131,56 @@ component accessors="true" {
 		return !this.directoryExists( arguments.path );
 	}
 
+	/**
+	 * Uploads a file in to the disk
+	 *
+	 * @fieldName The file field name
+	 * @directory the directory on disk to upload to
+	 * @fileName  optional file name on the disk
+	 * @overwrite whether to overwrite ( defaults to false )
+	 */
+	function upload(
+		required fieldName,
+		required directory,
+		string fileName,
+		string overwrite = false
+	){
+		var tmpDirectory = getTempDirectory();
+
+		var upload = fileUpload(
+			tmpDirectory,
+			arguments.fieldName,
+			variables.properties.keyExists( "uploadMimeAccept" ) ? variables.properties.uploadMimeAccept : "*",
+			"makeunique"
+		);
+
+		var tmpFile  = tmpDirectory & upload.serverFile;
+		var filePath = arguments.directory & "/" & ( arguments.fileName ?: upload.clientFile );
+
+		create(
+			path     = filePath,
+			contents = !isBinaryFile( tmpFile )
+			 ? fileRead( tmpFile )
+			 : fileReadBinary( tmpFile ),
+			overwrite = arguments.overwrite
+		);
+
+		fileDelete( tmpFile );
+
+		return this;
+	}
+
 	/************************* UTILITY METHODS *******************************/
 
 	/**
-	 * Normalize and cleanup file paths for consistency
+	 * Normalize and cleanup file paths for consistency and remove leading slashes
 	 *
 	 * @path The path to clean
 	 */
 	function normalizePath( path ){
-		return replace( arguments.path, "\", "/", "all" ).reReplace( "\/$", "" );
+		return listToArray(
+			replace( arguments.path, "\", "/", "all" ).replace( "//", "/", "all" ).reReplace( "\/$", "" )
+		).toList( "/" );
 	}
 
 	/**
@@ -168,6 +209,11 @@ component accessors="true" {
 	 */
 	function getMimeType( required path ){
 		return variables.javaUrlConnection.guessContentTypeFromName( arguments.path );
+	}
+
+	boolean function isBinaryFile( target ){
+		var type = getMimeType( arguments.target ) ?: "binary";
+		return type.listFirst( "/" ).findnocase( "text" ) ? false : true;
 	}
 
 }
