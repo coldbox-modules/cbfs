@@ -12,8 +12,17 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	// DI
 	property name="wirebox" inject="wirebox";
 
-	// static lookups
-	variables.defaults    = { path : "", autoExpand : false, visibility : "public" };
+	// Default disk properties
+	variables.defaults = {
+		// The root path for the disk
+		path             : "",
+		// Auto expand the location
+		autoExpand       : false,
+		// Default visibility for files
+		visibility       : "public",
+		// Upload mime types to accept
+		uploadMimeAccept : "*"
+	};
 	// Java Helpers
 	// @see https://docs.oracle.com/javase/8/docs/api/java/nio/file/Paths.html#get-java.lang.String-java.lang.String...-
 	// @see https://docs.oracle.com/javase/8/docs/api/java/nio/file/Files.html
@@ -181,22 +190,29 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 			var upload = fileUpload(
 				tmpDirectory,
 				arguments.fieldName,
-				variables.properties.keyExists( "uploadMimeAccept" ) ? variables.properties.uploadMimeAccept : "*",
+				variables.properties.uploadMimeAccept,
 				"makeunique"
 			);
 
-			var tmpFile = tmpDirectory & upload.serverFile;
-
 			var filePath = buildDiskPath( filePath );
-			createDirectory( getDirectoryFromPath( filePath ) )
-
-			fileMove( tmpFile, filePath );
+			ensureDirectoryExists( getDirectoryFromPath( filePath ) );
+			variables.jFiles.move(
+				// Source
+				getJavaPath( tmpDirectory & upload.serverFile ),
+				// Destination
+				getJavaPath( filePath ),
+				// Options: Atomic move for speed
+				[
+					variables.jCopyOption.REPLACE_EXISTING,
+					variables.jCopyOption.ATOMIC_MOVE
+				]
+			);
 		} else {
 			// otherwise we can go directly to the directory
 			fileUpload(
 				buildDiskPath( arguments.directory ),
 				arguments.fieldName,
-				variables.properties.keyExists( "uploadMimeAccept" ) ? variables.properties.uploadMimeAccept : "*",
+				variables.properties.uploadMimeAccept,
 				arguments.overwrite ? "overwrite" : "error"
 			);
 		}
