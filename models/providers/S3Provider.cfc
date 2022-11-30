@@ -70,6 +70,9 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 
 		setName( arguments.name );
 		setProperties( arguments.properties );
+
+		intercept.announce( "cbfsOnDiskStart", { "disk" : this } );
+
 		return this;
 	}
 
@@ -78,6 +81,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * as you see fit to gracefully shutdown connections, sockets, etc.
 	 */
 	function shutdown(){
+		intercept.announce( "cbfsOnDiskShutdown", { "disk" : this } );
 		return this;
 	}
 
@@ -127,6 +131,8 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		);
 
 		evictFromCache( arguments.path );
+
+		intercept.announce( "cbfsOnFileCreate", { "path" : arguments.path, "disk" : this } );
 
 		return this;
 	}
@@ -316,6 +322,8 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 
 		evictFromCache( buildPath( arguments.destination ) );
 
+		intercept.announce( "cbfsOnFileCopy", { "source" : arguments.source, "destination" : arguments.destination, "disk" : this } );
+
 		return this;
 	}
 
@@ -357,6 +365,8 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		);
 
 		evictFromCache( [ arguments.source, arguments.destination ] );
+
+		intercept.announce( "cbfsOnFileMove", { "source" : arguments.source, "destination" : arguments.destination, "disk" : this } );
 
 		return delete( arguments.source );
 	}
@@ -549,7 +559,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	/**
 	 * Deletes a file
 	 *
-	 * @path          
+	 * @path
 	 * @throwOnMissing When true an error will be thrown if the file does not exist
 	 */
 	boolean function delete( required any path, boolean throwOnMissing = false ){
@@ -557,18 +567,20 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 			arguments.path = buildPath( arguments.path );
 			variables.s3.deleteObject( bucketName = variables.properties.bucketName, uri = arguments.path );
 			evictFromCache( arguments.path );
-			return true;
 		} else if ( this.directoryExists( arguments.path ) ) {
 			arguments.path = buildDirectoryPath( arguments.path );
 			variables.s3.deleteObject( bucketName = variables.properties.bucketName, uri = arguments.path );
 			evictFromCache( arguments.path );
-			return true;
 		} else {
 			if ( throwOnMissing ) {
 				throwFileNotFoundException( arguments.path );
 			}
 			return false;
 		}
+
+		intercept.announce( "cbfsOnFileDelete", { "path" : normalizePath( arguments.path ), "disk" : this } );
+
+		return true;
 	}
 
 	/**
@@ -613,6 +625,8 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 			"canWrite"     : findNoCase( "-write", acl ) && acl == "private",
 			"isHidden"     : acl == "private"
 		};
+
+		intercept.announce( "cbfsOnFileInfoRequest", info );
 
 		return info;
 	}
@@ -818,6 +832,10 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		arguments.directory = buildDirectoryPath( arguments.directory );
 
 		variables.s3.putObjectFolder( bucketName = variables.properties.bucketName, uri = arguments.directory );
+
+		intercept.announce( "cbfsOnDirectoryCreate", { "directory" : arguments.directory, "disk" : this } );
+
+		return this;
 	}
 
 	/**
@@ -871,6 +889,10 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 			evictFromCache( destinationPath );
 		} );
 		evictFromCache( sourcePath );
+
+		intercept.announce( "cbfsOnDirectoryCopy", { "source" : arguments.source, "destination" : arguments.destination, "disk" : this } );
+
+		return this;
 	};
 
 	/**
@@ -883,19 +905,23 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @return S3Provider
 	 */
 	function moveDirectory(
-		required oldPath,
-		required newPath,
+		required source,
+		required destination,
 		boolean createPath = true
 	){
 		copyDirectory(
-			source      = arguments.oldPath,
-			destination = arguments.newPath,
+			source      = arguments.source,
+			destination = arguments.destination,
 			recurse     = true
 		);
 
-		deleteDirectory( oldPath );
+		deleteDirectory( source );
 
-		evictFromCache( [ oldPath, newPath ] );
+		evictFromCache( [ source, destination ] );
+
+		intercept.announce( "cbfsOnDirectoryMove", { "source" : arguments.source, "destination" : arguments.destination, "disk" : this } );
+
+		return this;
 	}
 
 	/**
@@ -954,6 +980,8 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		delete( path = arguments.directory, throwOnMissing = arguments.throwOnMissing );
 
 		evictFromCache( arguments.directory );
+
+		intercept.announce( "cbfsOnDirectoryDelete", { "directory" : arguments.directory, "disk" : this } );
 
 		return !foundDirectory ? true : false;
 	}

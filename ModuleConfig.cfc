@@ -43,6 +43,23 @@ component {
 		};
 		// Setup the defaults
 		settings = structCopy( variables.DEFAULTS );
+
+		interceptorSettings = {
+			customInterceptionPoints : [
+				"cbfsOnDiskStart",
+				"cfsOnDiskShutdown",
+				"cbfsOnFileCreate",
+				"cbfsOnFileMove",
+				"cbfsOnFileCopy",
+				"cbfsOnFileDelete",
+				"cbfsOnFileInfoRequest",
+				"cbfsOnFileMove",
+				"cbfsOnDirectoryMove",
+				"cbfsOnDirectoryCreate",
+				"cbfsOnDirectoryCopy",
+				"cbfsOnDirectoryDelete"
+			]
+		};
 		// Register custom DSL
 		wirebox.registerDSL( "cbfs", "#moduleMapping#.dsl.cbfsDSL" );
 	}

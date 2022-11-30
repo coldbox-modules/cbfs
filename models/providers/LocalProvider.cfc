@@ -78,6 +78,9 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		}
 
 		variables.started = true;
+
+		intercept.announce( "cbfsOnDiskStart", { "disk" : this } );
+
 		return this;
 	}
 
@@ -89,6 +92,9 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 */
 	any function shutdown(){
 		variables.started = false;
+
+		intercept.announce( "cbfsOnDiskShutdown", { "disk" : this } );
+
 		return this;
 	}
 
@@ -114,6 +120,8 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		boolean overwrite = true,
 		string mode
 	){
+
+		arguments.path = normalizePath( arguments.path );
 		// Verify the path
 		if ( !arguments.overwrite && exists( arguments.path ) ) {
 			throw(
@@ -128,20 +136,20 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		}
 
 		// Normalize and build the path on disk
-		arguments.path = buildDiskPath( arguments.path );
+		var diskPath = buildDiskPath( arguments.path );
 
 		// Make sure if we pass a nested file, that the sub-directories get created
-		var containerDirectory = getDirectoryFromPath( arguments.path );
+		var containerDirectory = getDirectoryFromPath( diskPath );
 		if ( containerDirectory != variables.properties.path ) {
 			ensureDirectoryExists( containerDirectory );
 		}
 
 		// Use native method if binary, as it's less verbose than creating an input stream and getting the bytes
 		if ( isBinary( arguments.contents ) ) {
-			fileWrite( arguments.path, arguments.contents );
+			fileWrite( diskPath, arguments.contents );
 		} else {
 			variables.jFiles.write(
-				buildJavaDiskPath( arguments.path ),
+				buildJavaDiskPath( diskPath ),
 				arguments.contents.getBytes(),
 				[]
 			);
@@ -149,10 +157,12 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 
 		// Set visibility or mode
 		if ( isWindows() ) {
-			fileSetAttribute( arguments.path, variables.VISIBILITY_ATTRIBUTE[ arguments.visibility ] );
+			fileSetAttribute( diskPath, variables.VISIBILITY_ATTRIBUTE[ arguments.visibility ] );
 		} else {
-			fileSetAccessMode( arguments.path, arguments.mode );
+			fileSetAccessMode( diskPath, arguments.mode );
 		}
+
+		intercept.announce( "cbfsOnFileCreate", { "path" : arguments.path, "disk" : this } );
 
 		return this;
 	}
@@ -194,27 +204,31 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 				"makeunique"
 			);
 
-			var filePath = buildDiskPath( filePath );
-			ensureDirectoryExists( getDirectoryFromPath( filePath ) );
+			var diskPath = buildDiskPath( filePath );
+			ensureDirectoryExists( getDirectoryFromPath( diskPath ) );
 			variables.jFiles.move(
 				// Source
 				getJavaPath( tmpDirectory & upload.serverFile ),
 				// Destination
-				getJavaPath( filePath ),
+				getJavaPath( diskPath ),
 				// Options: Atomic move for speed
 				[
 					variables.jCopyOption.REPLACE_EXISTING,
 					variables.jCopyOption.ATOMIC_MOVE
 				]
 			);
+			intercept.announce( "cbfsOnFileCreate", { "path" : filePath, "disk" : this } );
 		} else {
 			// otherwise we can go directly to the directory
-			fileUpload(
-				buildDiskPath( arguments.directory ),
-				arguments.fieldName,
-				variables.properties.uploadMimeAccept,
-				arguments.overwrite ? "overwrite" : "error"
-			);
+			var upload = fileUpload(
+							buildDiskPath( arguments.directory ),
+							arguments.fieldName,
+							variables.properties.uploadMimeAccept,
+							arguments.overwrite ? "overwrite" : "error"
+						);
+			var filePath = arguments.directory & "/" & upload.serverFile;
+
+			intercept.announce( "cbfsOnFileCreate", { "path" : filePath, "disk" : this } );
 		}
 
 
@@ -381,6 +395,8 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 			]
 		);
 
+		intercept.announce( "cbfsOnFileCopy", { "source" : arguments.source, "destination" : arguments.destination, "disk" : this } );
+
 		return this;
 	}
 
@@ -425,6 +441,9 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 				variables.jCopyOption.ATOMIC_MOVE
 			]
 		);
+
+		intercept.announce( "cbfsOnFileMove", { "source" : arguments.source, "destination" : arguments.destination, "disk" : this } );
+
 	}
 
 	/**
@@ -491,6 +510,8 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 			return false;
 		}
 		variables.jFiles.delete( buildJavaDiskPath( arguments.path ) );
+
+		intercept.announce( "cbfsOnFileDelete", { "path" : normalizePath( arguments.path ), "disk" : this } );
 
 		return true;
 	}
@@ -670,7 +691,10 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 			throw( type = "cbfs.FileNotFoundException", message = "File [#arguments.path#] not found." );
 		}
 		var fileInfo           = getFileInfo( buildDiskPath( arguments.path ) );
-		fileInfo[ "diskPath" ] = arguments.path;
+		fileInfo[ "diskPath" ] = normalizePath( arguments.path );
+
+		intercept.announce( "cbfsOnFileInfoRequest", fileInfo );
+
 		return fileInfo;
 	}
 
@@ -703,7 +727,10 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 					return arguments.value.toString();
 			}
 		} );
-		infoMap[ "diskPath" ] = arguments.path;
+		infoMap[ "diskPath" ] = normalizePath( arguments.path );
+
+		intercept.announce( "cbfsOnFileInfoRequest", infoMap );
+
 		return infoMap;
 	}
 
@@ -867,6 +894,9 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 			);
 		}
 		ensureDirectoryExists( buildJavaDiskPath( arguments.directory ) );
+
+		intercept.announce( "cbfsOnDirectoryCreate", { "directory" : arguments.directory, "disk" : this } );
+
 		return this;
 	};
 
@@ -910,6 +940,8 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 			isNull( arguments.filter ) ? "" : arguments.filter
 		);
 
+		intercept.announce( "cbfsOnDirectoryCopy", { "source" : arguments.source, "destination" : arguments.destination, "disk" : this } );
+
 		return this;
 	}
 
@@ -947,6 +979,8 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 				variables.jCopyOption.ATOMIC_MOVE
 			]
 		);
+
+		intercept.announce( "cbfsOnDirectoryMove", { "source" : arguments.source, "destination" : arguments.destination, "disk" : this } );
 
 		return this;
 	};
@@ -998,6 +1032,8 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 					[ "java.nio.file.FileVisitor" ]
 				) // visitor
 			);
+
+			intercept.announce( "cbfsOnDirectoryDelete", { "directory" : arguments.directory, "disk" : this } );
 
 			return !this.directoryExists( arguments.directory );
 		}

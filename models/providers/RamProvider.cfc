@@ -33,6 +33,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		variables.properties  = arguments.properties;
 		variables.started     = true;
 		variables.fileStorage = {};
+		intercept.announce( "cbfsOnDiskStart", { "disk" : this } );
 		return this;
 	}
 
@@ -45,6 +46,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	any function shutdown(){
 		variables.fileStorage = {};
 		variables.started     = false;
+		intercept.announce( "cbfsOnDiskShutdown", { "disk" : this } );
 		return this;
 	}
 
@@ -109,6 +111,8 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		if ( find( "/", arguments.path ) ) {
 			createDirectory( getDirectoryFromPath( arguments.path ) );
 		}
+
+		intercept.announce( "cbfsOnFileCreate", { "path" : arguments.path, "disk" : this } );
 
 		return this;
 	}
@@ -239,11 +243,15 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		required destination,
 		boolean overwrite = true
 	){
-		return create(
+		create(
 			path      = arguments.destination,
 			contents  = get( arguments.source ),
 			overwrite = arguments.overwrite
 		);
+
+		intercept.announce( "cbfsOnFileCopy", { "source" : arguments.source, "destination" : arguments.destination, "disk" : this } );
+
+		return this;
 	}
 
 	/**
@@ -266,7 +274,11 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 			contents  = get( arguments.source ),
 			overwrite = arguments.overwrite
 		);
-		return delete( arguments.source );
+		delete( arguments.source );
+
+		intercept.announce( "cbfsOnFileMove", { "source" : arguments.source, "destination" : arguments.destination, "disk" : this } );
+
+		return this;
 	}
 
 	/**
@@ -338,6 +350,9 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 			return false;
 		}
 		variables.fileStorage.delete( arguments.path );
+
+		intercept.announce( "cbfsOnFileDelete", { "path" : normalizePath( arguments.path ), "disk" : this } );
+
 		return true;
 	}
 
@@ -628,6 +643,9 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 			"mode"         : "777",
 			"symbolicLink" : false
 		};
+
+		intercept.announce( "cbfsOnDirectoryCreate", { "directory" : arguments.directory, "disk" : this } );
+
 		return this;
 	}
 
@@ -708,6 +726,8 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 				variables.fileStorage[ newKey ].path = newKey;
 			} );
 
+			intercept.announce( "cbfsOnDirectoryCopy", { "source" : arguments.source, "destination" : arguments.destination, "disk" : this } );
+
 		return this;
 	}
 
@@ -760,6 +780,8 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 				variables.fileStorage.delete( arguments.oldItemPath );
 			} );
 
+		intercept.announce( "cbfsOnDirectoryMove", { "source" : arguments.source, "destination" : arguments.destination, "disk" : this } );
+
 		return this;
 	}
 
@@ -802,12 +824,13 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 				.each( function( filePath ){
 					variables.fileStorage.delete( arguments.filepath );
 				} );
-
+				intercept.announce( "cbfsOnDirectoryDelete", { "directory" : arguments.directory, "disk" : this } );
 			return isNull( aDeleted ) ? true : aDeleted.len() > 0 ? true : false;
 		} else {
 			files( arguments.directory ).each( function( file ){
 				delete( file );
 			} );
+			intercept.announce( "cbfsOnDirectoryDelete", { "directory" : arguments.directory, "disk" : this } );
 			return !this.directoryExists( arguments.directory );
 		}
 	}
