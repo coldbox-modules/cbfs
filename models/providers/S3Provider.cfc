@@ -70,6 +70,9 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 
 		setName( arguments.name );
 		setProperties( arguments.properties );
+
+		intercept.announce( "cbfsOnDiskStart", { "disk" : this } );
+
 		return this;
 	}
 
@@ -78,6 +81,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * as you see fit to gracefully shutdown connections, sockets, etc.
 	 */
 	function shutdown(){
+		intercept.announce( "cbfsOnDiskShutdown", { "disk" : this } );
 		return this;
 	}
 
@@ -127,6 +131,9 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		);
 
 		evictFromCache( arguments.path );
+
+		arguments[ "disk" ] = this;
+		intercept.announce( "cbfsOnFileCreate", arguments );
 
 		return this;
 	}
@@ -316,6 +323,15 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 
 		evictFromCache( buildPath( arguments.destination ) );
 
+		intercept.announce(
+			"cbfsOnFileCopy",
+			{
+				"source"      : arguments.source,
+				"destination" : arguments.destination,
+				"disk"        : this
+			}
+		);
+
 		return this;
 	}
 
@@ -357,6 +373,15 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		);
 
 		evictFromCache( [ arguments.source, arguments.destination ] );
+
+		intercept.announce(
+			"cbfsOnFileMove",
+			{
+				"source"      : arguments.source,
+				"destination" : arguments.destination,
+				"disk"        : this
+			}
+		);
 
 		return delete( arguments.source );
 	}
@@ -400,20 +425,8 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 			return fileContents;
 		} else {
 			return !isBinaryFile( arguments.path )
-			 ? fileRead(
-				variables.s3.getAuthenticatedURL(
-					bucketName   = variables.properties.bucketName,
-					uri          = arguments.path,
-					minutesValid = 1
-				)
-			)
-			 : fileReadBinary(
-				variables.s3.getAuthenticatedURL(
-					bucketName   = variables.properties.bucketName,
-					uri          = arguments.path,
-					minutesValid = 1
-				)
-			);
+			 ? fileRead( url( arguments.path ) )
+			 : fileReadBinary( url( arguments.path ) );
 		}
 	}
 
@@ -557,18 +570,20 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 			arguments.path = buildPath( arguments.path );
 			variables.s3.deleteObject( bucketName = variables.properties.bucketName, uri = arguments.path );
 			evictFromCache( arguments.path );
-			return true;
 		} else if ( this.directoryExists( arguments.path ) ) {
 			arguments.path = buildDirectoryPath( arguments.path );
 			variables.s3.deleteObject( bucketName = variables.properties.bucketName, uri = arguments.path );
 			evictFromCache( arguments.path );
-			return true;
 		} else {
 			if ( throwOnMissing ) {
 				throwFileNotFoundException( arguments.path );
 			}
 			return false;
 		}
+
+		intercept.announce( "cbfsOnFileDelete", { "path" : normalizePath( arguments.path ), "disk" : this } );
+
+		return true;
 	}
 
 	/**
@@ -613,6 +628,8 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 			"canWrite"     : findNoCase( "-write", acl ) && acl == "private",
 			"isHidden"     : acl == "private"
 		};
+
+		intercept.announce( "cbfsOnFileInfoRequest", info );
 
 		return info;
 	}
@@ -737,11 +754,21 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 				var acl = variables.s3.ACL_PRIVATE;
 			}
 		}
-		return variables.s3.setAccessControlPolicy(
-			bucketName = variables.properties.bucketName,
-			uri        = buildPath( arguments.path ),
-			acl        = acl
-		);
+
+		// S3Mock and some other providers do not support modifying the ACL
+		try {
+			variables.s3.setAccessControlPolicy(
+				bucketName = variables.properties.bucketName,
+				uri        = buildPath( arguments.path ),
+				acl        = acl
+			);
+		} catch ( any e ) {
+			if ( !findNoCase( "400 Bad Request", e.message ) ) {
+				rethrow;
+			}
+		}
+
+		return this;
 	}
 
 	/**************************************** STREAM METHODS ****************************************/
@@ -818,6 +845,10 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		arguments.directory = buildDirectoryPath( arguments.directory );
 
 		variables.s3.putObjectFolder( bucketName = variables.properties.bucketName, uri = arguments.directory );
+
+		intercept.announce( "cbfsOnDirectoryCreate", { "directory" : arguments.directory, "disk" : this } );
+
+		return this;
 	}
 
 	/**
@@ -871,6 +902,17 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 			evictFromCache( destinationPath );
 		} );
 		evictFromCache( sourcePath );
+
+		intercept.announce(
+			"cbfsOnDirectoryCopy",
+			{
+				"source"      : arguments.source,
+				"destination" : arguments.destination,
+				"disk"        : this
+			}
+		);
+
+		return this;
 	};
 
 	/**
@@ -883,19 +925,30 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @return S3Provider
 	 */
 	function moveDirectory(
-		required oldPath,
-		required newPath,
+		required source,
+		required destination,
 		boolean createPath = true
 	){
 		copyDirectory(
-			source      = arguments.oldPath,
-			destination = arguments.newPath,
+			source      = arguments.source,
+			destination = arguments.destination,
 			recurse     = true
 		);
 
-		deleteDirectory( oldPath );
+		deleteDirectory( source );
 
-		evictFromCache( [ oldPath, newPath ] );
+		evictFromCache( [ source, destination ] );
+
+		intercept.announce(
+			"cbfsOnDirectoryMove",
+			{
+				"source"      : arguments.source,
+				"destination" : arguments.destination,
+				"disk"        : this
+			}
+		);
+
+		return this;
 	}
 
 	/**
@@ -954,6 +1007,8 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		delete( path = arguments.directory, throwOnMissing = arguments.throwOnMissing );
 
 		evictFromCache( arguments.directory );
+
+		intercept.announce( "cbfsOnDirectoryDelete", { "directory" : arguments.directory, "disk" : this } );
 
 		return !foundDirectory ? true : false;
 	}

@@ -38,6 +38,7 @@ component accessors="true" {
 	 */
 	property name="streamBuilder" inject="StreamBuilder@cbstreams";
 	property name="log"           inject="logbox:logger:{this}";
+	property name="intercept"     inject="coldbox:InterceptorService";
 
 	/**
 	 * --------------------------------------------------------------------------

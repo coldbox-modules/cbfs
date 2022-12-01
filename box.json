@@ -50,6 +50,7 @@
         "format":"cfformat run models,test-harness/**/*.cfc,ModuleConfig.cfc --overwrite",
         "format:watch":"cfformat watch models,test-harness/**/*.cfc,ModuleConfig.cfc ./.cfformat.json",
         "format:check":"cfformat check models,test-harness/**/*.cfc,ModuleConfig.cfc",
-        "install:dependencies":"install --force && cd test-harness && install --force"
+        "install:dependencies":"install --force && cd test-harness && install --force",
+		"start:S3Mock" : "!docker run --rm -d --name cbfs-s3-mock -p 9090:9090 -p 9191:9191 -e initialBuckets=cbfs-test -t adobe/s3mock"
     }
 }

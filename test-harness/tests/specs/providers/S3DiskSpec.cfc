@@ -3,7 +3,12 @@ component extends="cbfs.models.testing.AbstractDiskSpec" {
 	// The target provider name to test
 	variables.providerName = "S3";
 	// The concrete test must activate these in order for the tests to execute according to their disk features
-	variables.testFeatures = { symbolicLink : false };
+	variables.publicDomain = createObject( "java", "java.lang.System" ).getEnv( "AWS_S3_PUBLIC_DOMAIN" );
+
+	variables.testFeatures = {
+		symbolicLink : false,
+		chmod        : isNull( publicDomain ) || !findNoCase( ":9090", publicDomain )
+	};
 
 	// Path prefix for handling concurrency during workflow engine tests
 	variables.pathPrefix = createUUID() & "/";

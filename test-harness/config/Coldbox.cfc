@@ -41,6 +41,7 @@
 						"properties" : {
 							"visibility"        : "public", // can be 'public' or 'private'
 							"path"              : "",
+							"ssl"               : getSystemSetting( "AWS_S3_SSL", true ),
 							"accessKey"         : getSystemSetting( "AWS_S3_ACCESS_KEY", "" ),
 							"secretKey"         : getSystemSetting( "AWS_S3_SECRET_KEY", "" ),
 							"awsDomain"         : getSystemSetting( "AWS_S3_DOMAIN", "amazonaws.com" ),
@@ -55,6 +56,10 @@
 				}
 			}
 		};
+
+		if ( len( getSystemSetting( "AWS_S3_PUBLIC_DOMAIN", "" ) ) ) {
+			moduleSettings.cbfs.disks.S3.properties[ "publicDomain" ] = getSystemSetting( "AWS_S3_PUBLIC_DOMAIN" );
+		}
 
 		// environment settings, create a detectEnvironment() method to detect it yourself.
 		// create a function with the name of the environment so it can be executed if that environment is detected
