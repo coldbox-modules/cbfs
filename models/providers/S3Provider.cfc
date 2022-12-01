@@ -323,7 +323,14 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 
 		evictFromCache( buildPath( arguments.destination ) );
 
-		intercept.announce( "cbfsOnFileCopy", { "source" : arguments.source, "destination" : arguments.destination, "disk" : this } );
+		intercept.announce(
+			"cbfsOnFileCopy",
+			{
+				"source"      : arguments.source,
+				"destination" : arguments.destination,
+				"disk"        : this
+			}
+		);
 
 		return this;
 	}
@@ -367,7 +374,14 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 
 		evictFromCache( [ arguments.source, arguments.destination ] );
 
-		intercept.announce( "cbfsOnFileMove", { "source" : arguments.source, "destination" : arguments.destination, "disk" : this } );
+		intercept.announce(
+			"cbfsOnFileMove",
+			{
+				"source"      : arguments.source,
+				"destination" : arguments.destination,
+				"disk"        : this
+			}
+		);
 
 		return delete( arguments.source );
 	}
@@ -552,7 +566,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	/**
 	 * Deletes a file
 	 *
-	 * @path
+	 * @path          
 	 * @throwOnMissing When true an error will be thrown if the file does not exist
 	 */
 	boolean function delete( required any path, boolean throwOnMissing = false ){
@@ -893,7 +907,14 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		} );
 		evictFromCache( sourcePath );
 
-		intercept.announce( "cbfsOnDirectoryCopy", { "source" : arguments.source, "destination" : arguments.destination, "disk" : this } );
+		intercept.announce(
+			"cbfsOnDirectoryCopy",
+			{
+				"source"      : arguments.source,
+				"destination" : arguments.destination,
+				"disk"        : this
+			}
+		);
 
 		return this;
 	};
@@ -922,7 +943,14 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 
 		evictFromCache( [ source, destination ] );
 
-		intercept.announce( "cbfsOnDirectoryMove", { "source" : arguments.source, "destination" : arguments.destination, "disk" : this } );
+		intercept.announce(
+			"cbfsOnDirectoryMove",
+			{
+				"source"      : arguments.source,
+				"destination" : arguments.destination,
+				"disk"        : this
+			}
+		);
 
 		return this;
 	}

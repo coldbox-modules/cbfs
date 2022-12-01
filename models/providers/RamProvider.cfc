@@ -250,7 +250,14 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 			overwrite = arguments.overwrite
 		);
 
-		intercept.announce( "cbfsOnFileCopy", { "source" : arguments.source, "destination" : arguments.destination, "disk" : this } );
+		intercept.announce(
+			"cbfsOnFileCopy",
+			{
+				"source"      : arguments.source,
+				"destination" : arguments.destination,
+				"disk"        : this
+			}
+		);
 
 		return this;
 	}
@@ -277,7 +284,14 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		);
 		delete( arguments.source );
 
-		intercept.announce( "cbfsOnFileMove", { "source" : arguments.source, "destination" : arguments.destination, "disk" : this } );
+		intercept.announce(
+			"cbfsOnFileMove",
+			{
+				"source"      : arguments.source,
+				"destination" : arguments.destination,
+				"disk"        : this
+			}
+		);
 
 		return this;
 	}
@@ -727,7 +741,14 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 				variables.fileStorage[ newKey ].path = newKey;
 			} );
 
-			intercept.announce( "cbfsOnDirectoryCopy", { "source" : arguments.source, "destination" : arguments.destination, "disk" : this } );
+		intercept.announce(
+			"cbfsOnDirectoryCopy",
+			{
+				"source"      : arguments.source,
+				"destination" : arguments.destination,
+				"disk"        : this
+			}
+		);
 
 		return this;
 	}
@@ -781,7 +802,14 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 				variables.fileStorage.delete( arguments.oldItemPath );
 			} );
 
-		intercept.announce( "cbfsOnDirectoryMove", { "source" : arguments.source, "destination" : arguments.destination, "disk" : this } );
+		intercept.announce(
+			"cbfsOnDirectoryMove",
+			{
+				"source"      : arguments.source,
+				"destination" : arguments.destination,
+				"disk"        : this
+			}
+		);
 
 		return this;
 	}
@@ -825,7 +853,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 				.each( function( filePath ){
 					variables.fileStorage.delete( arguments.filepath );
 				} );
-				intercept.announce( "cbfsOnDirectoryDelete", { "directory" : arguments.directory, "disk" : this } );
+			intercept.announce( "cbfsOnDirectoryDelete", { "directory" : arguments.directory, "disk" : this } );
 			return isNull( aDeleted ) ? true : aDeleted.len() > 0 ? true : false;
 		} else {
 			files( arguments.directory ).each( function( file ){

@@ -120,7 +120,6 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		boolean overwrite = true,
 		string mode
 	){
-
 		arguments.path = normalizePath( arguments.path );
 		// Verify the path
 		if ( !arguments.overwrite && exists( arguments.path ) ) {
@@ -222,11 +221,11 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		} else {
 			// otherwise we can go directly to the directory
 			var upload = fileUpload(
-							buildDiskPath( arguments.directory ),
-							arguments.fieldName,
-							variables.properties.uploadMimeAccept,
-							arguments.overwrite ? "overwrite" : "error"
-						);
+				buildDiskPath( arguments.directory ),
+				arguments.fieldName,
+				variables.properties.uploadMimeAccept,
+				arguments.overwrite ? "overwrite" : "error"
+			);
 			var filePath = arguments.directory & "/" & upload.serverFile;
 
 			intercept.announce( "cbfsOnFileCreate", { "path" : filePath, "disk" : this } );
@@ -396,7 +395,14 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 			]
 		);
 
-		intercept.announce( "cbfsOnFileCopy", { "source" : arguments.source, "destination" : arguments.destination, "disk" : this } );
+		intercept.announce(
+			"cbfsOnFileCopy",
+			{
+				"source"      : arguments.source,
+				"destination" : arguments.destination,
+				"disk"        : this
+			}
+		);
 
 		return this;
 	}
@@ -443,8 +449,14 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 			]
 		);
 
-		intercept.announce( "cbfsOnFileMove", { "source" : arguments.source, "destination" : arguments.destination, "disk" : this } );
-
+		intercept.announce(
+			"cbfsOnFileMove",
+			{
+				"source"      : arguments.source,
+				"destination" : arguments.destination,
+				"disk"        : this
+			}
+		);
 	}
 
 	/**
@@ -941,7 +953,14 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 			isNull( arguments.filter ) ? "" : arguments.filter
 		);
 
-		intercept.announce( "cbfsOnDirectoryCopy", { "source" : arguments.source, "destination" : arguments.destination, "disk" : this } );
+		intercept.announce(
+			"cbfsOnDirectoryCopy",
+			{
+				"source"      : arguments.source,
+				"destination" : arguments.destination,
+				"disk"        : this
+			}
+		);
 
 		return this;
 	}
@@ -981,7 +1000,14 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 			]
 		);
 
-		intercept.announce( "cbfsOnDirectoryMove", { "source" : arguments.source, "destination" : arguments.destination, "disk" : this } );
+		intercept.announce(
+			"cbfsOnDirectoryMove",
+			{
+				"source"      : arguments.source,
+				"destination" : arguments.destination,
+				"disk"        : this
+			}
+		);
 
 		return this;
 	};
