@@ -12,7 +12,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 	// The target provider name to test: Filled by concrete test clases
 	variables.providerName = "";
 	// The concrete test must activate these in order for the tests to execute according to their disk features
-	variables.testFeatures = { symbolicLink : false };
+	variables.testFeatures = { symbolicLink : false, chmod : true };
 
 	function beforeAll(){
 		// Load ColdBox
@@ -594,18 +594,22 @@ component extends="coldbox.system.testing.BaseTestCase" {
 				} );
 			} );
 
-			story( "The disk can set the permissions of a file via chmod", function(){
-				it( "can set the permissions of a file via chmod", function(){
-					var path = variables.pathPrefix & "/one/two/test_file.txt";
-					disk.create(
-						path      = path,
-						contents  = "Hello",
-						overwrite = true
-					);
-					disk.chmod( path, "777" );
-					expect( disk.isWritable( path ) ).toBeTrue();
-				} );
-			} );
+			story(
+				story: "The disk can set the permissions of a file via chmod",
+				skip : !hasFeature( "chmod" ),
+				body : function(){
+					it( "can set the permissions of a file via chmod", function(){
+						var path = variables.pathPrefix & "/one/two/test_file.txt";
+						disk.create(
+							path      = path,
+							contents  = "Hello",
+							overwrite = true
+						);
+						disk.chmod( path, "777" );
+						expect( disk.isWritable( path ) ).toBeTrue();
+					} );
+				}
+			);
 
 			story(
 				story: "The disk can create symbolic links",
@@ -668,35 +672,12 @@ component extends="coldbox.system.testing.BaseTestCase" {
 				} );
 			} );
 
-			story( "The disk can verify if a file is writable", function(){
-				it( "it returns true for a writable path", function(){
-					var path = variables.pathPrefix & "/one/two/writeable.txt";
-					disk.delete( path );
-					disk.create(
-						path       = path,
-						contents   = "my contents",
-						visibility = "public",
-						overwrite  = true
-					);
-					expect( disk.isWritable( path ) ).toBeTrue( "Path should be writable." );
-				} );
-				it( "returns false for a non-writable path", function(){
-					var path = variables.pathPrefix & "/one/two/non-writeable.txt";
-					disk.delete( path );
-					disk.create(
-						path       = path,
-						contents   = "my contents",
-						visibility = "private",
-						overwrite  = true
-					);
-					expect( disk.isWritable( path ) ).toBeFalse( "Path should not be writable." );
-				} );
-			} );
-
-			story( "The disk can verify if a file is readable", function(){
-				given( "a public file", function(){
-					it( "should returns as readable", function(){
-						var path = variables.pathPrefix & "/one/two/readable.txt";
+			story(
+				story: "The disk can verify if a file is writable",
+				skip : !hasFeature( "chmod" ),
+				body : function(){
+					it( "it returns true for a writable path", function(){
+						var path = variables.pathPrefix & "/one/two/writeable.txt";
 						disk.delete( path );
 						disk.create(
 							path       = path,
@@ -704,24 +685,9 @@ component extends="coldbox.system.testing.BaseTestCase" {
 							visibility = "public",
 							overwrite  = true
 						);
-						expect( disk.isReadable( path ) ).toBeTrue( "Path should be readable." );
+						expect( disk.isWritable( path ) ).toBeTrue( "Path should be writable." );
 					} );
-				} );
-				given( "a readonly file", function(){
-					it( "should returns as readable", function(){
-						var path = variables.pathPrefix & "/one/two/readable.txt";
-						disk.delete( path );
-						disk.create(
-							path       = path,
-							contents   = "my contents",
-							visibility = "readonly",
-							overwrite  = true
-						);
-						expect( disk.isReadable( path ) ).toBeTrue( "Path should be readable." );
-					} );
-				} );
-				given( "a private file", function(){
-					it( "should return false as readable", function(){
+					it( "returns false for a non-writable path", function(){
 						var path = variables.pathPrefix & "/one/two/non-writeable.txt";
 						disk.delete( path );
 						disk.create(
@@ -730,14 +696,60 @@ component extends="coldbox.system.testing.BaseTestCase" {
 							visibility = "private",
 							overwrite  = true
 						);
-						expect( disk.isWritable( path ) ).toBeFalse( "Path should not be readable." );
+						expect( disk.isWritable( path ) ).toBeFalse( "Path should not be writable." );
 					} );
-				} );
-			} );
+				}
+			);
+
+			story(
+				story: "The disk can verify if a file is readable",
+				skip : !hasFeature( "chmod" ),
+				body : function(){
+					given( "a public file", function(){
+						it( "should returns as readable", function(){
+							var path = variables.pathPrefix & "/one/two/readable.txt";
+							disk.delete( path );
+							disk.create(
+								path       = path,
+								contents   = "my contents",
+								visibility = "public",
+								overwrite  = true
+							);
+							expect( disk.isReadable( path ) ).toBeTrue( "Path should be readable." );
+						} );
+					} );
+					given( "a readonly file", function(){
+						it( "should returns as readable", function(){
+							var path = variables.pathPrefix & "/one/two/readable.txt";
+							disk.delete( path );
+							disk.create(
+								path       = path,
+								contents   = "my contents",
+								visibility = "readonly",
+								overwrite  = true
+							);
+							expect( disk.isReadable( path ) ).toBeTrue( "Path should be readable." );
+						} );
+					} );
+					given( "a private file", function(){
+						it( "should return false as readable", function(){
+							var path = variables.pathPrefix & "/one/two/non-writeable.txt";
+							disk.delete( path );
+							disk.create(
+								path       = path,
+								contents   = "my contents",
+								visibility = "private",
+								overwrite  = true
+							);
+							expect( disk.isWritable( path ) ).toBeFalse( "Path should not be readable." );
+						} );
+					} );
+				}
+			);
 
 			story(
 				story = "The disk can verify if a file is hidden",
-				skip  = isWindows(),
+				skip  = isWindows() || !hasFeature( "chmod" ),
 				body  = function(){
 					given( "a public file", function(){
 						it( "should returns false as hidden", function(){
@@ -1347,7 +1359,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 	}
 
 	private boolean function hasFeature( required feature ){
-		return variables.testFeatures[ arguments.feature ];
+		return !variables.testFeatures.keyExists( feature ) || variables.testFeatures[ arguments.feature ];
 	}
 
 	/**
