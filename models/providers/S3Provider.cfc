@@ -425,12 +425,8 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 			return fileContents;
 		} else {
 			return !isBinaryFile( arguments.path )
-			 ? fileRead(
-				url( arguments.path )
-			)
-			 : fileReadBinary(
-				url( arguments.path )
-			);
+			 ? fileRead( url( arguments.path ) )
+			 : fileReadBinary( url( arguments.path ) );
 		}
 	}
 
@@ -760,14 +756,14 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		}
 
 		// S3Mock and some other providers do not support modifying the ACL
-		try{
+		try {
 			variables.s3.setAccessControlPolicy(
 				bucketName = variables.properties.bucketName,
 				uri        = buildPath( arguments.path ),
 				acl        = acl
 			);
-		} catch( any e ){
-			if( !findNoCase( "400 Bad Request", e.message ) ){
+		} catch ( any e ) {
+			if ( !findNoCase( "400 Bad Request", e.message ) ) {
 				rethrow;
 			}
 		}
