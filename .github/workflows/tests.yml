@@ -6,10 +6,6 @@ on:
     secrets:
       SLACK_WEBHOOK_URL:
         required: true
-      S3SDK_AWS_ACCESS_KEY:
-        required: true
-      S3SDK_AWS_ACCESS_SECRET:
-        required: true
       S3SDK_AWS_BUCKET_NAME:
         required: true
 
@@ -44,18 +40,29 @@ jobs:
       - name: Start ${{ matrix.cfengine }} Server
         env:
           ENVIRONMENT: development
-          AWS_S3_ACCESS_KEY: ${{ secrets.S3SDK_AWS_ACCESS_KEY }}
-          AWS_S3_SECRET_KEY: ${{ secrets.S3SDK_AWS_ACCESS_SECRET }}
+          AWS_S3_DOMAIN: 127.0.0.1:9090
+          AWS_S3_SSL: "false"
+          AWS_S3_REGION:
+          AWS_S3_PUBLIC_DOMAIN: 127.0.0.1:9090/cbfs-test
           AWS_S3_BUCKET_NAME: ${{ secrets.S3SDK_AWS_BUCKET_NAME }}
         run: |
           box server start serverConfigFile="server-${{ matrix.cfengine }}.json" --noSaveSettings --debug
           curl http://127.0.0.1:60299
 
       - name: Run Tests
+        services:
+          s3Mock:
+            image: adobe/s3mock
+            ports:
+              - 9090:9090
+            env:
+              initialBuckets: ${{ secrets.S3SDK_AWS_BUCKET_NAME }}
         env:
           ENVIRONMENT: development
-          AWS_S3_ACCESS_KEY: ${{ secrets.S3SDK_AWS_ACCESS_KEY }}
-          AWS_S3_SECRET_KEY: ${{ secrets.S3SDK_AWS_ACCESS_SECRET }}
+          AWS_S3_DOMAIN: 127.0.0.1:9090
+          AWS_S3_SSL: "false"
+          AWS_S3_REGION:
+          AWS_S3_PUBLIC_DOMAIN: 127.0.0.1:9090/cbfs-test
           AWS_S3_BUCKET_NAME: ${{ secrets.S3SDK_AWS_BUCKET_NAME }}
         run: |
           mkdir -p test-harness/tests/results

@@ -20,7 +20,6 @@ component extends="cbfs.models.testing.AbstractDiskSpec" {
 			beforeEach( function( currentSpec ){
 				disk                   = getDisk();
 				variables.publicDomain = disk.getProperties()[ "publicDomain" ];
-
 			} );
 
 			afterEach( function( currentSpec ){
