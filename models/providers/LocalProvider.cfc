@@ -162,7 +162,8 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 			fileSetAccessMode( diskPath, arguments.mode );
 		}
 
-		intercept.announce( "cbfsOnFileCreate", { "path" : arguments.path, "disk" : this } );
+		arguments[ "disk" ] = this;
+		intercept.announce( "cbfsOnFileCreate", arguments );
 
 		return this;
 	}

@@ -132,7 +132,8 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 
 		evictFromCache( arguments.path );
 
-		intercept.announce( "cbfsOnFileCreate", { "path" : arguments.path, "disk" : this } );
+		arguments[ "disk" ] = this;
+		intercept.announce( "cbfsOnFileCreate", arguments );
 
 		return this;
 	}
