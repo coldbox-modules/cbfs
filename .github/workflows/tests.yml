@@ -13,6 +13,13 @@ jobs:
   tests:
     name: Tests
     runs-on: ubuntu-20.04
+    services:
+      s3Mock:
+        image: adobe/s3mock
+        ports:
+          - 9090:9090
+        env:
+          initialBuckets: ${{ secrets.S3SDK_AWS_BUCKET_NAME }}
     env:
       DB_USER: root
       DB_PASSWORD: root
@@ -50,13 +57,6 @@ jobs:
           curl http://127.0.0.1:60299
 
       - name: Run Tests
-        services:
-          s3Mock:
-            image: adobe/s3mock
-            ports:
-              - 9090:9090
-            env:
-              initialBuckets: ${{ secrets.S3SDK_AWS_BUCKET_NAME }}
         env:
           ENVIRONMENT: development
           AWS_S3_DOMAIN: 127.0.0.1:9090
