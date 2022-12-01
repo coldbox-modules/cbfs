@@ -1,14 +1,13 @@
 component extends="cbfs.models.testing.AbstractDiskSpec" {
 
-	variables.util = new coldbox.system.core.util.Util();
-
 	// The target provider name to test
 	variables.providerName = "S3";
 	// The concrete test must activate these in order for the tests to execute according to their disk features
-	variables.publicDomain = util.getSystemSetting( "AWS_S3_PUBLIC_DOMAIN", "" );
+	variables.publicDomain = createObject( "java", "java.lang.System" ).getEnv( "AWS_S3_PUBLIC_DOMAIN" );
+
 	variables.testFeatures = {
 		symbolicLink : false,
-		chmod        : !len( publicDomain ) || !findNoCase( ":9090", publicDomain )
+		chmod        :  isNull( publicDomain ) || !findNoCase( ":9090", publicDomain )
 	};
 
 	// Path prefix for handling concurrency during workflow engine tests
