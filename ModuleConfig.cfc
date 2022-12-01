@@ -47,7 +47,7 @@ component {
 		interceptorSettings = {
 			customInterceptionPoints : [
 				"cbfsOnDiskStart",
-				"cfsOnDiskShutdown",
+				"cbfsOnDiskShutdown",
 				"cbfsOnFileCreate",
 				"cbfsOnFileMove",
 				"cbfsOnFileCopy",
