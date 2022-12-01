@@ -411,18 +411,10 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		} else {
 			return !isBinaryFile( arguments.path )
 			 ? fileRead(
-				variables.s3.getAuthenticatedURL(
-					bucketName   = variables.properties.bucketName,
-					uri          = arguments.path,
-					minutesValid = 1
-				)
+				url( arguments.path )
 			)
 			 : fileReadBinary(
-				variables.s3.getAuthenticatedURL(
-					bucketName   = variables.properties.bucketName,
-					uri          = arguments.path,
-					minutesValid = 1
-				)
+				url( arguments.path )
 			);
 		}
 	}
