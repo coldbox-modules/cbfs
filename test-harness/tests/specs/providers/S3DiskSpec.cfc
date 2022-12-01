@@ -7,7 +7,7 @@ component extends="cbfs.models.testing.AbstractDiskSpec" {
 
 	variables.testFeatures = {
 		symbolicLink : false,
-		chmod        :  isNull( publicDomain ) || !findNoCase( ":9090", publicDomain )
+		chmod        : isNull( publicDomain ) || !findNoCase( ":9090", publicDomain )
 	};
 
 	// Path prefix for handling concurrency during workflow engine tests
