@@ -33,7 +33,10 @@
 				"disks" : {
 					"local" : {
 						"provider"   : "Local",
-						"properties" : { "path" : expandPath( "/root/tests/storage" ) }
+						"properties" : {
+							"path"  : expandPath( "/root/tests/storage" ),
+							diskUrl : "http://localhost:60299/tests/storage/"
+						}
 					},
 					"ram" : { "provider" : "Ram" },
 					"S3"  : {

@@ -21,7 +21,11 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		// Default visibility for files
 		visibility       : "public",
 		// Upload mime types to accept
-		uploadMimeAccept : "*"
+		uploadMimeAccept : "*",
+		// The public disk Url. This is used to create file urls and temporary urls
+		// This should point to the root path but in a web accessible format
+		// It should remain empty if the disk is not web accessible
+		diskUrl           : ""
 	};
 	// Java Helpers
 	// @see https://docs.oracle.com/javase/8/docs/api/java/nio/file/Paths.html#get-java.lang.String-java.lang.String...-
@@ -71,6 +75,13 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 
 		// Create java nio path
 		variables.properties.jPath = getJavaPath( arguments.properties.path );
+
+		// Make sure if you have a diskurl, that it ends in a slash
+		if ( len( variables.properties.diskUrl ) ) {
+			if ( !reFind( "\/$", variables.properties.diskUrl ) ) {
+				variables.properties.diskUrl &= "/";
+			}
+		}
 
 		// Verify the disk storage exists, else create it
 		if ( !directoryExists( variables.properties.path ) ) {
@@ -587,54 +598,30 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	}
 
 	/**
-	 * Get the uri for the given file
+	 * Get the URL for the given file
 	 *
-	 * @path The file path to build the uri for
-	 *
-	 * @throws cbfs.FileNotFoundException
-	 */
-	string function uri( required string path ){
-		if ( missing( arguments.path ) ) {
-			throw( type = "cbfs.FileNotFoundException", message = "File [#arguments.path#] not found." );
-		}
-		return replace(
-			buildDiskPath( arguments.path ),
-			variables.wirebox.getInstance( "coldbox" ).getSetting( "ApplicationPath" ),
-			""
-		);
-	}
-
-	/**
-	 * Get the full url for the given file
-	 *
-	 * @path The file path to build the uri for
+	 * @path The file path to build the URL with
 	 *
 	 * @throws cbfs.FileNotFoundException
 	 */
 	string function url( required string path ){
-		var baseUrl = variables.wirebox
-			.getInstance( "coldbox:requestService" )
-			.getContext()
-			.getHTMLBaseURL();
-		return baseURL
-		& listToArray(
-			variables.properties.visibility == "public"
-			 ? uri( argumentCollection = arguments )
-			 : temporaryUri( argumentCollection = arguments ),
-			"/"
-		).toList( "/" );
+		if ( missing( arguments.path ) ) {
+			throw( type = "cbfs.FileNotFoundException", message = "File [#arguments.path#] not found." );
+		}
+		return variables.properties.diskUrl & arguments.path;
 	}
 
 	/**
-	 * Get a temporary uri for the given file
+	 * Get a temporary url for the given file
 	 *
-	 * @path       The file path to build the uri for
-	 * @expiration The number of minutes this uri should be valid for. Defaults to 60 minutes
+	 * @path       The file path to build the url for
+	 * @expiration The number of minutes this url should be valid for. Defaults to 60 minutes
 	 *
 	 * @throws cbfs.FileNotFoundException
 	 */
-	string function temporaryUri( required path, numeric expiration = 60 ){
-		return uri( arguments.path ) & "?expiration=#arguments.expiration#";
+	string function temporaryUrl( required path, numeric expiration = 60 ){
+		// TODO: Build out a proxy method on the module to validate these.
+		return this.url( arguments.path ) & "?expiration=#arguments.expiration#";
 	}
 
 	/**

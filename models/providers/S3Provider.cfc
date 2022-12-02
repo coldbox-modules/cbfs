@@ -1,14 +1,27 @@
+/**
+ * Copyright Since 2005 ColdBox Framework by Luis Majano and Ortus Solutions, Corp
+ * www.ortussolutions.com
+ * ---
+ * This is a s3 protocol implementation of a cbfs disk based off the S3SDK Module: https://forgebox.io/view/s3sdk
+ *
+ * @author Luis Majano <lmajano@ortussolutions.com>, Grant Copley <gcopley@ortussolutions.com>, Jon Clausen <jclausen@ortussolutions.com>
+ */
 component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 
-	property name="name"       type="string";
-	property name="properties" type="struct";
-
-	property name="wirebox" inject="wirebox";
-
-	property name="streamBuilder" inject="StreamBuilder@cbstreams";
-	property name="templateCache" inject="cachebox:template";
-
+	/**
+	 * --------------------------------------------------------------------------
+	 * Properties
+	 * --------------------------------------------------------------------------
+	 */
 	property name="s3";
+
+	/**
+	 * --------------------------------------------------------------------------
+	 * DI
+	 * --------------------------------------------------------------------------
+	 */
+	property name="wirebox"       inject="wirebox";
+	property name="templateCache" inject="cachebox:template";
 
 	/**
 	 * Return if startup has occurred.
@@ -45,6 +58,8 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		param arguments.properties.autoMD5             = false;
 		param arguments.properties.serviceName         = "s3";
 		param arguments.properties.debug               = false;
+		param arguments.properties.visibility          = "public";
+		param arguments.properties.cacheLookups        = true;
 
 		try {
 			variables.s3 = createObject( "component", "s3sdk.models.AmazonS3" ).init(
@@ -58,15 +73,9 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 			);
 		}
 
-		if ( !arguments.properties.keyExists( "bucketName" ) ) {
-			arguments.properties.bucketName = variables.s3.getDefaultBucketName();
-		}
-
-		param arguments.properties.publicDomain = arguments.properties.bucketName & "." & variables.s3.getURLEndpointHostname();
-
-		if ( !arguments.properties.keyExists( "visibility" ) ) {
-			arguments.properties.visibility = "public";
-		}
+		// More params
+		param arguments.properties.bucketName   = variables.s3.getDefaultBucketName();
+		param arguments.properties.publicDomain = arguments.properties.bucketName & "." & variables.s3.getURLEndpoint();
 
 		setName( arguments.name );
 		setProperties( arguments.properties );
@@ -446,11 +455,17 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	/**
 	 * Validate if a file exists
 	 *
-	 * @path The file to verify
+	 * @path  The file to verify
+	 * @force If true, it will skip any caching of existence checks, defaults to false
 	 */
-	boolean function exists( required string path ){
+	boolean function exists( required string path, boolean force = false ){
 		arguments.path = buildPath( arguments.path );
-		return variables.templateCache.getOrSet( "s3fs_path_exists_#hash( arguments.path )#", () => variables.s3.objectExists( bucketName = variables.properties.bucketName, uri = path ) );
+		var fLookup    = () => variables.s3.objectExists( bucketName = variables.properties.bucketName, uri = path );
+
+		return variables.properties.cacheLookups && !arguments.force ? variables.templateCache.getOrSet(
+			"s3fs_path_exists_#hash( arguments.path )#",
+			fLookup
+		) : fLookup();
 	}
 
 	/**
@@ -478,35 +493,11 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @throws cbfs.FileNotFoundException
 	 */
 	string function url( required string path ){
-		return variables.properties.visibility == "public"
-		 ? publicUrl( arguments.path )
-		 : temporaryURL( path = arguments.path );
-	}
-
-	/**
-	 * Get the uri for the given file
-	 *
-	 * @path The file path to build the uri for
-	 *
-	 * @throws cbfs.FileNotFoundException
-	 */
-	string function uri( required string path ){
-		if ( !exists( arguments.path ) ) {
-			throwFileNotFoundException( arguments.path );
-		}
-		return buildPath( arguments.path );
-	}
-
-	/**
-	 * Get a temporary uri for the given file
-	 *
-	 * @path       The file path to build the uri for
-	 * @expiration The number of minutes this uri should be valid for.
-	 *
-	 * @throws cbfs.FileNotFoundException
-	 */
-	string function temporaryUri( required path, numeric expiration ){
-		return uri( arguments.path );
+		return replace(
+			variables.s3.getUrlEndpoint(),
+			variables.s3.getURLEndpointHostname(),
+			variables.properties.publicDomain
+		) & "/" & buildPath( arguments.path );
 	}
 
 	/**
@@ -518,8 +509,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @throws cbfs.FileNotFoundException
 	 */
 	string function temporaryURL( required path, numeric expiration = 1 ){
-		ensureFileExists( arguments.path );
-		return publicUrl(
+		return this.url(
 			variables.s3.getAuthenticatedURL(
 				bucketName   = variables.properties.bucketName,
 				uri          = buildPath( arguments.path ),
@@ -562,7 +552,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	/**
 	 * Deletes a file
 	 *
-	 * @path          
+	 * @path
 	 * @throwOnMissing When true an error will be thrown if the file does not exist
 	 */
 	boolean function delete( required any path, boolean throwOnMissing = false ){
@@ -1433,19 +1423,6 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	}
 
 	/**
-	 * Builds a public URL for the resource
-	 */
-	function publicUrl( required string path ){
-		var uri         = uri( path );
-		var urlEndpoint = replace(
-			variables.s3.getUrlEndpoint(),
-			variables.s3.getURLEndpointHostname(),
-			variables.properties.publicDomain
-		) & "/";
-		return urlEndpoint & uri;
-	}
-
-	/**
 	 * Cache eviction for existence checks
 	 *
 	 * @paths an array or string list of paths
@@ -1461,4 +1438,3 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	}
 
 }
-

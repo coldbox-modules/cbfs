@@ -230,23 +230,23 @@ interface {
 	/**************************************** UTILITY METHODS ****************************************/
 
 	/**
-	 * Get the URI for the given file
+	 * Get the URL for the given file
 	 *
-	 * @path The file path to build the URI for
+	 * @path The file path to build the URL for
 	 *
 	 * @throws cbfs.FileNotFoundException
 	 */
-	string function uri( required string path );
+	string function url( required string path );
 
 	/**
-	 * Get a temporary URI for the given file
+	 * Get a temporary URL for the given file
 	 *
-	 * @path       The file path to build the URI for
-	 * @expiration The number of minutes this URI should be valid for
+	 * @path       The file path to build the URL for
+	 * @expiration The number of minutes this URL should be valid for
 	 *
 	 * @throws cbfs.FileNotFoundException
 	 */
-	string function temporaryUri( required path, numeric expiration );
+	string function temporaryUrl( required path, numeric expiration );
 
 	/**
 	 * Retrieve the size of the file in bytes

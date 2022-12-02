@@ -44,14 +44,14 @@ component extends="cbfs.models.testing.AbstractDiskSpec" {
 	}
 
 	/**
-	 * This method should validate the creation of a temporary uri to a file via the "uri()" method.
+	 * This method should validate the creation of a temporary uri to a file via the "url()" method.
 	 * This implementation is a basic in and out.
 	 *
 	 * @path The target path
 	 * @disk The disk used
 	 */
-	function validateTemporaryUri( required string path, required any disk ){
-		expect( disk.temporaryUri( arguments.path, 60 ) ).toInclude( arguments.path ).toInclude( "expiration=60" );
+	function validateTemporaryUrl( required string path, required any disk ){
+		expect( disk.temporaryUrl( arguments.path, 60 ) ).toInclude( arguments.path ).toInclude( "expiration=60" );
 	}
 
 }

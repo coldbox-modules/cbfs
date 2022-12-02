@@ -400,38 +400,26 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	/**************************************** UTILITY METHODS ****************************************/
 
 	/**
-	 * Get the uri for the given file
+	 * Get the URL for the given file
 	 *
-	 * @path The file path to build the uri for
-	 *
-	 * @throws cbfs.FileNotFoundException
-	 */
-	string function uri( required string path ){
-		return ensureRecordExists( arguments.path ).path;
-	}
-
-
-	/**
-	 * Get the url for the given file - for this provider it is the same as the URI
-	 *
-	 * @path The file path to build the uri for
+	 * @path The file path to build the URL for
 	 *
 	 * @throws cbfs.FileNotFoundException
 	 */
 	string function url( required string path ){
-		return uri( argumentCollection = arguments );
+		return ensureRecordExists( arguments.path ).path;
 	}
 
 	/**
-	 * Get a temporary uri for the given file
+	 * Get a temporary URL for the given file
 	 *
-	 * @path       The file path to build the uri for
-	 * @expiration The number of minutes this uri should be valid for.
+	 * @path       The file path to build the URL for
+	 * @expiration The number of minutes this URL should be valid for.
 	 *
 	 * @throws cbfs.FileNotFoundException
 	 */
-	string function temporaryUri( required path, numeric expiration ){
-		return uri( arguments.path ) & "?expiration=#arguments.expiration#";
+	string function temporaryUrl( required path, numeric expiration ){
+		return this.url( arguments.path ) & "?expiration=#arguments.expiration#";
 	}
 
 	/**
