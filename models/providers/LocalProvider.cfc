@@ -527,6 +527,23 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		 : fileReadBinary( buildDiskPath( ensureFileExists( arguments.path ) ) );
 	}
 
+
+	/**
+	 * Download a file to the browser
+	 *
+	 * @path       The file path to download
+	 *
+	 * @throws cbfs.FileNotFoundException
+	 */
+	string function download( required path ){
+		variables.requestService.getContext().sendFile(
+			file        = buildDiskPath( arguments.path ),
+			disposition = "inline",
+			mimeType    = getMimeType( arguments.path ),
+			extension   = listLast( arguments.path, "." )
+		);
+	}
+
 	/**
 	 * Get the contents of a file as binary, such as an executable or image
 	 *

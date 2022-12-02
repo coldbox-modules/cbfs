@@ -462,6 +462,21 @@ component extends="coldbox.system.testing.BaseTestCase" {
 				} );
 			} );
 
+			story( "The disk can download files", function(){
+				given( "a request for download", function(){
+					then( "it should deliver the file to the browser", function(){
+						var downloadTestEndpoint = replace( getRequestContext().buildLink( "Main.testDownload", { "disk" : disk.getName() } ), "root/", "" );
+						var req = new http(
+							method      = "GET",
+							url         = downloadTestEndpoint
+						);
+						var resp = req.send().getPrefix();
+						expect( resp.statusCode ).toBe( "200 OK" );
+						expect( isBinary( resp.fileContent ) ).toBeTrue();
+					} );
+				} );
+			} );
+
 			story( "The disk can touch files", function(){
 				given( "a file that doesn't exist", function(){
 					then( "it should touch it", function(){
