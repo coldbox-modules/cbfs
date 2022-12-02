@@ -551,8 +551,8 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 */
 	string function url( required string path ){
 		return variables.properties.visibility == "public"
-		? publicUrl( arguments.path )
-		: temporaryURL( arguments.path );
+		 ? publicUrl( arguments.path )
+		 : temporaryURL( arguments.path );
 	}
 
 	/**
