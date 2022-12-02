@@ -1407,8 +1407,12 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 */
 	function buildDiskPath( required string path ){
 		return arguments.path.startsWith( variables.properties.path )
-					? arguments.path
-					: reReplace( variables.properties.path & "/#normalizePath( arguments.path )#", "\/$", "" );
+		 ? arguments.path
+		 : reReplace(
+			variables.properties.path & "/#normalizePath( arguments.path )#",
+			"\/$",
+			""
+		);
 	}
 
 	/**************************************** STREAM METHODS ****************************************/
