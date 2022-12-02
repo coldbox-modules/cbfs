@@ -467,10 +467,20 @@ component extends="coldbox.system.testing.BaseTestCase" {
 							"root/",
 							""
 						);
-						var req  = new http( method = "GET", url = downloadTestEndpoint );
-						var resp = req.send().getPrefix();
+						if( server.keyExists( "lucee" ) ){
+							var req  = new http( method = "GET", url = downloadTestEndpoint );
+							var resp = req.send().getPrefix();
+						} else {
+							cfhttp( method = "GET", url = downloadTestEndpoint, result="local.resp" ){}
+						}
+
 						expect( resp.statusCode ).toBe( "200 OK" );
-						expect( isBinary( resp.fileContent ) ).toBeTrue();
+
+						if( server.keyExists( "lucee" ) ){
+							expect( isBinary( resp.fileContent ) ).toBeTrue();
+						} else {
+							expect( resp.fileContent ).toBeInstanceOf( "java.io.ByteArrayOutputStream" );
+						}
 					} );
 				} );
 			} );
