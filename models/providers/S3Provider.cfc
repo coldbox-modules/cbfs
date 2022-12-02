@@ -152,7 +152,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 *
 	 * @source       The file path to use for storage
 	 * @directory    The target directory
-	 * @name 		 The destination file name. If not provided it defaults to the file name from the source
+	 * @name         The destination file name. If not provided it defaults to the file name from the source
 	 * @visibility   The storage visibility of the file, available options are `public, private, readonly` or a custom data type the implemented driver can interpret
 	 * @overwrite    Flag to overwrite the file at the destination, if it exists. Defaults to true.
 	 * @deleteSource Flag to remove the source file upon creation in the disk.  Defaults to false.
@@ -165,15 +165,14 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		required source,
 		required directory,
 		string name,
-		string visibility = variables.properties.visibility,
-		boolean overwrite = true,
+		string visibility    = variables.properties.visibility,
+		boolean overwrite    = true,
 		boolean deleteSource = false
 	){
-
-		if( isNull( arguments.name ) ) arguments.name = name( source );
+		if ( isNull( arguments.name ) ) arguments.name = name( source );
 
 		var filePath = arguments.directory & "/" & arguments.name;
-		if( !arguments.overwrite && exists( filePath ) ){
+		if ( !arguments.overwrite && exists( filePath ) ) {
 			throw(
 				type    = "cbfs.FileOverrideException",
 				message = "Cannot upload file. Destination already exists [#filePath#] and overwrite is false"
@@ -198,7 +197,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 			acl        = arguments.visibility
 		);
 
-		if( arguments.deleteSource ){
+		if ( arguments.deleteSource ) {
 			fileDelete( arguments.source );
 		}
 
@@ -610,7 +609,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	/**
 	 * Deletes a file
 	 *
-	 * @path
+	 * @path          
 	 * @throwOnMissing When true an error will be thrown if the file does not exist
 	 */
 	boolean function delete( required any path, boolean throwOnMissing = false ){
