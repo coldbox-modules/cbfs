@@ -477,14 +477,6 @@ component extends="coldbox.system.testing.BaseTestCase" {
 						validateURL( path, disk );
 					} );
 				} );
-				it( "throws an exception if the file does not exist", function(){
-					var path = variables.pathPrefix & "test_file.txt";
-					disk.delete( path );
-					expect( disk.exists( path ) ).toBeFalse( "[#path#] should not exist." );
-					expect( function(){
-						disk.url( path );
-					} ).toThrow( "cbfs.FileNotFoundException" );
-				} );
 			} );
 
 			story( "The disk can get temporary urls for a given file", function(){

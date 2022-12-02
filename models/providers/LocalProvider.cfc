@@ -601,13 +601,8 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * Get the URL for the given file
 	 *
 	 * @path The file path to build the URL with
-	 *
-	 * @throws cbfs.FileNotFoundException
 	 */
 	string function url( required string path ){
-		if ( missing( arguments.path ) ) {
-			throw( type = "cbfs.FileNotFoundException", message = "File [#arguments.path#] not found." );
-		}
 		return variables.properties.diskUrl & arguments.path;
 	}
 

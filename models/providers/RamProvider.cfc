@@ -403,8 +403,6 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * Get the URL for the given file
 	 *
 	 * @path The file path to build the URL for
-	 *
-	 * @throws cbfs.FileNotFoundException
 	 */
 	string function url( required string path ){
 		return ensureRecordExists( arguments.path ).path;
