@@ -1267,17 +1267,6 @@ component extends="coldbox.system.testing.BaseTestCase" {
 	 */
 	function validateInfoStruct( required info, required disk ){
 	}
-	/**
-	 * This method should validate the creation of a url to a file via the "url()" method.
-	 * This implementation is a basic in and out.
-	 *
-	 * @path The target path
-	 * @disk The disk used
-	 */
-	function validateUrl( required string path, required any disk ){
-		expect( disk.url( arguments.path ) ).toInclude( disk.normalizePath( arguments.path ) );
-	}
-
 
 	/**
 	 * This method should validate the creation of a url to a file via the "url()" method.
@@ -1289,7 +1278,6 @@ component extends="coldbox.system.testing.BaseTestCase" {
 	function validateURL( required string path, required any disk ){
 		if ( findNoCase( "RamProvider", getMetadata( disk ).name ) ) return;
 		var fileURL = disk.url( arguments.path );
-		debug( fileUrl );
 		expect( fileURL ).toInclude( disk.url( arguments.path ) ).toInclude( "http" );
 	}
 
