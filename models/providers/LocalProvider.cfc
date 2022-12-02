@@ -611,8 +611,6 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 *
 	 * @path       The file path to build the url for
 	 * @expiration The number of minutes this url should be valid for. Defaults to 60 minutes
-	 *
-	 * @throws cbfs.FileNotFoundException
 	 */
 	string function temporaryUrl( required path, numeric expiration = 60 ){
 		// TODO: Build out a proxy method on the module to validate these.

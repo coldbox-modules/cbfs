@@ -241,8 +241,6 @@ interface {
 	 *
 	 * @path       The file path to build the URL for
 	 * @expiration The number of minutes this URL should be valid for
-	 *
-	 * @throws cbfs.FileNotFoundException
 	 */
 	string function temporaryUrl( required path, numeric expiration );
 
