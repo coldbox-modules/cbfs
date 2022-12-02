@@ -58,11 +58,11 @@
 	}
 
 	function testDownload( event, rc, prc ){
-		param rc.disk = "local";
+		param rc.disk  = "local";
 		var activeDisk = cbfs().get( rc.disk );
-		var testFile = expandPath( '/tests/resources/assets/binary_file.png' );
-		var directory = createUUID();
-		var filename = createUUID() & "." & activeDisk.extension( testFile );
+		var testFile   = expandPath( "/tests/resources/assets/binary_file.png" );
+		var directory  = createUUID();
+		var filename   = createUUID() & "." & activeDisk.extension( testFile );
 		activeDisk.createFromFile( testFile, directory, filename );
 		activeDisk.download( directory & "/" & filename );
 	}

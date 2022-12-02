@@ -25,7 +25,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		// The public disk Url. This is used to create file urls and temporary urls
 		// This should point to the root path but in a web accessible format
 		// It should remain empty if the disk is not web accessible
-		diskUrl           : ""
+		diskUrl          : ""
 	};
 	// Java Helpers
 	// @see https://docs.oracle.com/javase/8/docs/api/java/nio/file/Paths.html#get-java.lang.String-java.lang.String...-
@@ -181,7 +181,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 *
 	 * @source       The file path to use for storage
 	 * @directory    The target directory
-	 * @name 		 The destination file name. If not provided it defaults to the file name from the source
+	 * @name         The destination file name. If not provided it defaults to the file name from the source
 	 * @visibility   The storage visibility of the file, available options are `public, private, readonly` or a custom data type the implemented driver can interpret
 	 * @overwrite    Flag to overwrite the file at the destination, if it exists. Defaults to true.
 	 * @deleteSource Flag to remove the source file upon creation in the disk.  Defaults to false.
@@ -194,25 +194,25 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		required source,
 		required directory,
 		string name,
-		string visibility = variables.properties.visibility,
-		boolean overwrite = true,
+		string visibility    = variables.properties.visibility,
+		boolean overwrite    = true,
 		boolean deleteSource = false
 	){
 		ensureDirectoryExists( buildDiskPath( arguments.directory ) );
 
-		if( isNull( arguments.name ) ) arguments.name = name( source );
+		if ( isNull( arguments.name ) ) arguments.name = name( source );
 
 		var filePath = normalizePath( arguments.directory & "/" & arguments.name );
-		var diskPath = buildDiskPath( arguments.directory & "/" & arguments.name  );
+		var diskPath = buildDiskPath( arguments.directory & "/" & arguments.name );
 
-		if( !arguments.overwrite && exists( filePath ) ){
+		if ( !arguments.overwrite && exists( filePath ) ) {
 			throw(
 				type    = "cbfs.FileOverrideException",
 				message = "Cannot upload file. Destination already exists [#filePath#] and overwrite is false"
 			);
 		}
 
-		if( arguments.deleteSource ){
+		if ( arguments.deleteSource ) {
 			fileMove( arguments.source, diskPath );
 		} else {
 			fileCopy( arguments.source, diskPath );
@@ -539,17 +539,19 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	/**
 	 * Download a file to the browser
 	 *
-	 * @path       The file path to download
+	 * @path The file path to download
 	 *
 	 * @throws cbfs.FileNotFoundException
 	 */
 	string function download( required path ){
-		variables.requestService.getContext().sendFile(
-			file        = buildDiskPath( arguments.path ),
-			disposition = "inline",
-			mimeType    = getMimeType( arguments.path ),
-			extension   = listLast( arguments.path, "." )
-		);
+		variables.requestService
+			.getContext()
+			.sendFile(
+				file        = buildDiskPath( arguments.path ),
+				disposition = "inline",
+				mimeType    = getMimeType( arguments.path ),
+				extension   = listLast( arguments.path, "." )
+			);
 	}
 
 	/**

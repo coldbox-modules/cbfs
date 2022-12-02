@@ -97,45 +97,42 @@ component extends="coldbox.system.testing.BaseTestCase" {
 			story( "The disk can create files from an existing file", function(){
 				given( "given a existing file path", function(){
 					then( "it should create the file", function(){
-						var path           = variables.pathPrefix & "space_ninja2.png";
-						var source         = expandPath( "/tests/resources/assets/binary_file.png" );
+						var path   = variables.pathPrefix & "space_ninja2.png";
+						var source = expandPath( "/tests/resources/assets/binary_file.png" );
 
 						disk.createFromFile(
-							source      : source,
-							directory	: getDirectoryFromPath( path ),
-							name     	: disk.name( path )
+							source   : source,
+							directory: getDirectoryFromPath( path ),
+							name     : disk.name( path )
 						);
 
 						var blob = disk.get( path );
 						expect( isBinary( blob ) ).toBeTrue();
-
 					} );
 				} );
 
 				when( "deleteSource is true", function(){
 					then( "the source file should no longer exist", function(){
+						var path     = variables.pathPrefix & "space_ninja2.png";
+						var original = expandPath( "/tests/resources/assets/binary_file.png" );
+						var clone    = expandPath( "/tests/resources/storage/#createUUID()#.png" );
 
-						var path           = variables.pathPrefix & "space_ninja2.png";
-						var original       = expandPath( "/tests/resources/assets/binary_file.png" );
-						var clone          = expandPath( "/tests/resources/storage/#createUUID()#.png" );
-
-						if( fileExists( clone ) ){
+						if ( fileExists( clone ) ) {
 							fileDelete( clone );
 						}
 
 						fileCopy( original, clone );
 
 						disk.createFromFile(
-							source   	: clone,
-							directory	: getDirectoryFromPath( path ),
-							name     	: disk.name( path ),
-							deleteSource : true
+							source      : clone,
+							directory   : getDirectoryFromPath( path ),
+							name        : disk.name( path ),
+							deleteSource: true
 						);
 
 						var blob = disk.get( path );
 						expect( isBinary( blob ) ).toBeTrue();
 						expect( fileExists( clone ) ).toBeFalse();
-
 					} );
 				} );
 
@@ -144,29 +141,29 @@ component extends="coldbox.system.testing.BaseTestCase" {
 						var disk = getDisk();
 
 						// Make sure file doesn't exist
-						var path           = variables.pathPrefix & "space_ninja2.png";
-						var source         = expandPath( "/tests/resources/assets/binary_file.png" );
+						var path   = variables.pathPrefix & "space_ninja2.png";
+						var source = expandPath( "/tests/resources/assets/binary_file.png" );
 						disk.delete( path );
 
 						// Create it
 						disk.createFromFile(
-							source   	: source,
-							directory	: getDirectoryFromPath( path ),
-							name     	: disk.name( path )
+							source   : source,
+							directory: getDirectoryFromPath( path ),
+							name     : disk.name( path )
 						);
 
 						// Test the scenario
 						expect( function(){
 							disk.createFromFile(
-								source    : source,
-								directory : getDirectoryFromPath( path ),
-								name      : disk.name( path ),
-								overwrite : false
+								source   : source,
+								directory: getDirectoryFromPath( path ),
+								name     : disk.name( path ),
+								overwrite: false
 							);
 						} ).toThrow( "cbfs.FileOverrideException" );
 					} );
 				} );
-			});
+			} );
 
 
 
@@ -465,11 +462,12 @@ component extends="coldbox.system.testing.BaseTestCase" {
 			story( "The disk can download files", function(){
 				given( "a request for download", function(){
 					then( "it should deliver the file to the browser", function(){
-						var downloadTestEndpoint = replace( getRequestContext().buildLink( "Main.testDownload", { "disk" : disk.getName() } ), "root/", "" );
-						var req = new http(
-							method      = "GET",
-							url         = downloadTestEndpoint
+						var downloadTestEndpoint = replace(
+							getRequestContext().buildLink( "Main.testDownload", { "disk" : disk.getName() } ),
+							"root/",
+							""
 						);
+						var req  = new http( method = "GET", url = downloadTestEndpoint );
 						var resp = req.send().getPrefix();
 						expect( resp.statusCode ).toBe( "200 OK" );
 						expect( isBinary( resp.fileContent ) ).toBeTrue();
