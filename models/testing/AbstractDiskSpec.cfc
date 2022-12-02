@@ -1348,7 +1348,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 	function validateURL( required string path, required any disk ){
 		if ( findNoCase( "RamProvider", getMetadata( disk ).name ) ) return;
 		var fileURL = disk.url( arguments.path );
-		expect( fileURL ).toInclude( disk.url( arguments.path ) ).toInclude( "http" );
+		expect( fileURL ).toInclude( disk.normalizePath( arguments.path ) ).toInclude( "http" );
 	}
 
 	/**

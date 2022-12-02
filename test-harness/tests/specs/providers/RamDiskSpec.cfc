@@ -51,7 +51,7 @@ component extends="cbfs.models.testing.AbstractDiskSpec" {
 	 * @disk The disk used
 	 */
 	function validateTemporaryUrl( required string path, required any disk ){
-		expect( disk.temporaryUrl( arguments.path, 60 ) ).toInclude( arguments.path ).toInclude( "expiration=60" );
+		expect( disk.temporaryUrl( arguments.path, 60 ) ).toInclude( disk.normalizePath( arguments.path ) ).toInclude( "expiration=60" );
 	}
 
 }

@@ -206,6 +206,7 @@ component accessors="true" {
 		if( left( cleanedPath, 1 ) == "/" ){
 			cleanedPath = right( cleanedPath, len( path ) - 1 );
 		}
+
 		return cleanedPath;
 	}
 

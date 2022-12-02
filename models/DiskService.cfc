@@ -138,8 +138,7 @@ component accessors="true" singleton threadsafe {
 		// Check if the disk is registered, else throw exception
 		if ( missing( arguments.name ) ) {
 			throw(
-				message: "The disk you requested (#arguments.name#) has not been registered.",
-				detail : "Registered disks are: #names().toList()#",
+				message: "The disk you requested (#arguments.name#) has not been registered. Registered disks are: #names().toList()#",
 				type   : "InvalidDiskException"
 			)
 		}

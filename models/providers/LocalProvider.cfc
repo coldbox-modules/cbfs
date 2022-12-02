@@ -70,9 +70,6 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 			variables.properties.path = expandPath( variables.properties.path );
 		}
 
-		// Normalize Path
-		variables.properties.path = normalizePath( variables.properties.path );
-
 		// Create java nio path
 		variables.properties.jPath = getJavaPath( arguments.properties.path );
 
@@ -534,7 +531,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 */
 	any function get( required path ){
 		return !isBinaryFile( arguments.path )
-		 ? variables.jFiles.readString( getJavaPath( ensureFileExists( arguments.path ) ) )
+		 ? variables.jFiles.readString( buildJavaDiskPath( ensureFileExists( arguments.path ) ) )
 		 : fileReadBinary( buildDiskPath( ensureFileExists( arguments.path ) ) );
 	}
 
@@ -565,7 +562,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @throws cbfs.FileNotFoundException
 	 */
 	any function getAsBinary( required path ){
-		return variables.jFiles.readAllBytes( getJavaPath( ensureFileExists( arguments.path ) ) );
+		return variables.jFiles.readAllBytes( buildJavaDiskPath( ensureFileExists( arguments.path ) ) );
 	};
 
 	/**
@@ -628,7 +625,6 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		}
 
 		// else touch it baby!
-		arguments.path = buildDiskPath( arguments.path );
 		if ( !arguments.createPath ) {
 			if ( directoryMissing( getDirectoryFromPath( arguments.path ) ) ) {
 				throw(
@@ -713,7 +709,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 			throw( type = "cbfs.FileNotFoundException", message = "File [#arguments.path#] not found." );
 		}
 		var inMillis = variables.jFiles
-			.getLastModifiedTime( getJavaPath( ensureFileExists( arguments.path ) ), [] )
+			.getLastModifiedTime( buildJavaDiskPath( ensureFileExists( arguments.path ) ), [] )
 			.toMillis();
 		// Calculate adjustments fot timezone and daylightsavindtime
 		var offset = ( ( getTimezoneInfo().utcHourOffset ) + 1 ) * -3600;
@@ -1408,10 +1404,9 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @return The canonical path on the disk
 	 */
 	function buildDiskPath( required string path ){
-		var pathTarget = normalizePath( arguments.path );
-		return pathTarget.startsWith( variables.properties.path ) ? pathTarget : getCanonicalPath(
-			variables.properties.path & "/#pathTarget#"
-		).reReplace( "\/$", "" );
+		return arguments.path.startsWith( variables.properties.path )
+					? arguments.path
+					: ( variables.properties.path & "/#normalizePath( arguments.path )#" ).reReplace( "\/$", "" );
 	}
 
 	/**************************************** STREAM METHODS ****************************************/
@@ -1496,7 +1491,6 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @throws cbfs.FileNotFoundException Throws if the file does not exist
 	 */
 	private function ensureFileExists( required path ){
-		arguments.path = buildDiskPath( arguments.path );
 		if ( !exists( arguments.path ) ) {
 			throw( type = "cbfs.FileNotFoundException", message = "File [#arguments.path#] not found." );
 		}
