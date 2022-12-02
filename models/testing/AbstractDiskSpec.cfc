@@ -456,7 +456,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 			// /** Utility Methods **/
 			// /********************************************************/
 
-			fstory( "The disk can get a url for the given file", function(){
+			story( "The disk can get a url for the given file", function(){
 				given( "a valid file", function(){
 					then( "it can retrieve the url for a file", function(){
 						var path = variables.pathPrefix & "/dir/test_file.txt";
