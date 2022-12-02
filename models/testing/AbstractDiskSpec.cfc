@@ -42,7 +42,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 			story( "The disk can create files", function(){
 				given( "a binary file", function(){
 					then( "it should create the file", function(){
-						var path           = "space_ninja.png";
+						var path           = variables.pathPrefix & "space_ninja.png";
 						var binaryContents = fileReadBinary(
 							expandPath( "/tests/resources/assets/binary_file.png" )
 						);
@@ -92,28 +92,83 @@ component extends="coldbox.system.testing.BaseTestCase" {
 						} ).toThrow( "cbfs.FileOverrideException" );
 					} );
 				} );
+			} );
 
-				when( "overwrite is true and the file exists", function(){
-					then( "it should re-create the file", function(){
+			story( "The disk can create files from an existing file", function(){
+				given( "given a existing file path", function(){
+					then( "it should create the file", function(){
+						var path           = variables.pathPrefix & "space_ninja2.png";
+						var source         = expandPath( "/tests/resources/assets/binary_file.png" );
+
+						disk.createFromFile(
+							source      : source,
+							directory	: getDirectoryFromPath( path ),
+							name     	: disk.name( path )
+						);
+
+						var blob = disk.get( path );
+						expect( isBinary( blob ) ).toBeTrue();
+
+					} );
+				} );
+
+				when( "deleteSource is true", function(){
+					then( "the source file should no longer exist", function(){
+
+						var path           = variables.pathPrefix & "space_ninja2.png";
+						var original       = expandPath( "/tests/resources/assets/binary_file.png" );
+						var clone          = expandPath( "/tests/resources/storage/#createUUID()#.png" );
+
+						if( fileExists( clone ) ){
+							fileDelete( clone );
+						}
+
+						fileCopy( original, clone );
+
+						disk.createFromFile(
+							source   	: clone,
+							directory	: getDirectoryFromPath( path ),
+							name     	: disk.name( path ),
+							deleteSource : true
+						);
+
+						var blob = disk.get( path );
+						expect( isBinary( blob ) ).toBeTrue();
+						expect( fileExists( clone ) ).toBeFalse();
+
+					} );
+				} );
+
+				when( "overwrite is false and the file exists", function(){
+					then( "it should throw a FileOverrideException", function(){
 						var disk = getDisk();
 
 						// Make sure file doesn't exist
-						var path = variables.pathPrefix & "test_file.txt";
+						var path           = variables.pathPrefix & "space_ninja2.png";
+						var source         = expandPath( "/tests/resources/assets/binary_file.png" );
 						disk.delete( path );
 
 						// Create it
-						disk.create( path, "my contents" );
+						disk.createFromFile(
+							source   	: source,
+							directory	: getDirectoryFromPath( path ),
+							name     	: disk.name( path )
+						);
+
+						// Test the scenario
 						expect( function(){
-							disk.create(
-								path      = path,
-								contents  = "new content",
-								overwrite = true
+							disk.createFromFile(
+								source    : source,
+								directory : getDirectoryFromPath( path ),
+								name      : disk.name( path ),
+								overwrite : false
 							);
-						} ).notToThrow( "cbfs.FileOverrideException" );
-						expect( disk.get( path ) ).toBe( "new content" );
+						} ).toThrow( "cbfs.FileOverrideException" );
 					} );
 				} );
-			} );
+			});
+
+
 
 			story( "Ensures the disk has an upload method", function(){
 				it( "has an upload method present", function(){

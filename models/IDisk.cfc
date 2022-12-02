@@ -70,6 +70,29 @@ interface {
 	);
 
 	/**
+	 * Create a file in the disk from a file path
+	 *
+	 * @source       The file path to use for storage
+	 * @directory    The target directory
+	 * @name 		 The destination file name. If not provided it defaults to the file name from the source
+	 * @visibility   The storage visibility of the file, available options are `public, private, readonly` or a custom data type the implemented driver can interpret
+	 * @overwrite    Flag to overwrite the file at the destination, if it exists. Defaults to true.
+	 * @deleteSource Flag to remove the source file upon creation in the disk.  Defaults to false.
+	 *
+	 * @return cbfs.models.IDisk
+	 *
+	 * @throws cbfs.FileOverrideException - When a file exists and no override has been provided
+	 */
+	function createFromFile(
+		required source,
+		required directory,
+		string name,
+		string visibility,
+		boolean overwrite = true,
+		boolean deleteSource = false
+	);
+
+	/**
 	 * Set the storage visibility of a file, available options are `public, private, readonly` or a custom data type the implemented driver can interpret
 	 *
 	 * @path       The target file
@@ -247,6 +270,15 @@ interface {
 	 * @throws cbfs.FileNotFoundException
 	 */
 	string function temporaryUri( required path, numeric expiration );
+
+	/**
+	 * Download a file to the browser
+	 *
+	 * @path       The file path to download
+	 *
+	 * @throws cbfs.FileNotFoundException
+	 */
+	string function download( required path );
 
 	/**
 	 * Retrieve the size of the file in bytes
