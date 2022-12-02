@@ -29,10 +29,21 @@ component {
 			"defaultDisk" : "default",
 			// Register the disks on the system
 			"disks"       : {
-				// Your default application storage
+				// Your default application storage : non-web accessible
 				"default" : {
 					provider   : "Local",
 					properties : { path : "#controller.getAppRootPath()#.cbfs" }
+				},
+				// A public web-accessible storage located at /includes/public
+				"public" : {
+					provider   : "Local",
+					properties : {
+						path    : "#controller.getAppRootPath()#includes/public",
+						diskUrl : controller
+							.getRequestService()
+							.getContext()
+							.getHtmlBaseUrl() & "includes/public"
+					}
 				},
 				// A disk that points to the CFML Engine's temp directory
 				"temp" : {
@@ -41,9 +52,11 @@ component {
 				}
 			}
 		};
+
 		// Setup the defaults
 		settings = structCopy( variables.DEFAULTS );
 
+		// Disk Events
 		interceptorSettings = {
 			customInterceptionPoints : [
 				"cbfsOnDiskStart",
@@ -60,6 +73,7 @@ component {
 				"cbfsOnDirectoryDelete"
 			]
 		};
+
 		// Register custom DSL
 		wirebox.registerDSL( "cbfs", "#moduleMapping#.dsl.cbfsDSL" );
 	}
