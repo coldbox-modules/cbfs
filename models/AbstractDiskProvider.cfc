@@ -226,4 +226,9 @@ component accessors="true" {
 		return type.listFirst( "/" ).findnocase( "text" ) ? false : true;
 	}
 
+	File function file( required path, contents ) {
+		arguments.disk = this;
+		return createObject( "component", "cbfs.models.File" ).init( argumentCollection=arguments );
+	}
+
 }

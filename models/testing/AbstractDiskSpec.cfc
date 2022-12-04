@@ -1253,6 +1253,158 @@ component extends="coldbox.system.testing.BaseTestCase" {
 					} );
 				} );
 			} );
+
+			fstory( "We can work with a file object", function() {
+				beforeEach( function() {
+					var files = [
+						"some_file.txt",
+						"another_file.txt"
+					];
+
+					files.each( function( testFile ) {
+						if ( disk.exists( testFile ) ) {
+							disk.delete( testFile );
+						}
+					} );
+
+					testFile = newFile( "some_file.txt" ).create( "some content" );;
+				} );
+				given( "a call to file()", function() {
+					then( "it returns a file object", function() {
+						expect( testFile ).toBeInstanceOf( "File" );
+					} );
+				} );
+				given( "we create a file", function() {
+					then( "it is proxied to the disk", function() {
+						expect( testFile.exists() ).toBeTrue();
+					} );
+				} );
+				given( "we set the visibity", function() {
+					then( "it is proxied to the disk", function() {
+						var result = testFile.setVisibility( "private" )
+											.visibility();
+						expect( result ).toBe( "private" );
+					} );
+				} );
+				given( "we prepend the file", function() {
+					then( "it is proxied to the disk", function() {
+						var result = testFile.prepend( "some more content" ).get();
+						expect( result ).toInclude( "some more content" );
+					} );
+				} );
+				given( "we append the file", function() {
+					then( "it is proxied to the disk", function() {
+						var result = testFile.append( "some more content" )
+										.get();
+						expect( result ).toInclude( "some more content" );
+					} );
+				} );
+				given( "we copy the file", function() {
+					then( "it is proxied to the disk and returns the copied file object", function() {
+						var result = testFile.copy( "another_file.txt" );
+						expect( result ).toBeInstanceOf( "File" );
+						expect( result.getPath() ).toBe( "another_file.txt" );
+					} );
+				} );
+				given( "we move the file", function() {
+					then( "it is proxied to the disk and returns the moved file object", function() {
+						var result = testFile.move( "another_file.txt" );
+						expect( result ).toBeInstanceOf( "File" );
+						expect( result.getPath() ).toBe( "another_file.txt" );
+					} );
+				} );
+				given( "we get the file", function() {
+					then( "it is proxied to the disk and returns the file contents", function() {
+						expect( testFile.get() ).toBe( "some content" );
+					} );
+				} );
+				given( "we check for existance", function() {
+					then( "it is proxied to the disk", function() {
+						expect( testFile.exists() ).toBeTrue();
+					} );
+				} );
+				given( "we delete the file", function() {
+					then( "it is proxied to the disk", function() {
+						testFile.delete();
+						expect( testFile.exists() ).toBeFalse();
+						testFile = newFile( "some_file.txt" ).create( "some content" );
+					} );
+				} );
+				given( "we touch the file", function() {
+					then( "it is proxied to the disk", function() {					
+						tmpFile = newFile( "touch_file" );
+						expect( tmpFile.exists() ).toBeFalse();
+						tmpFile.touch();
+						expect( tmpFile.exists() ).toBeTrue();
+						tmpFile.delete(); // cleanup
+					} );
+				} );
+				given( "we get the file size", function() {
+					then( "it is proxied to the disk", function() {					
+						expect( testFile.size() ).toBe( 12 );
+					} );
+				} );
+				given( "we get the last modified date", function() {
+					then( "it is proxied to the disk", function() {					
+						expect( testFile.lastModified() ).toBeTypeOf( "date" );
+					} );
+				} );
+				given( "we get the mime type", function() {
+					then( "it is proxied to the disk", function() {					
+						expect( testFile.mimeType() ).toBe( "text/plain" );
+					} );
+				} );
+				given( "we get the file info", function() {
+					then( "it is proxied to the disk", function() {		
+						expect( testFile.info().type ).toBe( "file" );
+					} );
+				} );
+				given( "we get the checksum", function() {
+					then( "it is proxied to the disk", function() {		
+						expect( testFile.checksum() ).toHaveLength( 32 );
+					} );
+				} );
+				given( "we get the extension", function() {
+					then( "it is proxied to the disk", function() {		
+						expect( testFile.extension() ).toBe( "txt" );
+					} );
+				} );
+				given( "we use chmod", function() {
+					then( "it is proxied to the disk", function() {		
+						expect( testFile.chmod( "777" ) ).toBeInstanceOf( "File" );
+					} );
+				} );
+				given( "we check is writable", function() {
+					then( "it is proxied to the disk", function() {		
+						expect( testFile.isWritable() ).toBeTrue();
+					} );
+				} );
+				given( "we check is readable", function() {
+					then( "it is proxied to the disk", function() {		
+						expect( testFile.isReadable() ).toBeTrue();
+					} );
+				} );
+				given( "we check is executeable", function() {
+					then( "it is proxied to the disk", function() {		
+						expect( testFile.isExecutable() ).toBeFalse();
+					} );
+				} );
+				given( "we check is hidden", function() {
+					then( "it is proxied to the disk", function() {		
+						expect( testFile.isHidden() ).toBeFalse();
+					} );
+				} );
+				given( "we check is symbolic link", function() {
+					then( "it is proxied to the disk", function() {		
+						expect( testFile.isSymbolicLink() ).toBeFalse();
+					} );
+				} );
+				given( "we get a stream", function() {
+					then( "it is proxied to the disk", function() {		
+						expect( testFile.stream() ).toBeInstanceOf( "Stream" );
+					} );
+				} );
+			} );
 		} ); // end suite
 	}
 
@@ -1352,6 +1504,13 @@ component extends="coldbox.system.testing.BaseTestCase" {
 	 */
 	function isMac(){
 		return reFindNoCase( "Mac", createObject( "java", "java.lang.System" ).getProperties()[ "os.name" ] );
+	}
+
+	/**
+	 * Create a test file
+	 */
+	function newFile( required path ){
+		return disk.file( arguments.path );
 	}
 
 }
