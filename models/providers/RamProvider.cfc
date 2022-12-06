@@ -561,7 +561,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @throws cbfs.FileNotFoundException - If the filepath is missing
 	 */
 	boolean function isExecutable( required path ){
-		return true;
+		return false;
 	}
 
 	/**
