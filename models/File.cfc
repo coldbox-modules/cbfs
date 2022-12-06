@@ -1,16 +1,16 @@
 component accessors="true" {
 
-    property name="path";
+	property name="path";
 
-    property name="disk";
+	property name="disk";
 
-    function init( required disk, required path ) {
-        setDisk( arguments.disk );
-        setPath( arguments.path );
-        return this;
-    }
+	function init( required disk, required path ){
+		setDisk( arguments.disk );
+		setPath( arguments.path );
+		return this;
+	}
 
-    /**
+	/**
 	 * Create a file in the disk
 	 *
 	 * @contents   The contents of the file to store
@@ -30,12 +30,12 @@ component accessors="true" {
 		boolean overwrite = true,
 		string mode
 	){
-        arguments.path = getPath();
-        invoke( getDisk(), "create", arguments );
-        return this;
-    }
+		arguments.path = getPath();
+		invoke( getDisk(), "create", arguments );
+		return this;
+	}
 
-    /**
+	/**
 	 * Set the storage visibility of a file, available options are `public, private, readonly` or a custom data type the implemented driver can interpret
 	 *
 	 * @visibility The storage visibility of the file, available options are `public, private, readonly` or a custom data type the implemented driver can interpret
@@ -43,21 +43,21 @@ component accessors="true" {
 	 * @return File
 	 */
 	function setVisibility( required string visibility ){
-        arguments.path = getPath();
-        getDisk().setVisibility( argumentCollection=arguments );
-        return this;
+		arguments.path = getPath();
+		getDisk().setVisibility( argumentCollection = arguments );
+		return this;
 	};
 
-    /**
+	/**
 	 * Get the storage visibility of a file, the return format can be a string of `public, private, readonly` or a custom data type the implemented driver can interpret.
 	 *
-     * @return String
+	 * @return String
 	 */
 	public string function visibility(){
-        return getDisk().visibility( getpath() );
+		return getDisk().visibility( getpath() );
 	};
 
-    /**
+	/**
 	 * Prepend contents to the beginning of a file. This is a very expensive operation for local disk storage.
 	 *
 	 * @contents       The contents of the file to prepend
@@ -73,12 +73,12 @@ component accessors="true" {
 		struct metadata        = {},
 		boolean throwOnMissing = false
 	){
-        arguments.path = getPath();
-        getDisk().prepend( argumentCollection=arguments );
-        return this;
+		arguments.path = getPath();
+		getDisk().prepend( argumentCollection = arguments );
+		return this;
 	}
 
-    /**
+	/**
 	 * Append contents to the end of a file
 	 *
 	 * @contents       The contents of the file to append
@@ -94,12 +94,12 @@ component accessors="true" {
 		struct metadata        = {},
 		boolean throwOnMissing = false
 	){
-        arguments.path = getPath();
-        getDisk().append( argumentCollection=arguments );
-        return this;
+		arguments.path = getPath();
+		getDisk().append( argumentCollection = arguments );
+		return this;
 	}
 
-    /**
+	/**
 	 * Copy a file from one destination to another
 	 *
 	 * @destination The end destination path
@@ -110,16 +110,16 @@ component accessors="true" {
 	 * @throws cbfs.FileNotFoundException - When the source doesn't exist
 	 * @throws cbfs.FileOverrideException - When the destination exists and no override has been provided
 	 */
-	function copy(
-		required destination,
-		boolean overwrite = true
-	){
-        arguments.source = getPath();
-        getDisk().copy( argumentCollection=arguments );
-        return createObject( "component", "cbfs.models.File" ).init( disk=getDisk(), path=arguments.destination );
+	function copy( required destination, boolean overwrite = true ){
+		arguments.source = getPath();
+		getDisk().copy( argumentCollection = arguments );
+		return createObject( "component", "cbfs.models.File" ).init(
+			disk = getDisk(),
+			path = arguments.destination
+		);
 	}
 
-    /**
+	/**
 	 * Move a file from one destination to another
 	 *
 	 * @destination The end destination path
@@ -129,16 +129,16 @@ component accessors="true" {
 	 * @throws cbfs.FileNotFoundException - When the source doesn't exist
 	 * @throws cbfs.FileOverrideException - When the destination exists and no override has been provided
 	 */
-	function move(
-		required destination,
-		boolean overwrite = true
-	){
-        arguments.source = getPath();
-        getDisk().move( argumentCollection=arguments );
-        return createObject( "component", "cbfs.models.File" ).init( disk=getDisk(), path=arguments.destination );
-    }
+	function move( required destination, boolean overwrite = true ){
+		arguments.source = getPath();
+		getDisk().move( argumentCollection = arguments );
+		return createObject( "component", "cbfs.models.File" ).init(
+			disk = getDisk(),
+			path = arguments.destination
+		);
+	}
 
-    /**
+	/**
 	 * Get the contents of a file
 	 *
 	 * @return The contents of the file
@@ -146,10 +146,10 @@ component accessors="true" {
 	 * @throws cbfs.FileNotFoundException
 	 */
 	any function get(){
-        return getDisk().get( getPath() );
+		return getDisk().get( getPath() );
 	}
 
-    /**
+	/**
 	 * Delete a file or an array of file paths. If a file does not exist a `false` will be shown for it's return.
 	 *
 	 * @throwOnMissing Boolean to throw an exception if the file is missing.
@@ -159,11 +159,11 @@ component accessors="true" {
 	 * @throws cbfs.FileNotFoundException
 	 */
 	public boolean function delete( boolean throwOnMissing = false ){
-        arguments.path = getPath();
-        return getDisk().delete( argumentCollection=arguments );
-    }
+		arguments.path = getPath();
+		return getDisk().delete( argumentCollection = arguments );
+	}
 
-    /**
+	/**
 	 * Create a new empty file if it does not exist
 	 *
 	 * @createPath if set to false, expects all parent directories to exist, true will generate necessary directories. Defaults to true.
@@ -173,42 +173,42 @@ component accessors="true" {
 	 * @throws cbfs.PathNotFoundException
 	 */
 	function touch( boolean createPath = true ){
-        arguments.path = getPath();
-        getDisk().touch( argumentCollection=arguments );
-        return this;
+		arguments.path = getPath();
+		getDisk().touch( argumentCollection = arguments );
+		return this;
 	}
 
-    /**
+	/**
 	 * Returns the size of a file (in bytes). The size may differ from the actual size on the file system due to compression, support for sparse files, or other reasons.
 	 *
 	 * @throws cbfs.FileNotFoundException
 	 */
 	numeric function size(){
-        arguments.path = getPath();
-        return getDisk().size( argumentCollection=arguments );
+		arguments.path = getPath();
+		return getDisk().size( argumentCollection = arguments );
 	}
 
-    /**
+	/**
 	 * Retrieve the file's last modified timestamp
 	 *
 	 * @throws cbfs.FileNotFoundException
 	 */
 	function lastModified(){
-        arguments.path = getPath();
-        return getDisk().lastModified( argumentCollection=arguments );
+		arguments.path = getPath();
+		return getDisk().lastModified( argumentCollection = arguments );
 	}
 
-    /**
+	/**
 	 * Retrieve the file's mimetype
 	 *
 	 * @throws cbfs.FileNotFoundException
 	 */
 	function mimeType(){
-        arguments.path = getPath();
-        return getDisk().mimeType( argumentCollection=arguments );
-    }
+		arguments.path = getPath();
+		return getDisk().mimeType( argumentCollection = arguments );
+	}
 
-    /**
+	/**
 	 * Return information about the file.  Will contain keys such as lastModified, size, path, name, type, canWrite, canRead, isHidden and more
 	 * depending on the provider used
 	 *
@@ -217,11 +217,11 @@ component accessors="true" {
 	 * @throws cbfs.FileNotFoundException
 	 */
 	struct function info(){
-        arguments.path = getPath();
-        return getDisk().info( argumentCollection=arguments );
-    }
+		arguments.path = getPath();
+		return getDisk().info( argumentCollection = arguments );
+	}
 
-    /**
+	/**
 	 * Generate checksum for a file in different hashing algorithms
 	 *
 	 * @algorithm Default is MD5, but SHA-1, SHA-256, and SHA-512 can also be used.
@@ -229,85 +229,85 @@ component accessors="true" {
 	 * @throws cbfs.FileNotFoundException
 	 */
 	string function checksum( algorithm = "MD5" ){
-        arguments.path = getPath();
-        return getDisk().checksum( argumentCollection=arguments );
+		arguments.path = getPath();
+		return getDisk().checksum( argumentCollection = arguments );
 	}
 
 	/**
 	 * Extract the extension from the file path
 	 */
 	string function extension(){
-        arguments.path = getPath();
-        return getDisk().extension( argumentCollection=arguments );
+		arguments.path = getPath();
+		return getDisk().extension( argumentCollection = arguments );
 	}
 
-    /**
+	/**
 	 * Sets the access attributes of the file on Unix based disks
 	 *
 	 * @mode Access mode, the same attributes you use for the Linux command `chmod`
-     * 
-     * @return File
+	 *
+	 * @return File
 	 */
 	function chmod( required string mode ){
-        arguments.path = getPath();
-        getDisk().chmod( argumentCollection=arguments );
-        return this;
+		arguments.path = getPath();
+		getDisk().chmod( argumentCollection = arguments );
+		return this;
 	}
 
 	/**
 	 * Is the path writable or not
-     * 
-     * @return Boolean
+	 *
+	 * @return Boolean
 	 */
 	boolean function isWritable(){
-        arguments.path = getPath();
-        return getDisk().isWritable( argumentCollection=arguments );
+		arguments.path = getPath();
+		return getDisk().isWritable( argumentCollection = arguments );
 	}
 
-    /**
+	/**
 	 * Is the path readable or not
 	 *
-     * @return Boolean
+	 * @return Boolean
 	 */
 	boolean function isReadable(){
-        arguments.path = getPath();
-        return getDisk().isReadable( argumentCollection=arguments );
+		arguments.path = getPath();
+		return getDisk().isReadable( argumentCollection = arguments );
 	}
 
 	/**
 	 * Is the file executable or not
 	 *
-	 * @throws cbfs.FileNotFoundException - If the filepath is missing
-     * 
-     * @return Boolean
-	 */
-	boolean function isExecutable(){
-        arguments.path = getPath();
-        return getDisk().isExecutable( argumentCollection=arguments );
-	}
-
-    /**
-	 * Is the file is hidden or not
+	 * @return Boolean
 	 *
 	 * @throws cbfs.FileNotFoundException - If the filepath is missing
-     * 
-     * @return Boolean
+	 */
+	boolean function isExecutable(){
+		arguments.path = getPath();
+		return getDisk().isExecutable( argumentCollection = arguments );
+	}
+
+	/**
+	 * Is the file is hidden or not
+	 *
+	 * @return Boolean
+	 *
+	 * @throws cbfs.FileNotFoundException - If the filepath is missing
 	 */
 	boolean function isHidden(){
-        arguments.path = getPath();
-        return getDisk().isHidden( argumentCollection=arguments );
+		arguments.path = getPath();
+		return getDisk().isHidden( argumentCollection = arguments );
 	}
 
 	/**
 	 * Is the file is a symbolic link
 	 *
+	 * @return Boolean
+	 *
 	 * @throws cbfs.FileNotFoundException - If the filepath is missing
-     * 
-     * @return Boolean
 	 */
 	boolean function isSymbolicLink(){
-        arguments.path = getPath();
-        return getDisk().isSymbolicLink( argumentCollection=arguments );
+		arguments.path = getPath();
+		return getDisk().isSymbolicLink( argumentCollection = arguments );
 	}
 
 	/**
@@ -316,18 +316,18 @@ component accessors="true" {
 	 * @path The file path to verify
 	 */
 	boolean function exists(){
-        return getDisk().exists( getPath() );
+		return getDisk().exists( getPath() );
 	}
 
-    /**
+	/**
 	 * Return a Java stream of the file using non-blocking IO classes. The stream will represent every line in the file so you can navigate through it.
 	 * This method leverages the `cbstreams` library used accordingly by implementations (https://www.forgebox.io/view/cbstreams)
 	 *
 	 * @return Stream object: See https://apidocs.ortussolutions.com/coldbox-modules/cbstreams/1.1.0/index.html
 	 */
 	function stream(){
-        arguments.path = getPath();
-        return getDisk().stream( argumentCollection=arguments );
+		arguments.path = getPath();
+		return getDisk().stream( argumentCollection = arguments );
 	};
 
 }

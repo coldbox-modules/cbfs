@@ -25,7 +25,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		// The public disk Url. This is used to create file urls and temporary urls
 		// This should point to the root path but in a web accessible format
 		// It should remain empty if the disk is not web accessible
-		diskUrl           : ""
+		diskUrl          : ""
 	};
 	// Java Helpers
 	// @see https://docs.oracle.com/javase/8/docs/api/java/nio/file/Paths.html#get-java.lang.String-java.lang.String...-
