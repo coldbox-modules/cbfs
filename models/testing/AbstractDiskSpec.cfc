@@ -1254,7 +1254,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 				} );
 			} );
 
-			fstory( "We can work with a file object", function() {
+			story( "We can work with a file object", function() {
 				beforeEach( function() {
 					var files = [
 						"some_file.txt",

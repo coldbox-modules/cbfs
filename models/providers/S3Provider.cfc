@@ -75,7 +75,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 
 		// More params
 		param arguments.properties.bucketName   = variables.s3.getDefaultBucketName();
-		param arguments.properties.publicDomain = arguments.properties.bucketName & "." & variables.s3.getURLEndpoint();
+		param arguments.properties.publicDomain = arguments.properties.bucketName & "." & variables.s3.getURLEndpointHostname();
 
 		setName( arguments.name );
 		setProperties( arguments.properties );
@@ -772,7 +772,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @return Stream object: See https://apidocs.ortussolutions.com/coldbox-modules/cbstreams/1.1.0/index.html
 	 */
 	function stream( required path ){
-		return getStreamBuilder().new().ofFile( url() );
+		return getStreamBuilder().new().ofFile( url( arguments.path ) );
 	};
 
 	/**
