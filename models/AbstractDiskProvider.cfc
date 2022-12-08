@@ -226,7 +226,12 @@ component accessors="true" {
 		return type.listFirst( "/" ).findnocase( "text" ) ? false : true;
 	}
 
-	File function file( required path, contents ) {
+	/**
+	 * Returns a File object for simplier API access
+	 *
+	 * @path The file path to check
+	 */
+	File function file( required path ) {
 		arguments.disk = this;
 		return createObject( "component", "cbfs.models.File" ).init( argumentCollection=arguments );
 	}
