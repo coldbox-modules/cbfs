@@ -19,7 +19,7 @@ component accessors="true" {
 	 * @overwrite  Flag to overwrite the file at the destination, if it exists. Defaults to true.
 	 * @mode       Applies to *nix systems. If passed, it overrides the visbility argument and uses these octal values instead
 	 *
-	 * @return cbfs.models.IDisk
+	 * @return File
 	 *
 	 * @throws cbfs.FileOverrideException - When a file exists and no override has been provided
 	 */
