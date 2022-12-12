@@ -73,7 +73,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		string mode
 	){
 		// Normalize slashes
-		arguments.path = replace( arguments.path, "\", "/", "all" );
+		arguments.path = normalizePath( arguments.path );
 
 		if ( !arguments.overwrite && exists( arguments.path ) ) {
 			throw(
@@ -114,6 +114,55 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 
 		arguments[ "disk" ] = this;
 		intercept.announce( "cbfsOnFileCreate", arguments );
+
+		return this;
+	}
+
+	/**
+	 * Create a file in the disk from a file path
+	 *
+	 * @source       The file path to use for storage
+	 * @directory    The target directory
+	 * @name         The destination file name. If not provided it defaults to the file name from the source
+	 * @visibility   The storage visibility of the file, available options are `public, private, readonly` or a custom data type the implemented driver can interpret
+	 * @overwrite    Flag to overwrite the file at the destination, if it exists. Defaults to true.
+	 * @deleteSource Flag to remove the source file upon creation in the disk.  Defaults to false.
+	 *
+	 * @return cbfs.models.IDisk
+	 *
+	 * @throws cbfs.FileOverrideException - When a file exists and no override has been provided
+	 */
+	function createFromFile(
+		required source,
+		required directory,
+		string name,
+		string visibility    = "public",
+		boolean overwrite    = true,
+		boolean deleteSource = false
+	){
+		if ( isNull( arguments.name ) ) arguments.name = name( source );
+
+		var filePath = normalizePath( arguments.directory & "/" & arguments.name );
+
+		if ( !arguments.overwrite && exists( filePath ) ) {
+			throw(
+				type    = "cbfs.FileOverrideException",
+				message = "Cannot upload file. Destination already exists [#filePath#] and overwrite is false"
+			);
+		}
+
+		create(
+			path     = filePath,
+			contents = !isBinaryFile( arguments.source )
+			 ? fileRead( arguments.source )
+			 : fileReadBinary( arguments.source ),
+			visibility = arguments.visibility,
+			overwrite  = arguments.overwrite
+		);
+
+		if ( arguments.deleteSource ) {
+			fileDelete( arguments.source );
+		}
 
 		return this;
 	}
@@ -1281,8 +1330,12 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @throws cbfs.FileNotFoundException - If the filepath is missing
 	 */
 	private struct function ensureRecordExists( required path ){
+		arguments.path = normalizePath( path );
 		if ( missing( arguments.path ) ) {
-			throw( type = "cbfs.FileNotFoundException", message = "File [#arguments.path#] not found." );
+			throw(
+				type    = "cbfs.FileNotFoundException",
+				message = "File [#arguments.path#] not found. Available files are [#variables.fileStorage.keyArray().toList()#]"
+			);
 		}
 		return variables.fileStorage[ arguments.path ];
 	}
