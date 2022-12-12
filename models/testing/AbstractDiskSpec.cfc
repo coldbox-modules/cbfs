@@ -115,7 +115,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 					then( "the source file should no longer exist", function(){
 						var path     = variables.pathPrefix & "space_ninja2.png";
 						var original = expandPath( "/tests/resources/assets/binary_file.png" );
-						var clone    = expandPath( "/tests/resources/storage/#createUUID()#.png" );
+						var clone    = getTempDirectory() & "/" & "#createUUID()#.png";
 
 						if ( fileExists( clone ) ) {
 							fileDelete( clone );
