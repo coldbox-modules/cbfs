@@ -1339,7 +1339,10 @@ component extends="coldbox.system.testing.BaseTestCase" {
 
 			story( "We can work with a file object", function(){
 				beforeEach( function(){
-					var files = [ "some_file.txt", "another_file.txt" ];
+					var files = [ 
+						variables.pathPrefix & "some_file.txt",
+						variables.pathPrefix & "another_file.txt"
+					];
 
 					files.each( function( testFile ){
 						if ( disk.exists( testFile ) ) {
@@ -1347,8 +1350,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 						}
 					} );
 
-					testFile = newFile( "some_file.txt" ).create( "some content" );
-					;
+					testFile = newFile( variables.pathPrefix & "some_file.txt" ).create( "some content" );
 				} );
 				given( "a call to file()", function(){
 					then( "it returns a file object", function(){
@@ -1406,7 +1408,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 					then( "it is proxied to the disk", function(){
 						testFile.delete();
 						expect( testFile.exists() ).toBeFalse();
-						testFile = newFile( "some_file.txt" ).create( "some content" );
+						testFile = newFile( variables.pathPrefix & "some_file.txt" ).create( "some content" );
 					} );
 				} );
 				given( "we touch the file", function(){
