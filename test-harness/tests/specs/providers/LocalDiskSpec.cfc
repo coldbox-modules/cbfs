@@ -69,7 +69,7 @@ component extends="cbfs.models.testing.AbstractDiskSpec" {
 
 					testFile = newFile( variables.pathPrefix & "some_file.txt" ).create( "some content" );
 				} );
-				fgiven( "we get a stream", function(){
+				given( "we get a stream", function(){
 					then( "it is proxied to the disk", function(){
 						expect( testFile.stream() ).toBeInstanceOf( "Stream" );
 					} );
