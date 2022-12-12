@@ -56,7 +56,7 @@ component extends="cbfs.models.testing.AbstractDiskSpec" {
 
 			story( "We can work with a file object", function(){
 				beforeEach( function(){
-					var files = [ 
+					var files = [
 						variables.pathPrefix & "some_file.txt",
 						variables.pathPrefix & "another_file.txt"
 					];
