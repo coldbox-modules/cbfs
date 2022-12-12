@@ -10,26 +10,6 @@ component extends="cbfs.models.testing.AbstractDiskSpec" {
 
 		// Localized Suites
 
-		describe( "Ram Provider Extended Specs", function(){
-			beforeEach( function( currentSpec ){
-				disk = getDisk();
-			} );
-
-			story( "I want to produce a stream from the content's of a file", function(){
-				given( "a valid path", function(){
-					then( "it should return a stream of the file contents", function(){
-						var path = "localFile.cfc";
-						disk.create(
-							path      = path,
-							contents  = fileRead( expandPath( "/cbfs/models/testing/AbstractDiskSpec.cfc" ) ),
-							overwrite = true
-						);
-						var stream = disk.stream( path );
-						expect( stream ).toBeInstanceOf( "Stream" );
-					} );
-				} );
-			} );
-		} );
 	}
 
 	/**
