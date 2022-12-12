@@ -78,6 +78,13 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 			if ( !reFind( "\/$", variables.properties.diskUrl ) ) {
 				variables.properties.diskUrl &= "/";
 			}
+		} else {
+			variables.properties.diskURL = variables.requestService.getContext().getHTMLBaseURL()
+								& replace(
+									variables.properties.path,
+									variables.wirebox.getInstance( "coldbox" ).getSetting( "ApplicationPath" ),
+									""
+								) & "/" ;
 		}
 
 		// Verify the disk storage exists, else create it
