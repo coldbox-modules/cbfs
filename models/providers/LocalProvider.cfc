@@ -80,11 +80,11 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 			}
 		} else {
 			variables.properties.diskURL = variables.requestService.getContext().getHTMLBaseURL()
-								& replace(
-									variables.properties.path,
-									variables.wirebox.getInstance( "coldbox" ).getSetting( "ApplicationPath" ),
-									""
-								) & "/" ;
+			& replace(
+				variables.properties.path,
+				variables.wirebox.getInstance( "coldbox" ).getSetting( "ApplicationPath" ),
+				""
+			) & "/";
 		}
 
 		// Verify the disk storage exists, else create it
