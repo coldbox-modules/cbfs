@@ -4,6 +4,9 @@ component extends="cbfs.models.testing.AbstractDiskSpec" {
 	variables.providerName = "S3";
 	// The concrete test must activate these in order for the tests to execute according to their disk features
 	variables.publicDomain = createObject( "java", "java.lang.System" ).getEnv( "AWS_S3_PUBLIC_DOMAIN" );
+	if( isNull( variables.publicDomain ) ){
+		variables.publicDomain = createObject( "java", "java.lang.System" ).getProperty( "AWS_S3_PUBLIC_DOMAIN" );		
+	}
 
 	variables.testFeatures = {
 		symbolicLink : false,
