@@ -1339,7 +1339,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 
 			story( "We can work with a file object", function(){
 				beforeEach( function(){
-					var files = [ 
+					var files = [
 						variables.pathPrefix & "some_file.txt",
 						variables.pathPrefix & "another_file.txt"
 					];

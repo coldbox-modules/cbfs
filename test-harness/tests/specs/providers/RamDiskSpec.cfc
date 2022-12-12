@@ -9,7 +9,6 @@ component extends="cbfs.models.testing.AbstractDiskSpec" {
 		super.run();
 
 		// Localized Suites
-
 	}
 
 	/**
