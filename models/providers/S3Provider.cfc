@@ -491,8 +491,8 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 			return fileContents;
 		} else {
 			return !isBinaryFile( arguments.path )
-			 ? fileRead( url( arguments.path ) )
-			 : fileReadBinary( url( arguments.path ) );
+			 ? fileRead( this.url( arguments.path ) )
+			 : fileReadBinary( this.url( arguments.path ) );
 		}
 	}
 
