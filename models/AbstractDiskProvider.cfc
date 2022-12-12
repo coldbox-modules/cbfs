@@ -36,9 +36,10 @@ component accessors="true" {
 	 * Dependency Injection
 	 * --------------------------------------------------------------------------
 	 */
-	property name="streamBuilder" inject="StreamBuilder@cbstreams";
-	property name="log"           inject="logbox:logger:{this}";
-	property name="intercept"     inject="coldbox:InterceptorService";
+	property name="streamBuilder"  inject="StreamBuilder@cbstreams";
+	property name="log"            inject="logbox:logger:{this}";
+	property name="intercept"      inject="coldbox:InterceptorService";
+	property name="requestService" inject="coldbox:RequestService";
 
 	/**
 	 * --------------------------------------------------------------------------
@@ -173,6 +174,25 @@ component accessors="true" {
 		return this;
 	}
 
+	/**
+	 * Download a file to the browser
+	 *
+	 * @path The file path to download
+	 *
+	 * @throws cbfs.FileNotFoundException
+	 */
+	string function download( required path ){
+		var contents = get( arguments.path );
+		variables.requestService
+			.getContext()
+			.sendFile(
+				file        = isBinary( contents ) ? contents : toBinary( toBase64( contents ) ),
+				disposition = "inline",
+				mimeType    = getMimeType( arguments.path ),
+				extension   = listLast( arguments.path, "." )
+			);
+	}
+
 	/************************* UTILITY METHODS *******************************/
 
 	/**
@@ -181,9 +201,15 @@ component accessors="true" {
 	 * @path The path to clean
 	 */
 	function normalizePath( path ){
-		return listToArray(
+		var cleanedPath = listToArray(
 			replace( arguments.path, "\", "/", "all" ).replace( "//", "/", "all" ).reReplace( "\/$", "" )
 		).toList( "/" );
+
+		if ( left( cleanedPath, 1 ) == "/" ) {
+			cleanedPath = right( cleanedPath, len( path ) - 1 );
+		}
+
+		return cleanedPath;
 	}
 
 	/**

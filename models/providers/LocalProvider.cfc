@@ -70,9 +70,6 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 			variables.properties.path = expandPath( variables.properties.path );
 		}
 
-		// Normalize Path
-		variables.properties.path = normalizePath( variables.properties.path );
-
 		// Create java nio path
 		variables.properties.jPath = getJavaPath( arguments.properties.path );
 
@@ -174,6 +171,59 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 
 		arguments[ "disk" ] = this;
 		intercept.announce( "cbfsOnFileCreate", arguments );
+
+		return this;
+	}
+
+
+	/**
+	 * Create a file in the disk from a file path
+	 *
+	 * @source       The file path to use for storage
+	 * @directory    The target directory
+	 * @name         The destination file name. If not provided it defaults to the file name from the source
+	 * @visibility   The storage visibility of the file, available options are `public, private, readonly` or a custom data type the implemented driver can interpret
+	 * @overwrite    Flag to overwrite the file at the destination, if it exists. Defaults to true.
+	 * @deleteSource Flag to remove the source file upon creation in the disk.  Defaults to false.
+	 *
+	 * @return cbfs.models.IDisk
+	 *
+	 * @throws cbfs.FileOverrideException - When a file exists and no override has been provided
+	 */
+	function createFromFile(
+		required source,
+		required directory,
+		string name,
+		string visibility    = variables.properties.visibility,
+		boolean overwrite    = true,
+		boolean deleteSource = false
+	){
+		ensureDirectoryExists( buildDiskPath( arguments.directory ) );
+
+		if ( isNull( arguments.name ) ) arguments.name = name( source );
+
+		var filePath = normalizePath( arguments.directory & "/" & arguments.name );
+		var diskPath = buildDiskPath( arguments.directory & "/" & arguments.name );
+
+		if ( !arguments.overwrite && exists( filePath ) ) {
+			throw(
+				type    = "cbfs.FileOverrideException",
+				message = "Cannot upload file. Destination already exists [#filePath#] and overwrite is false"
+			);
+		}
+
+		if ( arguments.deleteSource ) {
+			fileMove( arguments.source, diskPath );
+		} else {
+			fileCopy( arguments.source, diskPath );
+		}
+
+		// Set visibility or mode
+		if ( isWindows() ) {
+			fileSetAttribute( diskPath, variables.VISIBILITY_ATTRIBUTE[ arguments.visibility ] );
+		} else {
+			fileSetAccessMode( diskPath, variables.PERMISSIONS.file[ arguments.visibility ] );
+		}
 
 		return this;
 	}
@@ -481,8 +531,27 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 */
 	any function get( required path ){
 		return !isBinaryFile( arguments.path )
-		 ? variables.jFiles.readString( getJavaPath( ensureFileExists( arguments.path ) ) )
+		 ? variables.jFiles.readString( buildJavaDiskPath( ensureFileExists( arguments.path ) ) )
 		 : fileReadBinary( buildDiskPath( ensureFileExists( arguments.path ) ) );
+	}
+
+
+	/**
+	 * Download a file to the browser
+	 *
+	 * @path The file path to download
+	 *
+	 * @throws cbfs.FileNotFoundException
+	 */
+	string function download( required path ){
+		variables.requestService
+			.getContext()
+			.sendFile(
+				file        = buildDiskPath( arguments.path ),
+				disposition = "inline",
+				mimeType    = getMimeType( arguments.path ),
+				extension   = listLast( arguments.path, "." )
+			);
 	}
 
 	/**
@@ -495,7 +564,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @throws cbfs.FileNotFoundException
 	 */
 	any function getAsBinary( required path ){
-		return variables.jFiles.readAllBytes( getJavaPath( ensureFileExists( arguments.path ) ) );
+		return variables.jFiles.readAllBytes( buildJavaDiskPath( ensureFileExists( arguments.path ) ) );
 	};
 
 	/**
@@ -558,7 +627,6 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		}
 
 		// else touch it baby!
-		arguments.path = buildDiskPath( arguments.path );
 		if ( !arguments.createPath ) {
 			if ( directoryMissing( getDirectoryFromPath( arguments.path ) ) ) {
 				throw(
@@ -643,7 +711,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 			throw( type = "cbfs.FileNotFoundException", message = "File [#arguments.path#] not found." );
 		}
 		var inMillis = variables.jFiles
-			.getLastModifiedTime( getJavaPath( ensureFileExists( arguments.path ) ), [] )
+			.getLastModifiedTime( buildJavaDiskPath( ensureFileExists( arguments.path ) ), [] )
 			.toMillis();
 		// Calculate adjustments fot timezone and daylightsavindtime
 		var offset = ( ( getTimezoneInfo().utcHourOffset ) + 1 ) * -3600;
@@ -1338,10 +1406,13 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @return The canonical path on the disk
 	 */
 	function buildDiskPath( required string path ){
-		var pathTarget = normalizePath( arguments.path );
-		return pathTarget.startsWith( variables.properties.path ) ? pathTarget : getCanonicalPath(
-			variables.properties.path & "/#pathTarget#"
-		).reReplace( "\/$", "" );
+		return arguments.path.startsWith( variables.properties.path )
+		 ? arguments.path
+		 : reReplace(
+			variables.properties.path & "/#normalizePath( arguments.path )#",
+			"\/$",
+			""
+		);
 	}
 
 	/**************************************** STREAM METHODS ****************************************/
@@ -1426,7 +1497,6 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @throws cbfs.FileNotFoundException Throws if the file does not exist
 	 */
 	private function ensureFileExists( required path ){
-		arguments.path = buildDiskPath( arguments.path );
 		if ( !exists( arguments.path ) ) {
 			throw( type = "cbfs.FileNotFoundException", message = "File [#arguments.path#] not found." );
 		}

@@ -147,6 +147,63 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		return this;
 	}
 
+	/**
+	 * Create a file in the disk from a file path
+	 *
+	 * @source       The file path to use for storage
+	 * @directory    The target directory
+	 * @name         The destination file name. If not provided it defaults to the file name from the source
+	 * @visibility   The storage visibility of the file, available options are `public, private, readonly` or a custom data type the implemented driver can interpret
+	 * @overwrite    Flag to overwrite the file at the destination, if it exists. Defaults to true.
+	 * @deleteSource Flag to remove the source file upon creation in the disk.  Defaults to false.
+	 *
+	 * @return cbfs.models.IDisk
+	 *
+	 * @throws cbfs.FileOverrideException - When a file exists and no override has been provided
+	 */
+	function createFromFile(
+		required source,
+		required directory,
+		string name,
+		string visibility    = variables.properties.visibility,
+		boolean overwrite    = true,
+		boolean deleteSource = false
+	){
+		if ( isNull( arguments.name ) ) arguments.name = name( source );
+
+		var filePath = arguments.directory & "/" & arguments.name;
+		if ( !arguments.overwrite && exists( filePath ) ) {
+			throw(
+				type    = "cbfs.FileOverrideException",
+				message = "Cannot upload file. Destination already exists [#filePath#] and overwrite is false"
+			);
+		}
+
+		switch ( arguments.visibility ) {
+			case "private": {
+				arguments.visibility = variables.s3.ACL_PRIVATE;
+				break;
+			}
+			default: {
+				arguments.visibility = variables.s3.ACL_PUBLIC_READ;
+				break;
+			}
+		}
+
+		variables.s3.putObjectFile(
+			bucketName = variables.properties.bucketName,
+			filePath   = arguments.source,
+			uri        = buildPath( filePath ),
+			acl        = arguments.visibility
+		);
+
+		if ( arguments.deleteSource ) {
+			fileDelete( arguments.source );
+		}
+
+		return this;
+	}
+
 
 	/**
 	 * Set the storage visibility of a file, available options are `public, private, readonly` or a custom data type the implemented driver can interpret
@@ -493,11 +550,9 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @throws cbfs.FileNotFoundException
 	 */
 	string function url( required string path ){
-		return replace(
-			variables.s3.getUrlEndpoint(),
-			variables.s3.getURLEndpointHostname(),
-			variables.properties.publicDomain
-		) & "/" & buildPath( arguments.path );
+		return variables.properties.visibility == "public"
+		 ? publicUrl( arguments.path )
+		 : temporaryURL( arguments.path );
 	}
 
 	/**
@@ -1435,6 +1490,19 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		arguments.paths.each( ( path ) => variables.templateCache.clear( "s3fs_path_exists_#hash( path )#" ) );
 
 		return this;
+	}
+
+	/**
+	 * Builds a public URL for the resource
+	 */
+	private function publicUrl( required string path ){
+		var uri         = buildPath( arguments.path );
+		var urlEndpoint = replace(
+			variables.s3.getUrlEndpoint(),
+			variables.s3.getURLEndpointHostname(),
+			variables.properties.publicDomain
+		) & "/";
+		return urlEndpoint & uri;
 	}
 
 }
