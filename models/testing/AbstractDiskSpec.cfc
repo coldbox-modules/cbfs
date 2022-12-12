@@ -1480,11 +1480,6 @@ component extends="coldbox.system.testing.BaseTestCase" {
 						expect( testFile.isSymbolicLink() ).toBeFalse();
 					} );
 				} );
-				given( "we get a stream", function(){
-					then( "it is proxied to the disk", function(){
-						expect( testFile.stream() ).toBeInstanceOf( "Stream" );
-					} );
-				} );
 			} );
 		} ); // end suite
 	}
