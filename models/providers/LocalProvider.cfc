@@ -671,18 +671,18 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @path The file path to build the URL with
 	 */
 	string function url( required string path ){
-		if( isNull( variables.properties.diskUrl ) ){
+		if ( isNull( variables.properties.diskUrl ) ) {
 			throw(
 				message = "This implementation for disk #variables.name# does not support retreiving URLs. Please provide a `diskUrl` configuration string or closure to allow URL generation.",
-				type = "cbfs.UnsupportedMethodException"
+				type    = "cbfs.UnsupportedMethodException"
 			);
 		}
 		return (
-				isClosure( variables.properties.diskUrl )
-					? variables.properties.diskUrl()
-					: variables.properties.diskUrl
-				)
-				& arguments.path;
+			isClosure( variables.properties.diskUrl )
+			 ? variables.properties.diskUrl()
+			 : variables.properties.diskUrl
+		)
+		& arguments.path;
 	}
 
 	/**

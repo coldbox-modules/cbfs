@@ -38,12 +38,15 @@ component {
 				"public" : {
 					provider   : "Local",
 					properties : {
-						path    : getSystemSetting( "CBFS_PUBLIC_DISK_PATH", "#controller.getAppRootPath()#includes/public" ),
+						path : getSystemSetting(
+							"CBFS_PUBLIC_DISK_PATH",
+							"#controller.getAppRootPath()#includes/public"
+						),
 						diskUrl : function(){
 							return variables.controller
-									.getRequestService()
-									.getContext()
-									.getHtmlBaseUrl() & "includes/public"
+								.getRequestService()
+								.getContext()
+								.getHtmlBaseUrl() & "includes/public"
 						}
 					}
 				},
