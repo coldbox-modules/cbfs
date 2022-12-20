@@ -4,7 +4,7 @@
  * ---
  * File object abstration for simplied access to the disk API.
  *
- * @author Grant Copley <gcopley@ortussolutions.com>, Luis Majano <lmajano@ortussolutions.com> 
+ * @author Grant Copley <gcopley@ortussolutions.com>, Luis Majano <lmajano@ortussolutions.com>
  */
 component accessors="true" {
 
@@ -375,7 +375,7 @@ component accessors="true" {
 		boolean deleteSource = false
 	){
 		arguments.source = getPath();
-		return getDisk().createFromFile( argumentCollection=arguments );
-	}	
+		return getDisk().createFromFile( argumentCollection = arguments );
+	}
 
 }
