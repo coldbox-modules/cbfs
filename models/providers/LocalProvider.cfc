@@ -679,7 +679,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		}
 		return (
 			isClosure( variables.properties.diskUrl )
-			 ? variables.properties.diskUrl()
+			 ? variables.properties.diskUrl( arguments.path, this )
 			 : variables.properties.diskUrl
 		)
 		& arguments.path;
