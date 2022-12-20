@@ -32,7 +32,9 @@ component {
 				// Your default application storage : non-web accessible
 				"default" : {
 					provider   : "Local",
-					properties : { path : "#controller.getAppRootPath()#.cbfs" }
+					properties : {
+						path : getSystemSetting( "CBFS_DEFAULT_DISK_PATH", "#controller.getAppRootPath()#.cbfs" )
+					}
 				},
 				// A public web-accessible storage located at /includes/public
 				"public" : {
