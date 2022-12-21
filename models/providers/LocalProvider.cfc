@@ -211,7 +211,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 				message = "Cannot upload file. Destination already exists [#filePath#] and overwrite is false"
 			);
 		}
-
+		// TODO: Move to jFiles
 		if ( arguments.deleteSource ) {
 			fileMove( arguments.source, diskPath );
 		} else {
