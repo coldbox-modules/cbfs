@@ -53,7 +53,7 @@ component accessors="true" {
 		string mode
 	){
 		arguments.path = getPath();
-		invoke( getDisk(), "create", arguments );
+		getDisk().create( argumentCollection=arguments );
 		return this;
 	}
 
