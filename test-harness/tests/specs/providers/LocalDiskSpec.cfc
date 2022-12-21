@@ -71,7 +71,9 @@ component extends="tests.resources.AbstractDiskSpec" {
 						}
 					} );
 
-					testFile = new cbfs.models.File( disk, variables.pathPrefix & "some_file.txt" ).create( "some content" );
+					testFile = new cbfs.models.File( disk, variables.pathPrefix & "some_file.txt" ).create(
+						"some content"
+					);
 				} );
 				given( "we get a stream", function(){
 					then( "it is proxied to the disk", function(){
