@@ -252,4 +252,14 @@ component accessors="true" {
 		return type.listFirst( "/" ).findnocase( "text" ) ? false : true;
 	}
 
+	/**
+	 * Returns a File object for simplier API access
+	 *
+	 * @path The file path to check
+	 */
+	File function file( required path ){
+		arguments.disk = this;
+		return new File( argumentCollection = arguments );
+	}
+
 }

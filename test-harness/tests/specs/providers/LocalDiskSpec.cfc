@@ -57,6 +57,30 @@ component extends="tests.resources.AbstractDiskSpec" {
 					} );
 				} );
 			} );
+
+			story( "We can work with a file object", function(){
+				beforeEach( function(){
+					var files = [
+						variables.pathPrefix & "some_file.txt",
+						variables.pathPrefix & "another_file.txt"
+					];
+
+					files.each( function( testFile ){
+						if ( disk.exists( testFile ) ) {
+							disk.delete( testFile );
+						}
+					} );
+
+					testFile = new cbfs.models.File( disk, variables.pathPrefix & "some_file.txt" ).create(
+						"some content"
+					);
+				} );
+				given( "we get a stream", function(){
+					then( "it is proxied to the disk", function(){
+						expect( testFile.stream() ).toBeInstanceOf( "Stream" );
+					} );
+				} );
+			} );
 		} );
 	}
 

@@ -9,7 +9,6 @@ component extends="tests.resources.AbstractDiskSpec" {
 		super.run();
 
 		// Localized Suites
-
 		describe( "Ram Provider Extended Specs", function(){
 			beforeEach( function( currentSpec ){
 				disk = getDisk();

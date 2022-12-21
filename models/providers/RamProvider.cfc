@@ -610,7 +610,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @throws cbfs.FileNotFoundException - If the filepath is missing
 	 */
 	boolean function isExecutable( required path ){
-		return true;
+		return false;
 	}
 
 	/**
@@ -1271,6 +1271,16 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		return contentsMap( argumentCollection = arguments );
 	}
 
+	/**
+	 * Find path names matching a given globbing pattern
+	 *
+	 * @pattern The globbing pattern to match
+	 */
+	array function glob( required pattern ){
+		// Not implemented yet. HELP!!
+		throw( "Not Implemented Yet" );
+	}
+
 	/**************************************** STREAM METHODS ****************************************/
 
 	/**
@@ -1306,17 +1316,6 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	function streamOf( required array target ){
 		return wirebox.getInstance( "StreamBuilder@cbstreams" ).new( arguments.target );
 	}
-
-	/**
-	 * Find path names matching a given globbing pattern
-	 *
-	 * @pattern The globbing pattern to match
-	 */
-	array function glob( required pattern ){
-		// Not implemented yet. HELP!!
-		throw( "Not Implemented Yet" );
-	}
-
 
 	/********************* PRIVATE METHODS **********************/
 
