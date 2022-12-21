@@ -800,7 +800,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 					} );
 					given( "a private file", function(){
 						it( "should return true as hidden", function(){
-							var path = variables.pathPrefix & "/one/two/hidden-file.txt";
+							var path = variables.pathPrefix & "/one/two/.hidden-file.txt";
 							disk.delete( path );
 							disk.create(
 								path       = path,
