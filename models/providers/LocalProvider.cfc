@@ -25,7 +25,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		// The public disk Url. This is used to create file urls and temporary urls
 		// This should point to the root path but in a web accessible format
 		// It should remain empty if the disk is not web accessible
-		diskUrl          : ""
+		diskUrl          : javacast( "null", 0 )
 	};
 	// Java Helpers
 	// @see https://docs.oracle.com/javase/8/docs/api/java/nio/file/Paths.html#get-java.lang.String-java.lang.String...-
@@ -74,7 +74,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		variables.properties.jPath = getJavaPath( arguments.properties.path );
 
 		// Make sure if you have a diskurl, that it ends in a slash
-		if ( len( variables.properties.diskUrl ) ) {
+		if ( !isNull( variables.properties.diskUrl ) && !isClosure( variables.properties.diskUrl ) ) {
 			if ( !reFind( "\/$", variables.properties.diskUrl ) ) {
 				variables.properties.diskUrl &= "/";
 			}
@@ -211,7 +211,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 				message = "Cannot upload file. Destination already exists [#filePath#] and overwrite is false"
 			);
 		}
-
+		// TODO: Move to jFiles
 		if ( arguments.deleteSource ) {
 			fileMove( arguments.source, diskPath );
 		} else {
@@ -671,7 +671,18 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @path The file path to build the URL with
 	 */
 	string function url( required string path ){
-		return variables.properties.diskUrl & arguments.path;
+		if ( isNull( variables.properties.diskUrl ) ) {
+			throw(
+				message = "This implementation for disk #variables.name# does not support retreiving URLs. Please provide a `diskUrl` configuration string or closure to allow URL generation.",
+				type    = "cbfs.UnsupportedMethodException"
+			);
+		}
+		return (
+			isClosure( variables.properties.diskUrl )
+			 ? variables.properties.diskUrl( arguments.path, this )
+			 : variables.properties.diskUrl
+		)
+		& arguments.path;
 	}
 
 	/**

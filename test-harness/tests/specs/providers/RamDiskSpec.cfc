@@ -1,4 +1,4 @@
-component extends="cbfs.models.testing.AbstractDiskSpec" {
+component extends="tests.resources.AbstractDiskSpec" {
 
 	// The name of the provider in the test-harness we want to test
 	variables.providerName = "Ram";
@@ -20,7 +20,7 @@ component extends="cbfs.models.testing.AbstractDiskSpec" {
 						var path = "localFile.cfc";
 						disk.create(
 							path      = path,
-							contents  = fileRead( expandPath( "/cbfs/models/testing/AbstractDiskSpec.cfc" ) ),
+							contents  = fileRead( expandPath( "/tests/resources/AbstractDiskSpec.cfc" ) ),
 							overwrite = true
 						);
 						var stream = disk.stream( path );

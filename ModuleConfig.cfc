@@ -32,23 +32,30 @@ component {
 				// Your default application storage : non-web accessible
 				"default" : {
 					provider   : "Local",
-					properties : { path : "#controller.getAppRootPath()#.cbfs" }
+					properties : {
+						path : getSystemSetting( "CBFS_DEFAULT_DISK_PATH", "#controller.getAppRootPath()#.cbfs" )
+					}
 				},
 				// A public web-accessible storage located at /includes/public
 				"public" : {
 					provider   : "Local",
 					properties : {
-						path    : "#controller.getAppRootPath()#includes/public",
-						diskUrl : controller
-							.getRequestService()
-							.getContext()
-							.getHtmlBaseUrl() & "includes/public"
+						path : getSystemSetting(
+							"CBFS_PUBLIC_DISK_PATH",
+							"#controller.getAppRootPath()#includes/public"
+						),
+						diskUrl : function(){
+							return variables.controller
+								.getRequestService()
+								.getContext()
+								.getHtmlBaseUrl() & "includes/public"
+						}
 					}
 				},
 				// A disk that points to the CFML Engine's temp directory
 				"temp" : {
 					provider   : "Local",
-					properties : { path : getTempDirectory() }
+					properties : { path : getSystemSetting( "CBFS_TEMP_DISK_PATH", getTempDirectory() ) }
 				}
 			}
 		};

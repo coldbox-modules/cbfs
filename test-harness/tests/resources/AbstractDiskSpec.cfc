@@ -115,7 +115,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 					then( "the source file should no longer exist", function(){
 						var path     = variables.pathPrefix & "space_ninja2.png";
 						var original = expandPath( "/tests/resources/assets/binary_file.png" );
-						var clone    = getTempDirectory() & "/" & "#createUUID()#.png";
+						var clone    = expandPath( "/tests/resources/assets/#createUUID()#.png" );
 
 						if ( fileExists( clone ) ) {
 							fileDelete( clone );
@@ -500,20 +500,26 @@ component extends="coldbox.system.testing.BaseTestCase" {
 						expect( disk.get( path ) ).toBe( "" );
 					} );
 				} );
-				given( "a file that does exist", function(){
-					then( "it should touch it by modified the lastmodified timestamp", function(){
-						var path = variables.pathPrefix & "test_file.txt";
-						disk.delete( path );
-						disk.create( path, "hello" );
-						var before = disk.lastModified( path );
-						sleep( 1000 );
+				// Skipping on windows, as the delay of 1000 is not enough and we don't want to add
+				// more delays to the test. There is a delay in windows to update the metadata of a file
+				given(
+					given: "a file that does exist",
+					skip : isWindows(),
+					body : function(){
+						then( "it should touch it by modified the lastmodified timestamp", function(){
+							var path = variables.pathPrefix & "test_file.txt";
+							disk.delete( path );
+							disk.create( path, "hello" );
+							var before = disk.lastModified( path );
+							sleep( 1000 );
 
-						var after = disk.touch( path ).lastModified( path );
-						expect( disk.exists( path ) ).toBeTrue( "[#path#] should exist" );
-						expect( disk.get( path ) ).toBe( "hello" );
-						expect( before ).toBeLT( after );
-					} );
-				} );
+							var after = disk.touch( path ).lastModified( path );
+							expect( disk.exists( path ) ).toBeTrue( "[#path#] should exist" );
+							expect( disk.get( path ) ).toBe( "hello" );
+							expect( before ).toBeLT( after );
+						} );
+					}
+				);
 				given( "a file that doesn't exist and it has a nested path", function(){
 					then( "it should create the nested directories and create it", function(){
 						var path = variables.pathPrefix & "/one/two/test_file.txt";
@@ -596,13 +602,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 						contents  = "hola amigo",
 						overwrite = true
 					);
-					var before = disk.lastModified( path );
-					expect( before ).toBeDate();
-					sleep( 500 );
-					disk.touch( path );
-					expect( getEpochTimeFromLocal( disk.lastModified( path ) ) ).toBeGTE(
-						getEpochTimeFromLocal( before )
-					);
+					expect( disk.lastModified( path ) ).toBeDate();
 				} );
 			} );
 
@@ -676,10 +676,11 @@ component extends="coldbox.system.testing.BaseTestCase" {
 					} );
 				}
 			);
-
+			// We skip also in windows, due to their amazing privilige system which makes it throw
+			// a Require privilege is not held by the client. :poop:
 			story(
 				story: "The disk can create symbolic links",
-				skip : !hasFeature( "symbolicLink" ),
+				skip : !hasFeature( "symbolicLink" ) || isWindows(),
 				body : function(){
 					it( "can create symbolic links", function(){
 						var path = variables.pathPrefix & "test_file.txt";
@@ -759,7 +760,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 						disk.create(
 							path       = path,
 							contents   = "my contents",
-							visibility = "private",
+							visibility = "readonly",
 							overwrite  = true
 						);
 						expect( disk.isWritable( path ) ).toBeFalse( "Path should not be writable." );
@@ -798,8 +799,8 @@ component extends="coldbox.system.testing.BaseTestCase" {
 						} );
 					} );
 					given( "a private file", function(){
-						it( "should return false as readable", function(){
-							var path = variables.pathPrefix & "/one/two/non-writeable.txt";
+						it( "should return true as hidden", function(){
+							var path = variables.pathPrefix & "/one/two/.hidden-file.txt";
 							disk.delete( path );
 							disk.create(
 								path       = path,
@@ -807,7 +808,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 								visibility = "private",
 								overwrite  = true
 							);
-							expect( disk.isWritable( path ) ).toBeFalse( "Path should not be readable." );
+							expect( disk.isHidden( path ) ).toBeTrue( "Path should not be visible." );
 						} );
 					} );
 				}
@@ -1183,7 +1184,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 						disk.create( dirPath & "/embedded/luis.txt", "hello mi amigo" );
 
 						var results = disk.contents( directory = dirPath, recurse = true );
-						expect( results.toList() ).toInclude( "bddtests/embedded/luis.txt" );
+						expect( results.toList().reReplace( "\\", "/", "all" ) ).toInclude( "bddtests/embedded/luis.txt" );
 					} );
 				} );
 				given( "a valid directory using allContents()", function(){
@@ -1195,7 +1196,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 						disk.create( dirPath & "/embedded/luis.txt", "hello mi amigo" );
 
 						var results = disk.allContents( dirPath );
-						expect( results.toList() ).toInclude( "bddtests/embedded/luis.txt" );
+						expect( results.toList().reReplace( "\\", "/", "all" ) ).toInclude( "bddtests/embedded/luis.txt" );
 					} );
 				} );
 				given( "a valid directory with type of 'file'", function(){
@@ -1336,151 +1337,6 @@ component extends="coldbox.system.testing.BaseTestCase" {
 					} );
 				} );
 			} );
-
-			story( "We can work with a file object", function(){
-				beforeEach( function(){
-					var files = [
-						variables.pathPrefix & "some_file.txt",
-						variables.pathPrefix & "another_file.txt"
-					];
-
-					files.each( function( testFile ){
-						if ( disk.exists( testFile ) ) {
-							disk.delete( testFile );
-						}
-					} );
-
-					testFile = newFile( variables.pathPrefix & "some_file.txt" ).create( "some content" );
-				} );
-				given( "a call to file()", function(){
-					then( "it returns a file object", function(){
-						expect( testFile ).toBeInstanceOf( "File" );
-					} );
-				} );
-				given( "we create a file", function(){
-					then( "it is proxied to the disk", function(){
-						expect( testFile.exists() ).toBeTrue();
-					} );
-				} );
-				given( "we set the visibity", function(){
-					then( "it is proxied to the disk", function(){
-						var result = testFile.setVisibility( "private" ).visibility();
-						expect( result ).toBe( "private" );
-					} );
-				} );
-				given( "we prepend the file", function(){
-					then( "it is proxied to the disk", function(){
-						var result = testFile.prepend( "some more content" ).get();
-						expect( result ).toInclude( "some more content" );
-					} );
-				} );
-				given( "we append the file", function(){
-					then( "it is proxied to the disk", function(){
-						var result = testFile.append( "some more content" ).get();
-						expect( result ).toInclude( "some more content" );
-					} );
-				} );
-				given( "we copy the file", function(){
-					then( "it is proxied to the disk and returns the copied file object", function(){
-						var result = testFile.copy( "another_file.txt" );
-						expect( result ).toBeInstanceOf( "File" );
-						expect( result.getPath() ).toBe( "another_file.txt" );
-					} );
-				} );
-				given( "we move the file", function(){
-					then( "it is proxied to the disk and returns the moved file object", function(){
-						var result = testFile.move( "another_file.txt" );
-						expect( result ).toBeInstanceOf( "File" );
-						expect( result.getPath() ).toBe( "another_file.txt" );
-					} );
-				} );
-				given( "we get the file", function(){
-					then( "it is proxied to the disk and returns the file contents", function(){
-						expect( testFile.get() ).toBe( "some content" );
-					} );
-				} );
-				given( "we check for existance", function(){
-					then( "it is proxied to the disk", function(){
-						expect( testFile.exists() ).toBeTrue();
-					} );
-				} );
-				given( "we delete the file", function(){
-					then( "it is proxied to the disk", function(){
-						testFile.delete();
-						expect( testFile.exists() ).toBeFalse();
-						testFile = newFile( variables.pathPrefix & "some_file.txt" ).create( "some content" );
-					} );
-				} );
-				given( "we touch the file", function(){
-					then( "it is proxied to the disk", function(){
-						tmpFile = newFile( "touch_file" );
-						expect( tmpFile.exists() ).toBeFalse();
-						tmpFile.touch();
-						expect( tmpFile.exists() ).toBeTrue();
-						tmpFile.delete(); // cleanup
-					} );
-				} );
-				given( "we get the file size", function(){
-					then( "it is proxied to the disk", function(){
-						expect( testFile.size() ).toBe( 12 );
-					} );
-				} );
-				given( "we get the last modified date", function(){
-					then( "it is proxied to the disk", function(){
-						expect( testFile.lastModified() ).toBeTypeOf( "date" );
-					} );
-				} );
-				given( "we get the mime type", function(){
-					then( "it is proxied to the disk", function(){
-						expect( testFile.mimeType() ).toBe( "text/plain" );
-					} );
-				} );
-				given( "we get the file info", function(){
-					then( "it is proxied to the disk", function(){
-						expect( testFile.info().type ).toBe( "file" );
-					} );
-				} );
-				given( "we get the checksum", function(){
-					then( "it is proxied to the disk", function(){
-						expect( testFile.checksum() ).toHaveLength( 32 );
-					} );
-				} );
-				given( "we get the extension", function(){
-					then( "it is proxied to the disk", function(){
-						expect( testFile.extension() ).toBe( "txt" );
-					} );
-				} );
-				given( "we use chmod", function(){
-					then( "it is proxied to the disk", function(){
-						expect( testFile.chmod( "777" ) ).toBeInstanceOf( "File" );
-					} );
-				} );
-				given( "we check is writable", function(){
-					then( "it is proxied to the disk", function(){
-						expect( testFile.isWritable() ).toBeTrue();
-					} );
-				} );
-				given( "we check is readable", function(){
-					then( "it is proxied to the disk", function(){
-						expect( testFile.isReadable() ).toBeTrue();
-					} );
-				} );
-				given( "we check is executeable", function(){
-					then( "it is proxied to the disk", function(){
-						expect( testFile.isExecutable() ).toBeFalse();
-					} );
-				} );
-				given( "we check is hidden", function(){
-					then( "it is proxied to the disk", function(){
-						expect( testFile.isHidden() ).toBeFalse();
-					} );
-				} );
-				given( "we check is symbolic link", function(){
-					then( "it is proxied to the disk", function(){
-						expect( testFile.isSymbolicLink() ).toBeFalse();
-					} );
-				} );
-			} );
 		} ); // end suite
 	}
 
@@ -1580,13 +1436,6 @@ component extends="coldbox.system.testing.BaseTestCase" {
 	 */
 	function isMac(){
 		return reFindNoCase( "Mac", createObject( "java", "java.lang.System" ).getProperties()[ "os.name" ] );
-	}
-
-	/**
-	 * Create a test file
-	 */
-	function newFile( required path ){
-		return disk.file( arguments.path );
 	}
 
 }
