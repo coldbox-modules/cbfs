@@ -9,20 +9,20 @@
 component accessors="true" {
 
 	/**
-	* The disk instance that all file operations should be performed on.
-	*/
+	 * The disk instance that all file operations should be performed on.
+	 */
 	property name="path";
 
 	/**
-	* The relative path to the file on disk.
-	*/
+	 * The relative path to the file on disk.
+	 */
 	property name="disk";
 
 	/**
 	 * Constructor
 	 *
-	 * @disk       The disk instance that all file operations should be performed on.
-	 * @path       The relative path to the file on disk.
+	 * @disk The disk instance that all file operations should be performed on.
+	 * @path The relative path to the file on disk.
 	 *
 	 * @return File
 	 */
