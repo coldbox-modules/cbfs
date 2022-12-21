@@ -21,7 +21,7 @@ component extends="tests.resources.AbstractDiskSpec" {
 						var path = "localFile.cfc";
 						disk.create(
 							path      = path,
-							contents  = fileRead( expandPath( "/cbfs/models/testing/AbstractDiskSpec.cfc" ) ),
+							contents  = fileRead( expandPath( "/tests/resources/AbstractDiskSpec.cfc" ) ),
 							overwrite = true
 						);
 						var stream = disk.stream( path );
