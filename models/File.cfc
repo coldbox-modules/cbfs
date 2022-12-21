@@ -135,7 +135,7 @@ component accessors="true" {
 	function copy( required destination, boolean overwrite = true ){
 		arguments.source = getPath();
 		getDisk().copy( argumentCollection = arguments );
-		return createObject( "component", "cbfs.models.File" ).init(
+		return new File(
 			disk = getDisk(),
 			path = arguments.destination
 		);
@@ -154,7 +154,7 @@ component accessors="true" {
 	function move( required destination, boolean overwrite = true ){
 		arguments.source = getPath();
 		getDisk().move( argumentCollection = arguments );
-		return createObject( "component", "cbfs.models.File" ).init(
+		return new File(
 			disk = getDisk(),
 			path = arguments.destination
 		);

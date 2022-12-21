@@ -259,7 +259,7 @@ component accessors="true" {
 	 */
 	File function file( required path ){
 		arguments.disk = this;
-		return createObject( "component", "cbfs.models.File" ).init( argumentCollection = arguments );
+		return new File( argumentCollection = arguments );
 	}
 
 }
