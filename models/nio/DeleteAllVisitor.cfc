@@ -33,7 +33,14 @@ component extends="FileVisitor" accessors="true" {
 	 */
 	function postVisitDirectory( dir, exception ){
 		// If we have an exclude root, check it and exclude it.
-		if ( !len( variables.excludeRoot ) || arguments.dir.toString() != variables.excludeRoot ) {
+		if (
+			!len( variables.excludeRoot ) ||
+			arguments.dir.toString().reReplace( "[\\/]", "", "all" ) != variables.excludeRoot.reReplace(
+				"[\\/]",
+				"",
+				"all"
+			)
+		) {
 			variables.jFiles.delete( arguments.dir );
 		}
 		return variables.jFileVisitResult.CONTINUE;

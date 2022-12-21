@@ -1,4 +1,4 @@
-component extends="cbfs.models.testing.AbstractDiskSpec" {
+component extends="tests.resources.AbstractDiskSpec" {
 
 	// The target provider name to test
 	variables.providerName = "S3";
