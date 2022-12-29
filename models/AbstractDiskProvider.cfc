@@ -249,7 +249,8 @@ component accessors="true" {
 	 */
 	boolean function isBinaryFile( required path ){
 		var type = getMimeType( arguments.path ) ?: "binary";
-		return type.listFirst( "/" ).findnocase( "text" ) ? false : true;
+        var textSuffixes = [ "json", "xml", "javascript" ];
+		return type.listFirst( "/" ).findnocase( "text" ) || textSuffixes.contains( type.listLast( "/" ) ) ? false : true;
 	}
 
 	/**
