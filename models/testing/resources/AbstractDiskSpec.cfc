@@ -1361,7 +1361,9 @@ component extends="coldbox.system.testing.BaseTestCase" {
 							overwrite = true
 						);
 
-						expect( disk.isBinaryFile( filePath ) ).toBeFalse( "Binary mimetype detected on JSON file.  The detected mimetype of the file is #disk.getMimeType( filePath )#" );
+						expect( disk.isBinaryFile( filePath ) ).toBeFalse(
+							"Binary mimetype detected on JSON file.  The detected mimetype of the file is #disk.getMimeType( filePath )#"
+						);
 					} );
 				} );
 			} );
