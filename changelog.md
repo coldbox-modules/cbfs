@@ -11,6 +11,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 * First iteration of this module
 
-## [1.0.1] => 2022-DEV-29
+## [1.0.1] => 2022-DEC-29
 ### Fixed
 - Issue #35 - JSON/JS/XML files being returned as binary
