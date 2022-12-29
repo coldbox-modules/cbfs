@@ -1,4 +1,4 @@
-component extends="tests.resources.AbstractDiskSpec" {
+component extends="cbfs.models.testing.AbstractDiskSpec" {
 
 	// The name of the provider in the test-harness we want to test
 	variables.providerName = "Ram";
