@@ -1,6 +1,6 @@
 {
     "name":"CB File Storages",
-    "version":"1.0.0",
+    "version":"1.0.1",
     "location":"https://downloads.ortussolutions.com/ortussolutions/coldbox-modules/cbfs/@build.version@/cbfs-@build.version@.zip",
     "author":"Ortus Solutions, Corp",
     "homepage":"https://github.com/coldbox-modules/cbfs",
@@ -51,6 +51,6 @@
         "format:watch":"cfformat watch models,test-harness/**/*.cfc,ModuleConfig.cfc ./.cfformat.json",
         "format:check":"cfformat check models,test-harness/**/*.cfc,ModuleConfig.cfc",
         "install:dependencies":"install --force && cd test-harness && install --force",
-		"start:S3Mock" : "!docker run --rm -d --name cbfs-s3-mock -p 9090:9090 -p 9191:9191 -e initialBuckets=cbfs-test -t adobe/s3mock"
+        "start:S3Mock":"!docker run --rm -d --name cbfs-s3-mock -p 9090:9090 -p 9191:9191 -e initialBuckets=cbfs-test -t adobe/s3mock"
     }
 }

@@ -1341,6 +1341,30 @@ component extends="coldbox.system.testing.BaseTestCase" {
 					} );
 				} );
 			} );
+
+			// /********************************************************/
+			// /** Additional verfications **/
+			// /********************************************************/
+			story( "The disk can work with binary and non-binary files", function(){
+				beforeEach( function( currentSpec ){
+					disk.deleteDirectory( variables.pathPrefix & "bddtests" );
+				} );
+				given( "we have a json file", function(){
+					then( "it should determine the file is not binary", function(){
+						var dirPath  = variables.pathPrefix & "bddtests/";
+						var filePath = dirPath & "supermario.json";
+						var jsonData = { "game" : "Super Mario Bros" };
+
+						disk.create(
+							path      = filePath,
+							contents  = serializeJSON( jsonData ),
+							overwrite = true
+						);
+
+						expect( disk.isBinaryFile( filePath ) ).toBeFalse();
+					} );
+				} );
+			} );
 		} ); // end suite
 	}
 

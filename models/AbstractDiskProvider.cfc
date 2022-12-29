@@ -248,8 +248,9 @@ component accessors="true" {
 	 * @path The file path to check
 	 */
 	boolean function isBinaryFile( required path ){
-		var type = getMimeType( arguments.path ) ?: "binary";
-		return type.listFirst( "/" ).findnocase( "text" ) ? false : true;
+		var type         = getMimeType( arguments.path ) ?: "binary";
+		var textSuffixes = [ "json", "xml", "javascript" ];
+		return type.listFirst( "/" ).findnocase( "text" ) || textSuffixes.contains( type.listLast( "/" ) ) ? false : true;
 	}
 
 	/**
