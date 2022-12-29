@@ -1349,17 +1349,15 @@ component extends="coldbox.system.testing.BaseTestCase" {
 				beforeEach( function( currentSpec ){
 					disk.deleteDirectory( variables.pathPrefix & "bddtests" );
 				} );
-				given( "we have a json file", function() {
-					then( "it should determine the file is not binary", function() {
-						var dirPath = variables.pathPrefix & "bddtests/";
+				given( "we have a json file", function(){
+					then( "it should determine the file is not binary", function(){
+						var dirPath  = variables.pathPrefix & "bddtests/";
 						var filePath = dirPath & "supermario.json";
-						var jsonData = {
-							"game": "Super Mario Bros"
-						};
+						var jsonData = { "game" : "Super Mario Bros" };
 
 						disk.create(
 							path      = filePath,
-							contents  = serializeJson( jsonData ),
+							contents  = serializeJSON( jsonData ),
 							overwrite = true
 						);
 
@@ -1367,7 +1365,6 @@ component extends="coldbox.system.testing.BaseTestCase" {
 					} );
 				} );
 			} );
-
 		} ); // end suite
 	}
 
