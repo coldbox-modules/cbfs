@@ -60,6 +60,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		param arguments.properties.debug               = false;
 		param arguments.properties.visibility          = "public";
 		param arguments.properties.cacheLookups        = true;
+		param arguments.properties.autoContentType     = true;
 
 		try {
 			variables.s3 = createObject( "component", "s3sdk.models.AmazonS3" ).init(
@@ -133,10 +134,11 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		arguments.path = buildPath( arguments.path );
 
 		variables.s3.putObject(
-			bucketName = variables.properties.bucketName,
-			uri        = arguments.path,
-			data       = arguments.contents,
-			acl        = arguments.visibility
+			bucketName  = variables.properties.bucketName,
+			uri         = arguments.path,
+			data        = arguments.contents,
+			acl         = arguments.visibility,
+			contentType = getMimeType( arguments.path )
 		);
 
 		evictFromCache( arguments.path );
@@ -194,7 +196,8 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 			bucketName = variables.properties.bucketName,
 			filePath   = arguments.source,
 			uri        = buildPath( filePath ),
-			acl        = arguments.visibility
+			acl        = arguments.visibility,
+			contentType = getMimeType( arguments.name )
 		);
 
 		if ( arguments.deleteSource ) {
@@ -452,6 +455,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		return delete( arguments.source );
 	}
 
+
 	/**
 	 * Get the contents of a file
 	 *
@@ -462,38 +466,24 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @throws cbfs.FileNotFoundException
 	 */
 	any function get( required path ){
+
 		ensureFileExists( arguments.path );
+
 		arguments.path = buildPath( arguments.path );
-		// ACF will not allow us to read the file directly via URL
-		if ( server.coldfusion.productVersion.listFirst() >= 2018 ) {
-			var tempFileName = createUUID() & "." & extension( arguments.path );
 
-			if ( getProperties().keyExists( "tempDirectory" ) ) {
-				var tempDir = getProperties().tempDirectory;
-				if ( !this.directoryExists( expandPath( tempDir ) ) ) this.directoryCreate( expandPath( tempDir ) );
-				var tempFilePath = expandPath( tempDir & "/" & tempFileName );
-			} else {
-				var tempFilePath = getTempFile( getTempDirectory(), tempFileName );
-				// the function above touches a file on ACF so we need to delete it
-				if ( fileExists( tempFilePath ) ) fileDelete( tempFilePath );
-			}
+		var response = variables.s3.getObject(
+			bucketName = variables.properties.bucketName,
+			uri        = arguments.path
+		).response;
 
-			variables.s3.downloadObject(
-				bucketName = variables.properties.bucketName,
-				uri        = arguments.path,
-				filepath   = tempFilePath
-			);
-
-			var fileContents = !isBinaryFile( arguments.path )
-			 ? fileRead( tempFilePath )
-			 : fileReadBinary( tempFilePath );
-			fileDelete( tempFilePath );
-			return fileContents;
+		if( getMetadata( response ).name == "java.io.ByteArrayOutputStream" ){
+			var bytes = [];
+			response.writeBytes( bytes );
+			return response.toByteArray();
 		} else {
-			return !isBinaryFile( arguments.path )
-			 ? fileRead( this.url( arguments.path ) )
-			 : fileReadBinary( this.url( arguments.path ) );
+			return response;
 		}
+
 	}
 
 	/**
@@ -607,7 +597,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	/**
 	 * Deletes a file
 	 *
-	 * @path          
+	 * @path   The path to delete
 	 * @throwOnMissing When true an error will be thrown if the file does not exist
 	 */
 	boolean function delete( required any path, boolean throwOnMissing = false ){
