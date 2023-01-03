@@ -471,10 +471,18 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 
 		arguments.path = buildPath( arguments.path );
 
-		return variables.s3.getObject(
+		var response = variables.s3.getObject(
 			bucketName = variables.properties.bucketName,
 			uri        = arguments.path
 		).response;
+
+		if( getMetadata( response ).name == "java.io.ByteArrayOutputStream" ){
+			var bytes = [];
+			response.writeBytes( bytes );
+			return response.toByteArray();
+		} else {
+			return response;
+		}
 
 	}
 
