@@ -169,8 +169,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 			fileSetAccessMode( diskPath, arguments.mode );
 		}
 
-		arguments[ "disk" ] = this;
-		intercept.announce( "cbfsOnFileCreate", arguments );
+		intercept.announce( "cbfsOnFileCreate", { file: this.file( arguments.path ) } );
 
 		return this;
 	}
@@ -278,7 +277,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 					variables.jCopyOption.ATOMIC_MOVE
 				]
 			);
-			intercept.announce( "cbfsOnFileCreate", { "path" : filePath, "disk" : this } );
+			intercept.announce( "cbfsOnFileCreate", { file: this.file( filePath ) } );
 		} else {
 			// otherwise we can go directly to the directory
 			var upload = fileUpload(
@@ -289,9 +288,8 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 			);
 			var filePath = arguments.directory & "/" & upload.serverFile;
 
-			intercept.announce( "cbfsOnFileCreate", { "path" : filePath, "disk" : this } );
+			intercept.announce( "cbfsOnFileCreate", { file: this.file( filePath ) } );
 		}
-
 
 		return this;
 	}
@@ -604,7 +602,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		}
 		variables.jFiles.delete( buildJavaDiskPath( arguments.path ) );
 
-		intercept.announce( "cbfsOnFileDelete", { "path" : normalizePath( arguments.path ), "disk" : this } );
+		intercept.announce( "cbfsOnFileDelete", { file : this.file( normalizePath( arguments.path ) ) } );
 
 		return true;
 	}
@@ -762,10 +760,9 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		if ( missing( arguments.path ) ) {
 			throw( type = "cbfs.FileNotFoundException", message = "File [#arguments.path#] not found." );
 		}
-		var fileInfo           = getFileInfo( buildDiskPath( arguments.path ) );
-		fileInfo[ "diskPath" ] = normalizePath( arguments.path );
+		var fileInfo = getFileInfo( buildDiskPath( arguments.path ) );
 
-		intercept.announce( "cbfsOnFileInfoRequest", fileInfo );
+		intercept.announce( "cbfsOnFileInfoRequest", { file: buildDiskPath( arguments.path ), info: fileInfo } );
 
 		return fileInfo;
 	}
@@ -799,9 +796,8 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 					return arguments.value.toString();
 			}
 		} );
-		infoMap[ "diskPath" ] = normalizePath( arguments.path );
 
-		intercept.announce( "cbfsOnFileInfoRequest", infoMap );
+		intercept.announce( "cbfsOnFileInfoRequest", { file: this.file( normalizePath( arguments.path ) ), infoMap: infoMap } );
 
 		return infoMap;
 	}

@@ -143,8 +143,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 
 		evictFromCache( arguments.path );
 
-		arguments[ "disk" ] = this;
-		intercept.announce( "cbfsOnFileCreate", arguments );
+		intercept.announce( "cbfsOnFileCreate", { file: this.file( arguments.path ) } );
 
 		return this;
 	}
@@ -616,7 +615,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 			return false;
 		}
 
-		intercept.announce( "cbfsOnFileDelete", { "path" : normalizePath( arguments.path ), "disk" : this } );
+		intercept.announce( "cbfsOnFileDelete", { file : this.file( normalizePath( arguments.path ) ) } );
 
 		return true;
 	}
@@ -664,7 +663,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 			"isHidden"     : acl == "private"
 		};
 
-		intercept.announce( "cbfsOnFileInfoRequest", info );
+		intercept.announce( "cbfsOnFileInfoRequest", { file: this.file( filePath ), info: info } );
 
 		return info;
 	}
