@@ -143,7 +143,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 
 		evictFromCache( arguments.path );
 
-		intercept.announce( "cbfsOnFileCreate", { file: this.file( arguments.path ) } );
+		intercept.announce( "cbfsOnFileCreate", { file : this.file( arguments.path ) } );
 
 		return this;
 	}
@@ -192,10 +192,10 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		}
 
 		variables.s3.putObjectFile(
-			bucketName = variables.properties.bucketName,
-			filePath   = arguments.source,
-			uri        = buildPath( filePath ),
-			acl        = arguments.visibility,
+			bucketName  = variables.properties.bucketName,
+			filePath    = arguments.source,
+			uri         = buildPath( filePath ),
+			acl         = arguments.visibility,
 			contentType = getMimeType( arguments.name )
 		);
 
@@ -465,24 +465,19 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @throws cbfs.FileNotFoundException
 	 */
 	any function get( required path ){
-
 		ensureFileExists( arguments.path );
 
 		arguments.path = buildPath( arguments.path );
 
-		var response = variables.s3.getObject(
-			bucketName = variables.properties.bucketName,
-			uri        = arguments.path
-		).response;
+		var response = variables.s3.getObject( bucketName = variables.properties.bucketName, uri = arguments.path ).response;
 
-		if( getMetadata( response ).name == "java.io.ByteArrayOutputStream" ){
+		if ( getMetadata( response ).name == "java.io.ByteArrayOutputStream" ) {
 			var bytes = [];
 			response.writeBytes( bytes );
 			return response.toByteArray();
 		} else {
 			return response;
 		}
-
 	}
 
 	/**
@@ -596,7 +591,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	/**
 	 * Deletes a file
 	 *
-	 * @path   The path to delete
+	 * @path           The path to delete
 	 * @throwOnMissing When true an error will be thrown if the file does not exist
 	 */
 	boolean function delete( required any path, boolean throwOnMissing = false ){
@@ -663,7 +658,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 			"isHidden"     : acl == "private"
 		};
 
-		intercept.announce( "cbfsOnFileInfoRequest", { file: this.file( filePath ), info: info } );
+		intercept.announce( "cbfsOnFileInfoRequest", { file : this.file( filePath ), info : info } );
 
 		return info;
 	}

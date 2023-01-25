@@ -169,7 +169,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 			fileSetAccessMode( diskPath, arguments.mode );
 		}
 
-		intercept.announce( "cbfsOnFileCreate", { file: this.file( arguments.path ) } );
+		intercept.announce( "cbfsOnFileCreate", { file : this.file( arguments.path ) } );
 
 		return this;
 	}
@@ -277,7 +277,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 					variables.jCopyOption.ATOMIC_MOVE
 				]
 			);
-			intercept.announce( "cbfsOnFileCreate", { file: this.file( filePath ) } );
+			intercept.announce( "cbfsOnFileCreate", { file : this.file( filePath ) } );
 		} else {
 			// otherwise we can go directly to the directory
 			var upload = fileUpload(
@@ -288,7 +288,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 			);
 			var filePath = arguments.directory & "/" & upload.serverFile;
 
-			intercept.announce( "cbfsOnFileCreate", { file: this.file( filePath ) } );
+			intercept.announce( "cbfsOnFileCreate", { file : this.file( filePath ) } );
 		}
 
 		return this;
@@ -762,7 +762,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		}
 		var fileInfo = getFileInfo( buildDiskPath( arguments.path ) );
 
-		intercept.announce( "cbfsOnFileInfoRequest", { file: buildDiskPath( arguments.path ), info: fileInfo } );
+		intercept.announce( "cbfsOnFileInfoRequest", { file : buildDiskPath( arguments.path ), info : fileInfo } );
 
 		return fileInfo;
 	}
@@ -797,7 +797,13 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 			}
 		} );
 
-		intercept.announce( "cbfsOnFileInfoRequest", { file: this.file( normalizePath( arguments.path ) ), infoMap: infoMap } );
+		intercept.announce(
+			"cbfsOnFileInfoRequest",
+			{
+				file    : this.file( normalizePath( arguments.path ) ),
+				infoMap : infoMap
+			}
+		);
 
 		return infoMap;
 	}

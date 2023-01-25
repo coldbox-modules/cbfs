@@ -112,7 +112,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 			createDirectory( getDirectoryFromPath( arguments.path ) );
 		}
 
-		intercept.announce( "cbfsOnFileCreate", { file: this.file( arguments.path ) } );
+		intercept.announce( "cbfsOnFileCreate", { file : this.file( arguments.path ) } );
 
 		return this;
 	}
