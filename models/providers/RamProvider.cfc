@@ -112,8 +112,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 			createDirectory( getDirectoryFromPath( arguments.path ) );
 		}
 
-		arguments[ "disk" ] = this;
-		intercept.announce( "cbfsOnFileCreate", arguments );
+		intercept.announce( "cbfsOnFileCreate", { file : this.file( arguments.path ) } );
 
 		return this;
 	}
@@ -415,7 +414,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		}
 		variables.fileStorage.delete( arguments.path );
 
-		intercept.announce( "cbfsOnFileDelete", { "path" : normalizePath( arguments.path ), "disk" : this } );
+		intercept.announce( "cbfsOnFileDelete", { file : this.file( normalizePath( arguments.path ) ) } );
 
 		return true;
 	}
