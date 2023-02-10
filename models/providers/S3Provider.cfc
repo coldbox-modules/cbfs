@@ -1042,13 +1042,14 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @absolute  Local provider only: We return relative disk paths by default. If true, we return absolute paths
 	 */
 	array function contents(
-		required directory,
+		directory = "",
 		any filter       = "",
 		sort             = "",
 		boolean recurse  = false,
 		type             = "all",
 		boolean absolute = false
 	){
+
 		var sourcePath = arguments.directory;
 
 		if ( !this.directoryExists( sourcePath ) ) {
@@ -1136,7 +1137,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @recurse   Recurse into subdirectories, default is false
 	 */
 	array function files(
-		required directory,
+		directory = "",
 		any filter,
 		sort,
 		boolean recurse = false
@@ -1155,7 +1156,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @recurse   Recurse into subdirectories, default is false
 	 */
 	array function directories(
-		required directory,
+		directory = "",
 		any filter,
 		sort,
 		boolean recurse = false
@@ -1178,7 +1179,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @filter    A string wildcard or a lambda/closure that receives the file path and should return true to include it in the returned array or not.
 	 * @sort      Columns by which to sort. e.g. Directory, Size DESC, DateLastModified.
 	 */
-	array function allFiles( required directory, any filter, sort ){
+	array function allFiles( directory = "", any filter, sort ){
 		arguments.recurse = true;
 		return files( argumentCollection = arguments );
 	};
@@ -1190,7 +1191,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @filter    A string wildcard or a lambda/closure that receives the file path and should return true to include it in the returned array or not.
 	 * @sort      Columns by which to sort. e.g. Directory, Size DESC, DateLastModified.
 	 */
-	array function allDirectories( required directory, any filter, sort ){
+	array function allDirectories( directory = "", any filter, sort ){
 		arguments.recurse = true;
 		return directories( argumentCollection = arguments );
 	};
@@ -1211,7 +1212,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @recurse   Recurse into subdirectories, default is false
 	 */
 	array function filesMap(
-		required directory,
+		directory = "",
 		any filter,
 		sort,
 		boolean recurse
@@ -1409,6 +1410,12 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @return String
 	 */
 	private function buildDirectoryPath( path ){
+
+		// Check for ROOT level path and return an empty string if matched.
+		if ( path.len() == 0 ) {
+			return "";
+		}
+
 		arguments.path = buildPath( arguments.path );
 
 		if ( right( arguments.path, 1 ) != "/" ) {

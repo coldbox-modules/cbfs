@@ -1215,6 +1215,24 @@ component extends="coldbox.system.testing.BaseTestCase" {
 						expect( results.len() ).toBe( 1 );
 					} );
 				} );
+				given( "a root directory with a files() call", function() {
+					then( "it will list the files in the root folder", function() {
+						var path = createUUID() & ".txt";
+						disk.create( path, "hola mi amigo" );
+						expect( disk.exists( path ) ).toBeTrue();
+
+						var matched = disk.files().reduce( function( agg, file ) {
+							if ( file.key == path ) {
+								agg = true;
+							}
+							return agg;
+						}, false );
+
+						expect( matched ).toBeTrue();
+
+						disk.delete( path );
+					} );
+				} );
 				given( "a valid directory with a files() call", function(){
 					then( "it will list the directory for files only", function(){
 						var dirPath = variables.pathPrefix & "bddtests";
