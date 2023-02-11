@@ -1222,7 +1222,9 @@ component extends="coldbox.system.testing.BaseTestCase" {
 						expect( disk.exists( path ) ).toBeTrue();
 
 						var matched = disk.files().reduce( function( agg, file ) {
-							if ( file.key == path ) {
+							if ( 
+								( isStruct( file ) && file.key == path ) ||
+								( !isStruct( file ) && file == path ) ) {
 								agg = true;
 							}
 							return agg;
