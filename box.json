@@ -1,6 +1,6 @@
 {
     "name":"CB File Storages",
-    "version":"1.0.5",
+    "version":"1.0.3",
     "location":"https://downloads.ortussolutions.com/ortussolutions/coldbox-modules/cbfs/@build.version@/cbfs-@build.version@.zip",
     "author":"Ortus Solutions, Corp",
     "homepage":"https://github.com/coldbox-modules/cbfs",
