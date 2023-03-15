@@ -556,12 +556,10 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @throws cbfs.FileNotFoundException
 	 */
 	string function temporaryURL( required path, numeric expiration = 1 ){
-		return this.url(
-			variables.s3.getAuthenticatedURL(
-				bucketName   = variables.properties.bucketName,
-				uri          = buildPath( arguments.path ),
-				minutesValid = arguments.expiration
-			)
+		return variables.s3.getAuthenticatedURL(
+			bucketName   = variables.properties.bucketName,
+			uri          = buildPath( arguments.path ),
+			minutesValid = arguments.expiration
 		);
 	}
 
