@@ -173,6 +173,14 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		if ( isNull( arguments.name ) ) arguments.name = name( source );
 
 		var filePath = arguments.directory & "/" & arguments.name;
+
+		if ( !fileExists( arguments.source ) ) {
+			throw(
+				type    = "cbfs.FileNotFoundException",
+				message = "Cannot upload file. Source file does not exist [#arguments.source#]"
+			);
+		}
+
 		if ( !arguments.overwrite && exists( filePath ) ) {
 			throw(
 				type    = "cbfs.FileOverrideException",
