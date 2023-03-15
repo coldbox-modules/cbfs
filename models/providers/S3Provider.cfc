@@ -1048,14 +1048,13 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @absolute  Local provider only: We return relative disk paths by default. If true, we return absolute paths
 	 */
 	array function contents(
-		directory = "",
+		directory        = "",
 		any filter       = "",
 		sort             = "",
 		boolean recurse  = false,
 		type             = "all",
 		boolean absolute = false
 	){
-
 		var sourcePath = arguments.directory;
 
 		if ( !this.directoryExists( sourcePath ) ) {
@@ -1416,7 +1415,6 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @return String
 	 */
 	private function buildDirectoryPath( path ){
-
 		// Check for ROOT level path and return an empty string if matched.
 		if ( path.len() == 0 ) {
 			return "";

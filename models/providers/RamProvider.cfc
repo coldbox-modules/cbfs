@@ -993,8 +993,8 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 
 				if ( directory.len() && reFindNoCase( "#directory#(\/|\\)[^\\//]*$", item ) ) {
 					return true;
-				// Check for ROOT folder items
-				} else if ( !directory.len() && !reFindNocase( "[\\//]", item ) ) {
+					// Check for ROOT folder items
+				} else if ( !directory.len() && !reFindNoCase( "[\\//]", item ) ) {
 					return true;
 				}
 
@@ -1025,12 +1025,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 *
 	 * @throws cbfs.DirectoryNotFoundException
 	 */
-	array function allContents(
-		directory = "",
-		any filter,
-		sort,
-		type = "all"
-	){
+	array function allContents( directory = "", any filter, sort, type = "all" ){
 		arguments.recurse = true;
 		return contents( argumentCollection = arguments );
 	}
@@ -1337,7 +1332,6 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @throws cbfs.FileNotFoundException - If the filepath is missing
 	 */
 	private struct function ensureRecordExists( required path ){
-
 		// Always return when checking for root path
 		if ( !arguments.path.len() ) {
 			return {};
