@@ -7,7 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ----
 
-## [1.0.3] => Unreleased
+## [1.0.5] => 2023-03-15
+
+## Fixed
+
+- Fix calling temporaryURL() on s3 provider
+- Throw error if the source does not exist in S3 Provider
+
+----
+
+## [1.0.4] => 2023-02-11
+
+## Fixed
+
+- Fix ROOT folder issues with S3
+- Fix when referencing root folder
+
+----
+
+## [1.0.3] => 2023-01-23
+
+### Fixed
+
+- Fix for Adobe S3 request returning ByteArrayOutputStream
 
 ----
 
