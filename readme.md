@@ -18,6 +18,7 @@ Apache License, Version 2.0.
 
 -   Lucee 5+
 -   Adobe ColdFusion 2018+
+-   Java 11-15
 
 ## Installation
 

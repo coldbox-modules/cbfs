@@ -169,8 +169,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 			fileSetAccessMode( diskPath, arguments.mode );
 		}
 
-		arguments[ "disk" ] = this;
-		intercept.announce( "cbfsOnFileCreate", arguments );
+		intercept.announce( "cbfsOnFileCreate", { file : this.file( arguments.path ) } );
 
 		return this;
 	}
@@ -278,7 +277,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 					variables.jCopyOption.ATOMIC_MOVE
 				]
 			);
-			intercept.announce( "cbfsOnFileCreate", { "path" : filePath, "disk" : this } );
+			intercept.announce( "cbfsOnFileCreate", { file : this.file( filePath ) } );
 		} else {
 			// otherwise we can go directly to the directory
 			var upload = fileUpload(
@@ -289,9 +288,8 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 			);
 			var filePath = arguments.directory & "/" & upload.serverFile;
 
-			intercept.announce( "cbfsOnFileCreate", { "path" : filePath, "disk" : this } );
+			intercept.announce( "cbfsOnFileCreate", { file : this.file( filePath ) } );
 		}
-
 
 		return this;
 	}
@@ -604,7 +602,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		}
 		variables.jFiles.delete( buildJavaDiskPath( arguments.path ) );
 
-		intercept.announce( "cbfsOnFileDelete", { "path" : normalizePath( arguments.path ), "disk" : this } );
+		intercept.announce( "cbfsOnFileDelete", { file : this.file( normalizePath( arguments.path ) ) } );
 
 		return true;
 	}
@@ -762,10 +760,9 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		if ( missing( arguments.path ) ) {
 			throw( type = "cbfs.FileNotFoundException", message = "File [#arguments.path#] not found." );
 		}
-		var fileInfo           = getFileInfo( buildDiskPath( arguments.path ) );
-		fileInfo[ "diskPath" ] = normalizePath( arguments.path );
+		var fileInfo = getFileInfo( buildDiskPath( arguments.path ) );
 
-		intercept.announce( "cbfsOnFileInfoRequest", fileInfo );
+		intercept.announce( "cbfsOnFileInfoRequest", { file : buildDiskPath( arguments.path ), info : fileInfo } );
 
 		return fileInfo;
 	}
@@ -799,9 +796,14 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 					return arguments.value.toString();
 			}
 		} );
-		infoMap[ "diskPath" ] = normalizePath( arguments.path );
 
-		intercept.announce( "cbfsOnFileInfoRequest", infoMap );
+		intercept.announce(
+			"cbfsOnFileInfoRequest",
+			{
+				file    : this.file( normalizePath( arguments.path ) ),
+				infoMap : infoMap
+			}
+		);
 
 		return infoMap;
 	}
@@ -1176,7 +1178,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @throws cbfs.DirectoryNotFoundException
 	 */
 	array function contents(
-		required directory,
+		directory = "",
 		any filter,
 		sort,
 		boolean recurse  = false,
@@ -1200,7 +1202,14 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 			isNull( arguments.sort ) ? "" : arguments.sort, // sort
 			arguments.type // type
 		).map( function( item ){
-			return absolute ? arguments.item : arguments.item.replace( variables.properties.path, "" );
+			var path = absolute ? arguments.item : arguments.item.replace( variables.properties.path, "" );
+
+			// Remove any beginning forward or backward slashes
+			if ( reFind( "^[\/\\]", path ) ) {
+				path = right( path, path.len() - 1 );
+			}
+
+			return path;
 		} );
 	}
 
@@ -1216,7 +1225,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @throws cbfs.DirectoryNotFoundException
 	 */
 	array function allContents(
-		required directory,
+		directory = "",
 		any filter,
 		sort,
 		type             = "all",
@@ -1238,7 +1247,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @throws cbfs.DirectoryNotFoundException
 	 */
 	array function files(
-		required directory,
+		directory = "",
 		any filter,
 		sort,
 		boolean recurse  = false,
@@ -1260,7 +1269,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @throws cbfs.DirectoryNotFoundException
 	 */
 	array function directories(
-		required directory,
+		directory = "",
 		any filter,
 		sort,
 		boolean recurse  = false,
@@ -1281,7 +1290,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @throws cbfs.DirectoryNotFoundException
 	 */
 	array function allFiles(
-		required directory,
+		directory = "",
 		any filter,
 		sort,
 		boolean absolute = false
@@ -1302,7 +1311,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @throws cbfs.DirectoryNotFoundException
 	 */
 	array function allDirectories(
-		required directory,
+		directory = "",
 		any filter,
 		sort,
 		boolean absolute = false
@@ -1331,7 +1340,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @throws cbfs.DirectoryNotFoundException
 	 */
 	array function filesMap(
-		required directory,
+		directory = "",
 		any filter,
 		sort,
 		boolean recurse  = false,
@@ -1360,7 +1369,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @throws cbfs.DirectoryNotFoundException
 	 */
 	array function allFilesMap(
-		required directory,
+		directory = "",
 		any filter,
 		sort,
 		boolean extended = false
@@ -1380,7 +1389,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @throws cbfs.DirectoryNotFoundException
 	 */
 	array function contentsMap(
-		required directory,
+		directory = "",
 		any filter,
 		sort,
 		boolean recurse = false
@@ -1403,7 +1412,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 *
 	 * @throws cbfs.DirectoryNotFoundException
 	 */
-	array function allContentsMap( required directory, any filter, sort ){
+	array function allContentsMap( directory = "", any filter, sort ){
 		arguments.recurse = true;
 		return contentsMap( argumentCollection = arguments );
 	};
@@ -1416,7 +1425,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 *
 	 * @return The canonical path on the disk
 	 */
-	function buildDiskPath( required string path ){
+	function buildDiskPath( string path = "" ){
 		return arguments.path.startsWith( variables.properties.path )
 		 ? arguments.path
 		 : reReplace(

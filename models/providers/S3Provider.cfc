@@ -143,8 +143,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 
 		evictFromCache( arguments.path );
 
-		arguments[ "disk" ] = this;
-		intercept.announce( "cbfsOnFileCreate", arguments );
+		intercept.announce( "cbfsOnFileCreate", { file : this.file( arguments.path ) } );
 
 		return this;
 	}
@@ -174,6 +173,14 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		if ( isNull( arguments.name ) ) arguments.name = name( source );
 
 		var filePath = arguments.directory & "/" & arguments.name;
+
+		if ( !fileExists( arguments.source ) ) {
+			throw(
+				type    = "cbfs.FileNotFoundException",
+				message = "Cannot upload file. Source file does not exist [#arguments.source#]"
+			);
+		}
+
 		if ( !arguments.overwrite && exists( filePath ) ) {
 			throw(
 				type    = "cbfs.FileOverrideException",
@@ -193,10 +200,10 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		}
 
 		variables.s3.putObjectFile(
-			bucketName = variables.properties.bucketName,
-			filePath   = arguments.source,
-			uri        = buildPath( filePath ),
-			acl        = arguments.visibility,
+			bucketName  = variables.properties.bucketName,
+			filePath    = arguments.source,
+			uri         = buildPath( filePath ),
+			acl         = arguments.visibility,
 			contentType = getMimeType( arguments.name )
 		);
 
@@ -466,24 +473,19 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @throws cbfs.FileNotFoundException
 	 */
 	any function get( required path ){
-
 		ensureFileExists( arguments.path );
 
 		arguments.path = buildPath( arguments.path );
 
-		var response = variables.s3.getObject(
-			bucketName = variables.properties.bucketName,
-			uri        = arguments.path
-		).response;
+		var response = variables.s3.getObject( bucketName = variables.properties.bucketName, uri = arguments.path ).response;
 
-		if( getMetadata( response ).name == "java.io.ByteArrayOutputStream" ){
+		if ( getMetadata( response ).name == "java.io.ByteArrayOutputStream" ) {
 			var bytes = [];
 			response.writeBytes( bytes );
 			return response.toByteArray();
 		} else {
 			return response;
 		}
-
 	}
 
 	/**
@@ -554,12 +556,10 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @throws cbfs.FileNotFoundException
 	 */
 	string function temporaryURL( required path, numeric expiration = 1 ){
-		return this.url(
-			variables.s3.getAuthenticatedURL(
-				bucketName   = variables.properties.bucketName,
-				uri          = buildPath( arguments.path ),
-				minutesValid = arguments.expiration
-			)
+		return variables.s3.getAuthenticatedURL(
+			bucketName   = variables.properties.bucketName,
+			uri          = buildPath( arguments.path ),
+			minutesValid = arguments.expiration
 		);
 	}
 
@@ -597,7 +597,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	/**
 	 * Deletes a file
 	 *
-	 * @path   The path to delete
+	 * @path           The path to delete
 	 * @throwOnMissing When true an error will be thrown if the file does not exist
 	 */
 	boolean function delete( required any path, boolean throwOnMissing = false ){
@@ -616,7 +616,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 			return false;
 		}
 
-		intercept.announce( "cbfsOnFileDelete", { "path" : normalizePath( arguments.path ), "disk" : this } );
+		intercept.announce( "cbfsOnFileDelete", { file : this.file( normalizePath( arguments.path ) ) } );
 
 		return true;
 	}
@@ -664,7 +664,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 			"isHidden"     : acl == "private"
 		};
 
-		intercept.announce( "cbfsOnFileInfoRequest", info );
+		intercept.announce( "cbfsOnFileInfoRequest", { file : this.file( filePath ), info : info } );
 
 		return info;
 	}
@@ -1048,7 +1048,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @absolute  Local provider only: We return relative disk paths by default. If true, we return absolute paths
 	 */
 	array function contents(
-		required directory,
+		directory        = "",
 		any filter       = "",
 		sort             = "",
 		boolean recurse  = false,
@@ -1142,7 +1142,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @recurse   Recurse into subdirectories, default is false
 	 */
 	array function files(
-		required directory,
+		directory = "",
 		any filter,
 		sort,
 		boolean recurse = false
@@ -1161,7 +1161,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @recurse   Recurse into subdirectories, default is false
 	 */
 	array function directories(
-		required directory,
+		directory = "",
 		any filter,
 		sort,
 		boolean recurse = false
@@ -1184,7 +1184,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @filter    A string wildcard or a lambda/closure that receives the file path and should return true to include it in the returned array or not.
 	 * @sort      Columns by which to sort. e.g. Directory, Size DESC, DateLastModified.
 	 */
-	array function allFiles( required directory, any filter, sort ){
+	array function allFiles( directory = "", any filter, sort ){
 		arguments.recurse = true;
 		return files( argumentCollection = arguments );
 	};
@@ -1196,7 +1196,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @filter    A string wildcard or a lambda/closure that receives the file path and should return true to include it in the returned array or not.
 	 * @sort      Columns by which to sort. e.g. Directory, Size DESC, DateLastModified.
 	 */
-	array function allDirectories( required directory, any filter, sort ){
+	array function allDirectories( directory = "", any filter, sort ){
 		arguments.recurse = true;
 		return directories( argumentCollection = arguments );
 	};
@@ -1217,7 +1217,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @recurse   Recurse into subdirectories, default is false
 	 */
 	array function filesMap(
-		required directory,
+		directory = "",
 		any filter,
 		sort,
 		boolean recurse
@@ -1415,6 +1415,11 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @return String
 	 */
 	private function buildDirectoryPath( path ){
+		// Check for ROOT level path and return an empty string if matched.
+		if ( path.len() == 0 ) {
+			return "";
+		}
+
 		arguments.path = buildPath( arguments.path );
 
 		if ( right( arguments.path, 1 ) != "/" ) {

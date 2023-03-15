@@ -1,6 +1,6 @@
 {
     "name":"CB File Storages",
-    "version":"1.0.2",
+    "version":"1.0.3",
     "location":"https://downloads.ortussolutions.com/ortussolutions/coldbox-modules/cbfs/@build.version@/cbfs-@build.version@.zip",
     "author":"Ortus Solutions, Corp",
     "homepage":"https://github.com/coldbox-modules/cbfs",
@@ -47,9 +47,9 @@
         "build:module":"task run taskFile=build/Build.cfc :projectName=`package show slug` :version=`package show version`",
         "build:docs":"task run taskFile=build/Build.cfc target=docs :projectName=`package show slug` :version=`package show version`",
         "release":"recipe build/release.boxr",
-        "format":"cfformat run models,test-harness/**/*.cfc,ModuleConfig.cfc --overwrite",
-        "format:watch":"cfformat watch models,test-harness/**/*.cfc,ModuleConfig.cfc ./.cfformat.json",
-        "format:check":"cfformat check models,test-harness/**/*.cfc,ModuleConfig.cfc",
+        "format":"cfformat run models,test-harness/tests/**/*.cfc,ModuleConfig.cfc --overwrite ./.cfformat.json",
+        "format:watch":"cfformat watch models,test-harness/tests/**/*.cfc,ModuleConfig.cfc ./.cfformat.json",
+        "format:check":"cfformat check models,test-harness/tests/**/*.cfc,ModuleConfig.cfc",
         "install:dependencies":"install --force && cd test-harness && install --force",
         "start:S3Mock":"!docker run --rm -d --name cbfs-s3-mock -p 9090:9090 -p 9191:9191 -e initialBuckets=cbfs-test -t adobe/s3mock"
     }

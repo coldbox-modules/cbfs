@@ -112,8 +112,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 			createDirectory( getDirectoryFromPath( arguments.path ) );
 		}
 
-		arguments[ "disk" ] = this;
-		intercept.announce( "cbfsOnFileCreate", arguments );
+		intercept.announce( "cbfsOnFileCreate", { file : this.file( arguments.path ) } );
 
 		return this;
 	}
@@ -415,7 +414,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		}
 		variables.fileStorage.delete( arguments.path );
 
-		intercept.announce( "cbfsOnFileDelete", { "path" : normalizePath( arguments.path ), "disk" : this } );
+		intercept.announce( "cbfsOnFileDelete", { file : this.file( normalizePath( arguments.path ) ) } );
 
 		return true;
 	}
@@ -948,7 +947,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @throws cbfs.DirectoryNotFoundException
 	 */
 	array function contents(
-		required directory,
+		directory = "",
 		any filter,
 		sort,
 		boolean recurse = false,
@@ -990,7 +989,16 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 			} )
 			// If recursive is off, filter those first level files ONLY!
 			.filter( function( item ){
-				return ( !recurse ? reFindNoCase( "#directory#(\/|\\)[^\\//]*$", item ) : true );
+				if ( recurse ) return true;
+
+				if ( directory.len() && reFindNoCase( "#directory#(\/|\\)[^\\//]*$", item ) ) {
+					return true;
+					// Check for ROOT folder items
+				} else if ( !directory.len() && !reFindNoCase( "[\\//]", item ) ) {
+					return true;
+				}
+
+				return false;
 			} )
 			// File Type Filter
 			.filter( function( item ){
@@ -1017,12 +1025,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 *
 	 * @throws cbfs.DirectoryNotFoundException
 	 */
-	array function allContents(
-		required directory,
-		any filter,
-		sort,
-		type = "all"
-	){
+	array function allContents( directory = "", any filter, sort, type = "all" ){
 		arguments.recurse = true;
 		return contents( argumentCollection = arguments );
 	}
@@ -1038,7 +1041,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @throws cbfs.DirectoryNotFoundException
 	 */
 	array function files(
-		required directory,
+		directory = "",
 		any filter,
 		sort,
 		boolean recurse = false
@@ -1058,7 +1061,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @throws cbfs.DirectoryNotFoundException
 	 */
 	array function directories(
-		required directory,
+		directory = "",
 		any filter,
 		sort,
 		boolean recurse = false
@@ -1076,7 +1079,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 *
 	 * @throws cbfs.DirectoryNotFoundException
 	 */
-	array function allFiles( required directory, any filter, sort ){
+	array function allFiles( directory = "", any filter, sort ){
 		arguments.type    = "File";
 		arguments.recurse = true;
 		return contents( argumentCollection = arguments );
@@ -1091,7 +1094,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 *
 	 * @throws cbfs.DirectoryNotFoundException
 	 */
-	array function allDirectories( required directory, any filter, sort ){
+	array function allDirectories( directory = "", any filter, sort ){
 		arguments.type    = "Dir";
 		arguments.recurse = true;
 		return contents( argumentCollection = arguments );
@@ -1116,7 +1119,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @throws cbfs.DirectoryNotFoundException
 	 */
 	array function filesMap(
-		required directory,
+		directory = "",
 		any filter,
 		sort,
 		boolean recurse = false
@@ -1185,7 +1188,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 *
 	 * @throws cbfs.DirectoryNotFoundException
 	 */
-	array function allFilesMap( required directory, any filter, sort ){
+	array function allFilesMap( directory = "", any filter, sort ){
 		arguments.recurse = true;
 		return filesMap( argumentCollection = arguments );
 	}
@@ -1201,7 +1204,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @throws cbfs.DirectoryNotFoundException
 	 */
 	array function contentsMap(
-		required directory,
+		directory = "",
 		any filter,
 		sort,
 		boolean recurse = false
@@ -1266,7 +1269,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 *
 	 * @throws cbfs.DirectoryNotFoundException
 	 */
-	array function allContentsMap( required directory, any filter, sort ){
+	array function allContentsMap( directory = "", any filter, sort ){
 		arguments.recurse = true;
 		return contentsMap( argumentCollection = arguments );
 	}
@@ -1329,7 +1332,13 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @throws cbfs.FileNotFoundException - If the filepath is missing
 	 */
 	private struct function ensureRecordExists( required path ){
+		// Always return when checking for root path
+		if ( !arguments.path.len() ) {
+			return {};
+		}
+
 		arguments.path = normalizePath( path );
+
 		if ( missing( arguments.path ) ) {
 			throw(
 				type    = "cbfs.FileNotFoundException",
