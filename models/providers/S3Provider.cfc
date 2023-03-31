@@ -552,14 +552,16 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 *
 	 * @path       The file path to build the URL for
 	 * @expiration The number of minutes this URL should be valid for.
+	 * @responseHeaders A struct of headers to be forced for the HTTP response of GET requests.  Valid options are content-type, content-language, expires, cache-control, content-disposition, content-encoding
 	 *
 	 * @throws cbfs.FileNotFoundException
 	 */
-	string function temporaryURL( required path, numeric expiration = 1 ){
+	string function temporaryURL( required path, numeric expiration = 1, responseHeaders = {} ){
 		return variables.s3.getAuthenticatedURL(
 			bucketName   = variables.properties.bucketName,
 			uri          = buildPath( arguments.path ),
-			minutesValid = arguments.expiration
+			minutesValid = arguments.expiration,
+			responseHeaders = arguments.responseHeaders
 		);
 	}
 

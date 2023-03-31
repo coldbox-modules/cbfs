@@ -17,6 +17,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ----
 
+## [1.1.0] => 2023-03-31
+
+### Added
+- Ability to pass response headers to temporaryURL() when using S3 provider.
+
 ## [1.0.2] => 2023-01-03
 
 ### Fixed
