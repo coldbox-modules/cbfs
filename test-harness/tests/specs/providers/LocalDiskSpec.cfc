@@ -80,6 +80,21 @@ component extends="cbfs.models.testing.AbstractDiskSpec" {
 						expect( testFile.stream() ).toBeInstanceOf( "Stream" );
 					} );
 				} );
+				given( "we call url()", function() {
+					then( "it returns the expected local path", function() {
+						expect( testFile.url() ).toInclude( "/tests/storage/some_file.txt" );
+					} );
+				} );
+				given( "we call temporaryURL()", function() {
+					then( "it returns the expected local path", function() {
+						expect( testFile.temporaryURL( expiration=30 ) ).toInclude( "/tests/storage/some_file.txt?expiration=30" );
+					} );
+				} );
+				given( "we call download()", function() {
+					then( "it returns the expected local path", function() {
+						expect( isCustomFunction( testFile.download ) ).toBeTrue();
+					} );
+				} );
 			} );
 		} );
 	}
