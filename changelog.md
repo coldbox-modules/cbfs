@@ -7,12 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ----
 
-## [Unreleased]
+## [1.1.0] => 2023-05-01
 
 ### Added
 
 - New Github actions
 - ColdBox 7 Auto-Testing
+- Added url(), temporaryURL(), and download() methods to the File object.
 
 ## [1.0.3] => 2023-03-15
 
