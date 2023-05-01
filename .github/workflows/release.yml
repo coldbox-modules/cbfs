@@ -21,10 +21,14 @@ env:
   SNAPSHOT: ${{ inputs.snapshot || false }}
 
 jobs:
+  tests:
+    secrets: inherit
+    uses: ./.github/workflows/tests.yml
   ##########################################################################################
   # Build & Publish
   ##########################################################################################
   build:
+    needs: tests
     name: Build & Publish
     runs-on: ubuntu-20.04
     steps:
@@ -161,7 +165,7 @@ jobs:
       # Bump to next version
       - name: Bump Version
         run: |
-          box bump --minor --!TagVersion
+          box bump --patch --!TagVersion
 
       # Commit it back to development
       - name: Commit Version Bump
