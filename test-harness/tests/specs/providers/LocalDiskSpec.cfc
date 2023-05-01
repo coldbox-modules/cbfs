@@ -87,7 +87,9 @@ component extends="cbfs.models.testing.AbstractDiskSpec" {
 				} );
 				given( "we call temporaryURL()", function(){
 					then( "it returns the expected local path", function(){
-						expect( testFile.temporaryURL( expiration = 30 ) ).toInclude( "/tests/storage/some_file.txt?expiration=30" );
+						expect( testFile.temporaryURL( expiration = 30 ) ).toInclude(
+							"/tests/storage/some_file.txt?expiration=30"
+						);
 					} );
 				} );
 				given( "we call download()", function(){
