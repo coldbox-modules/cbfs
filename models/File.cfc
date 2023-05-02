@@ -180,6 +180,15 @@ component accessors="true" {
 	}
 
 	/**
+	 * Download a file to the browser
+	 *
+	 * @throws cbfs.FileNotFoundException
+	 */
+	string function download(){
+		return getDisk().download( getPath() );
+	}
+
+	/**
 	 * Create a new empty file if it does not exist
 	 *
 	 * @createPath if set to false, expects all parent directories to exist, true will generate necessary directories. Defaults to true.
@@ -324,6 +333,25 @@ component accessors="true" {
 	boolean function isSymbolicLink(){
 		arguments.path = getPath();
 		return getDisk().isSymbolicLink( argumentCollection = arguments );
+	}
+
+	/**
+	 * Get the URL for this file.
+	 *
+	 * @throws cbfs.FileNotFoundException
+	 */
+	string function url(){
+		return getDisk().url( getPath() );
+	}
+
+	/**
+	 * Get a temporary url for the given file
+	 *
+	 * @expiration The number of minutes this url should be valid for. Defaults to 60 minutes
+	 */
+	string function temporaryUrl( numeric expiration = 60 ){
+		// TODO: Build out a proxy method on the module to validate these.
+		return this.url( getPath() ) & "?expiration=#arguments.expiration#";
 	}
 
 	/**
