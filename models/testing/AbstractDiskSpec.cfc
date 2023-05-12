@@ -466,8 +466,6 @@ component extends="coldbox.system.testing.BaseTestCase" {
 							"Main.testDownload",
 							{ "disk" : disk.getName() }
 						);
-						"Main.testDownload",
-						{ "disk" : disk.getName() }
 						try {
 							if ( server.keyExists( "lucee" ) ) {
 								var req  = new http( method = "GET", url = downloadTestEndpoint );
