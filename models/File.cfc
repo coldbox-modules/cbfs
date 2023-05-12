@@ -267,6 +267,13 @@ component accessors="true" {
 	}
 
 	/**
+	 * Returns the name of the file
+	 */
+	string function name(){
+		return getDisk().name( getPath() );
+	}
+
+	/**
 	 * Sets the access attributes of the file on Unix based disks
 	 *
 	 * @mode Access mode, the same attributes you use for the Linux command `chmod`
@@ -358,9 +365,10 @@ component accessors="true" {
 	 * Validate if a file exists
 	 *
 	 * @path The file path to verify
+	 * @force If set to true, it will force the disk to check for the file. Otherwise, it will use the internal cache of the disk.
 	 */
-	boolean function exists(){
-		return getDisk().exists( getPath() );
+	boolean function exists( force=true ){
+		return getDisk().exists( getPath(), arguments.force );
 	}
 
 	/**
@@ -377,9 +385,7 @@ component accessors="true" {
 	/**
 	 * Create a file in the disk from a file path
 	 *
-	 * @source       The file path to use for storage
-	 * @directory    The target directory
-	 * @name         The destination file name. If not provided it defaults to the file name from the source
+	 * @source       The source file path to copy from
 	 * @visibility   The storage visibility of the file, available options are `public, private, readonly` or a custom data type the implemented driver can interpret
 	 * @overwrite    Flag to overwrite the file at the destination, if it exists. Defaults to true.
 	 * @deleteSource Flag to remove the source file upon creation in the disk.  Defaults to false.
@@ -390,14 +396,14 @@ component accessors="true" {
 	 */
 	function createFromFile(
 		required source,
-		required directory,
-		string name,
 		string visibility    = variables.properties.visibility,
 		boolean overwrite    = true,
 		boolean deleteSource = false
 	){
-		arguments.source = getPath();
-		return getDisk().createFromFile( argumentCollection = arguments );
+		arguments.name = this.name();
+		arguments.directory = getDirectoryFromPath( getPath() );
+		getDisk().createFromFile( argumentCollection = arguments );
+		return this;
 	}
 
 }
