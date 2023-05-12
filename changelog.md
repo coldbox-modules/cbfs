@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - Adds the force argument to the File exists method for correct disk pass-through
+- Adds the `name` method to the File object
 
 ## [1.1.0] - 2023-05-01
 
