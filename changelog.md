@@ -7,15 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 * * *
 
+## [Unreleased]
+
 ## [1.1.1] - 2023-05-12
+
 ### Fixed
+
 - Fixes an issue where `createFromFile` would not clear the existence check cache
 - Fixes an incorrect source assigment and method signature for the File object `createFromFile` method
 
 ### Added
-- Adds the force argument to the File exists method for correct disk pass-through
 
-## [1.1.0] - 2023-05-01
+- Adds the force argument to the File exists method for correct disk pass-through
+- Adds the `name` method to the File object
 
 ## [1.1.1] - 2023-05-12
 

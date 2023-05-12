@@ -38,7 +38,7 @@ component {
 		// Set a high timeout for long running tests
 		setting requestTimeout   ="9999";
 		// New ColdBox Virtual Application Starter
-		request.coldBoxVirtualApp= new coldbox.system.testing.VirtualApp( appMapping = "/root" );
+		request.coldBoxVirtualApp= new coldbox.system.testing.VirtualApp();
 
 		// ORM Reload for fresh results
 		if ( structKeyExists( url, "fwreinit" ) ) {
