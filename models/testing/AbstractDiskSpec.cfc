@@ -462,10 +462,13 @@ component extends="coldbox.system.testing.BaseTestCase" {
 			story( "The disk can download files", function(){
 				given( "a request for download", function(){
 					then( "it should deliver the file to the browser", function(){
-						var downloadTestEndpoint = getRequestContext().buildLink( "Main.testDownload", { "disk" : disk.getName() } );
+						var downloadTestEndpoint = getRequestContext().buildLink(
 							"Main.testDownload",
 							{ "disk" : disk.getName() }
-						try{
+						);
+						"Main.testDownload",
+						{ "disk" : disk.getName() }
+						try {
 							if ( server.keyExists( "lucee" ) ) {
 								var req  = new http( method = "GET", url = downloadTestEndpoint );
 								var resp = req.send().getPrefix();
@@ -477,7 +480,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 								) {
 								}
 							}
-						} catch( any e ){
+						} catch ( any e ) {
 							fail( "The endpoint #downloadTestEndpoint# was not reachable" );
 						}
 
