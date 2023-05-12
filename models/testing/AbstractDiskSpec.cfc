@@ -461,18 +461,22 @@ component extends="coldbox.system.testing.BaseTestCase" {
 
 			story( "The disk can download files", function(){
 				given( "a request for download", function(){
-					then( "it should deliver the file to the browser from #getRequestContext().buildLink( "Main.testDownload", { "disk" : disk.getName() } )#", function(){
+					then( "it should deliver the file to the browser", function(){
 						var downloadTestEndpoint = getRequestContext().buildLink( "Main.testDownload", { "disk" : disk.getName() } );
-						if ( server.keyExists( "lucee" ) ) {
-							var req  = new http( method = "GET", url = downloadTestEndpoint );
-							var resp = req.send().getPrefix();
-						} else {
-							cfhttp(
-								method = "GET",
-								url    = downloadTestEndpoint,
-								result = "local.resp"
-							) {
+						try{
+							if ( server.keyExists( "lucee" ) ) {
+								var req  = new http( method = "GET", url = downloadTestEndpoint );
+								var resp = req.send().getPrefix();
+							} else {
+								cfhttp(
+									method = "GET",
+									url    = downloadTestEndpoint,
+									result = "local.resp"
+								) {
+								}
 							}
+						} catch( any e ){
+							fail( "The endpoint #downloadTestEndpoint# was not reachable" );
 						}
 
 						expect( resp.statusCode ).toBe( "200 OK" );
