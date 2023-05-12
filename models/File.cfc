@@ -364,10 +364,10 @@ component accessors="true" {
 	/**
 	 * Validate if a file exists
 	 *
-	 * @path The file path to verify
+	 * @path  The file path to verify
 	 * @force If set to true, it will force the disk to check for the file. Otherwise, it will use the internal cache of the disk.
 	 */
-	boolean function exists( force=true ){
+	boolean function exists( force = true ){
 		return getDisk().exists( getPath(), arguments.force );
 	}
 
@@ -400,7 +400,7 @@ component accessors="true" {
 		boolean overwrite    = true,
 		boolean deleteSource = false
 	){
-		arguments.name = this.name();
+		arguments.name      = this.name();
 		arguments.directory = getDirectoryFromPath( getPath() );
 		getDisk().createFromFile( argumentCollection = arguments );
 		return this;

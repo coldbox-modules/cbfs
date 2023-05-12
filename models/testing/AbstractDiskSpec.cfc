@@ -463,6 +463,8 @@ component extends="coldbox.system.testing.BaseTestCase" {
 				given( "a request for download", function(){
 					then( "it should deliver the file to the browser", function(){
 						var downloadTestEndpoint = getRequestContext().buildLink( "Main.testDownload", { "disk" : disk.getName() } );
+							"Main.testDownload",
+							{ "disk" : disk.getName() }
 						try{
 							if ( server.keyExists( "lucee" ) ) {
 								var req  = new http( method = "GET", url = downloadTestEndpoint );
