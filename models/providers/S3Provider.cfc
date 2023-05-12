@@ -151,7 +151,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	/**
 	 * Create a file in the disk from a file path
 	 *
-	 * @source       The file path to use for storage
+	 * @source       The source file path
 	 * @directory    The target directory
 	 * @name         The destination file name. If not provided it defaults to the file name from the source
 	 * @visibility   The storage visibility of the file, available options are `public, private, readonly` or a custom data type the implemented driver can interpret
@@ -199,13 +199,17 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 			}
 		}
 
+		var uri = buildPath( filePath );
+
 		variables.s3.putObjectFile(
 			bucketName  = variables.properties.bucketName,
 			filePath    = arguments.source,
-			uri         = buildPath( filePath ),
+			uri         = uri,
 			acl         = arguments.visibility,
 			contentType = getMimeType( arguments.name )
 		);
+
+		evictFromCache( uri );
 
 		if ( arguments.deleteSource ) {
 			fileDelete( arguments.source );
@@ -851,6 +855,8 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		arguments.directory = buildDirectoryPath( arguments.directory );
 
 		variables.s3.putObjectFolder( bucketName = variables.properties.bucketName, uri = arguments.directory );
+
+		evictFromCache( arguments.directory );
 
 		intercept.announce( "cbfsOnDirectoryCreate", { "directory" : arguments.directory, "disk" : this } );
 
