@@ -358,7 +358,7 @@ component accessors="true" {
 	 */
 	string function temporaryUrl( numeric expiration = 60 ){
 		// TODO: Build out a proxy method on the module to validate these.
-		return this.url( getPath() ) & "?expiration=#arguments.expiration#";
+		return getDisk().temporaryUrl( getPath(), arguments.expiration );
 	}
 
 	/**
