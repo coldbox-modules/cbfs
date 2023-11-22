@@ -65,7 +65,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 			);
 		}
 
-		variables.properties.path = normalizePath(variables.properties.path);
+		variables.properties.path = normalizePath( variables.properties.path );
 		// Do we need to expand the path
 		if ( variables.properties.autoExpand ) {
 			variables.properties.path = expandPath( variables.properties.path );
