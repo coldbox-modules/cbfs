@@ -65,7 +65,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 			);
 		}
 
-		variables.properties.path = normalizePath( variables.properties.path );
+		variables.properties.path = isWindows() ? normalizePath( variables.properties.path ) : variables.properties.path;
 		// Do we need to expand the path
 		if ( variables.properties.autoExpand ) {
 			variables.properties.path = expandPath( variables.properties.path );
@@ -1427,13 +1427,20 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @return The canonical path on the disk
 	 */
 	function buildDiskPath( string path = "" ){
-		return normalizePath( arguments.path ).startsWith( variables.properties.path )
-		 ? normalizePath( arguments.path )
-		 : reReplace(
-			variables.properties.path & "/#normalizePath( arguments.path )#",
-			"\/$",
-			""
-		);
+
+		if( isWindows() ){
+			arguments.path = normalizePath( arguments.path );
+		}
+
+
+		return arguments.path.startsWith( variables.properties.path )
+			? arguments.path
+			: reReplace(
+				variables.properties.path & "/#normalizePath( arguments.path )#",
+				"\/$",
+				""
+			);
+
 	}
 
 	/**************************************** STREAM METHODS ****************************************/
