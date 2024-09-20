@@ -1427,19 +1427,17 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @return The canonical path on the disk
 	 */
 	function buildDiskPath( string path = "" ){
-
-		if( isWindows() ){
+		if ( isWindows() ) {
 			arguments.path = normalizePath( arguments.path );
 		}
 
 		return arguments.path.startsWith( variables.properties.path )
-			? arguments.path
-			: reReplace(
-				variables.properties.path & "/#normalizePath( arguments.path )#",
-				"\/$",
-				""
-			);
-
+		 ? arguments.path
+		 : reReplace(
+			variables.properties.path & "/#normalizePath( arguments.path )#",
+			"\/$",
+			""
+		);
 	}
 
 	/**************************************** STREAM METHODS ****************************************/
