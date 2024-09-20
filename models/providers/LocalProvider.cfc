@@ -1432,7 +1432,6 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 			arguments.path = normalizePath( arguments.path );
 		}
 
-
 		return arguments.path.startsWith( variables.properties.path )
 			? arguments.path
 			: reReplace(
