@@ -1,12 +1,7 @@
 name: Build a Release
 
 on:
-  # If you push to master|main this will trigger a stable release
-  push:
-    branches:
-      - main
-
-  # Reusable workflow : Usually called by a `snapshot` workflow
+  # Reusable workflow only : called by either the `release` or `main` workflows
   workflow_call:
     inputs:
       snapshot:
@@ -20,15 +15,10 @@ env:
   SNAPSHOT: ${{ inputs.snapshot || false }}
 
 jobs:
-  tests:
-    if: inputs.snapshot == 'false'
-    secrets: inherit
-    uses: ./.github/workflows/tests.yml
   ##########################################################################################
   # Build & Publish
   ##########################################################################################
   build:
-    needs: tests
     name: Build & Publish
     runs-on: ubuntu-20.04
     steps:
