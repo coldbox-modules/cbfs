@@ -1,9 +1,5 @@
 ﻿component extends="coldbox.system.testing.BaseTestCase" {
 
-	structDelete( request, "coldBoxVirtualApp" );
-	structDelete( application, "wirebox" );
-	structDelete( application, "cbcontroller" );
-
 	// Load and do not unload COldBOx, for performance
 	this.loadColdbox   = true;
 	this.unLoadColdBox = false;
