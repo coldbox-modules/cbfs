@@ -142,7 +142,7 @@ jobs:
           forgeboxAPIKey: ${{ secrets.FORGEBOX_TOKEN }}
 
       - name: Download build artifacts
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v4
         with:
           name: ${{ env.MODULE_ID }}
           path: .tmp
@@ -159,7 +159,7 @@ jobs:
 
       # Commit it back to development
       - name: Commit Version Bump
-        uses: EndBug/add-and-commit@v9.1.1
+        uses: EndBug/add-and-commit@v9.1.4
         with:
           author_name: Github Actions
           author_email: info@ortussolutions.com
