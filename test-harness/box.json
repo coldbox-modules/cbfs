@@ -5,10 +5,10 @@
     "private":true,
     "description":"",
     "dependencies":{
-        "coldbox":"be"
+        "coldbox":"7"
     },
     "devDependencies":{
-        "testbox":"*"
+        "testbox":"^5.4.0+7"
     },
     "installPaths":{
         "coldbox":"coldbox/",

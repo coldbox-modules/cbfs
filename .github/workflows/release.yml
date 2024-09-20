@@ -1,13 +1,7 @@
 name: Build a Release
 
 on:
-  # If you push to master|main this will trigger a stable release
-  push:
-    branches:
-      - master
-      - main
-
-  # Reusable workflow : Usually called by a `snapshot` workflow
+  # Reusable workflow only : called by either the `release` or `main` workflows
   workflow_call:
     inputs:
       snapshot:
@@ -21,19 +15,15 @@ env:
   SNAPSHOT: ${{ inputs.snapshot || false }}
 
 jobs:
-  tests:
-    secrets: inherit
-    uses: ./.github/workflows/tests.yml
   ##########################################################################################
   # Build & Publish
   ##########################################################################################
   build:
-    needs: tests
     name: Build & Publish
     runs-on: ubuntu-20.04
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Setup CommandBox
         uses: Ortus-Solutions/setup-commandbox@v2.0.1
@@ -136,13 +126,13 @@ jobs:
   ##########################################################################################
   prep_next_release:
     name: Prep Next Release
-    if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-20.04
     needs: [ build ]
     steps:
       # Checkout development
       - name: Checkout Repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           ref: development
 
@@ -173,7 +163,7 @@ jobs:
         with:
           author_name: Github Actions
           author_email: info@ortussolutions.com
-          message: 'Version bump'
+          message: 'Version bump [ci skip]'
           add: |
             box.json
             changelog.md

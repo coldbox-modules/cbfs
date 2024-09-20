@@ -482,6 +482,8 @@ component extends="coldbox.system.testing.BaseTestCase" {
 							fail( "The endpoint #downloadTestEndpoint# was not reachable" );
 						}
 
+						debug( resp );
+
 						expect( resp.statusCode ).toBe( "200 OK" );
 
 						if ( server.keyExists( "lucee" ) ) {

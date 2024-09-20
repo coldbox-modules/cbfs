@@ -12,7 +12,7 @@ on:
 jobs:
   tests:
     name: Tests
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     services:
       s3Mock:
         image: adobe/s3mock
@@ -27,35 +27,46 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        cfengine: [ "lucee@5", "adobe@2018", "adobe@2021" ]
-        coldboxVersion: [ "^6.0.0" ]
+        commandbox_version: [ "6.1.0-rc" ]
+        cfengine: [ "lucee@5", "adobe@2021", "adobe@2023" ]
+        coldboxVersion: [ "^6.0.0", "^7.0.0" ]
         experimental: [ false ]
         include:
-          - cfengine: "adobe@2023"
+          - commandbox_version: "6.1.0-rc"
             coldboxVersion: "^6.0.0"
+            cfengine: "adobe@2018"
+            experimental: false
+          - commandbox_version: "6.1.0-rc"
+            coldboxVersion: "^7.0.0"
+            cfengine: "lucee@6"
             experimental: true
-          - coldboxVersion: "be"
+          - commandbox_version: "6.1.0-rc"
+            coldboxVersion: "be"
             cfengine: "lucee@5"
             experimental: true
-          - coldboxVersion: "be"
+          - commandbox_version: "6.1.0-rc"
+            coldboxVersion: "be"
             cfengine: "adobe@2018"
             experimental: true
-          - coldboxVersion: "be"
+          - commandbox_version: "6.1.0-rc"
+            coldboxVersion: "be"
             cfengine: "adobe@2021"
             experimental: true
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
 
       - name: Setup Java
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           distribution: "temurin"
           java-version: "11"
 
       - name: Setup CommandBox CLI
         uses: Ortus-Solutions/setup-commandbox@v2.0.1
+        with:
+          version: ${{ matrix.commandbox_version }}
 
       - name: Install Dependencies
         run: |
@@ -97,7 +108,7 @@ jobs:
 
       - name: Upload Test Results to Artifacts
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: test-results-${{ matrix.cfengine }}-${{ matrix.coldboxVersion }}
           path: |
@@ -110,22 +121,22 @@ jobs:
 
       - name: Upload Debug Logs To Artifacts
         if: ${{ failure() }}
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: Failure Debugging Info - ${{ matrix.cfengine }} - ${{ matrix.coldboxVersion }}
           path: |
             .engine/**/logs/*
             .engine/**/WEB-INF/cfusion/logs/*
 
-      - name: Slack Notifications
-        # Only on failures and NOT in pull requests
-        if: ${{ failure() && !startsWith( 'pull_request', github.event_name ) }}
-        uses: rtCamp/action-slack-notify@v2
-        env:
-          SLACK_CHANNEL: coding
-          SLACK_COLOR: ${{ job.status }} # or a specific color like 'green' or '#ff00ff'
-          SLACK_ICON_EMOJI: ":bell:"
-          SLACK_MESSAGE: '${{ github.repository }} tests failed :cry:'
-          SLACK_TITLE: ${{ github.repository }} Tests For ${{ matrix.cfengine }} with ColdBox ${{ matrix.coldboxVersion }} failed
-          SLACK_USERNAME: CI
-          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_URL }}
+      # - name: Slack Notifications
+      #   # Only on failures and NOT in pull requests
+      #   if: ${{ failure() && !startsWith( 'pull_request', github.event_name ) }}
+      #   uses: rtCamp/action-slack-notify@v2
+      #   env:
+      #     SLACK_CHANNEL: coding
+      #     SLACK_COLOR: ${{ job.status }} # or a specific color like 'green' or '#ff00ff'
+      #     SLACK_ICON_EMOJI: ":bell:"
+      #     SLACK_MESSAGE: '${{ github.repository }} tests failed :cry:'
+      #     SLACK_TITLE: ${{ github.repository }} Tests For ${{ matrix.cfengine }} with ColdBox ${{ matrix.coldboxVersion }} failed
+      #     SLACK_USERNAME: CI
+      #     SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_URL }}

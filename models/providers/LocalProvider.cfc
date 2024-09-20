@@ -65,6 +65,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 			);
 		}
 
+		variables.properties.path = isWindows() ? normalizePath( variables.properties.path ) : variables.properties.path;
 		// Do we need to expand the path
 		if ( variables.properties.autoExpand ) {
 			variables.properties.path = expandPath( variables.properties.path );
@@ -189,7 +190,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 *
 	 * @throws cbfs.FileOverrideException - When a file exists and no override has been provided
 	 */
-	function createFromFile(
+	File function createFromFile(
 		required source,
 		required directory,
 		string name,
@@ -224,7 +225,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 			fileSetAccessMode( diskPath, variables.PERMISSIONS.file[ arguments.visibility ] );
 		}
 
-		return this;
+		return this.file( filePath );
 	}
 
 	/**
@@ -1426,6 +1427,10 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 * @return The canonical path on the disk
 	 */
 	function buildDiskPath( string path = "" ){
+		if ( isWindows() ) {
+			arguments.path = normalizePath( arguments.path );
+		}
+
 		return arguments.path.startsWith( variables.properties.path )
 		 ? arguments.path
 		 : reReplace(

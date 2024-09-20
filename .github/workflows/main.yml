@@ -1,9 +1,9 @@
-name: Build Snapshot
+name: Build Main
 
 on:
   push:
     branches:
-      - 'development'
+      - 'main'
 
 jobs:
   ##########################################################################################
@@ -40,4 +40,4 @@ jobs:
     needs: [ tests, format ]
     secrets: inherit
     with:
-      snapshot: true
+      snapshot: false
