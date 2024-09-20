@@ -21,6 +21,7 @@ env:
 
 jobs:
   tests:
+    if: inputs.snapshot == 'false'
     secrets: inherit
     uses: ./.github/workflows/tests.yml
   ##########################################################################################
