@@ -1,5 +1,10 @@
 ﻿component extends="coldbox.system.testing.BaseTestCase" {
 
+	request.coldBoxVirtualApp.shutdown();
+	structDelete( request, "coldBoxVirtualApp" );
+	structDelete( application, "wirebox" );
+	structDelete( application, "cbcontroller" );
+
 	// Load and do not unload COldBOx, for performance
 	this.loadColdbox   = true;
 	this.unLoadColdBox = false;
@@ -10,8 +15,6 @@
 	 * executes before all suites+specs in the run() method
 	 */
 	function beforeAll(){
-		request.coldBoxVirtualApp.shutdown();
-		structDelete( request, "coldBoxVirtualApp" );
 		super.beforeAll();
 		setup();
 	}
