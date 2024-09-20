@@ -32,19 +32,24 @@ jobs:
         coldboxVersion: [ "^6.0.0", "^7.0.0" ]
         experimental: [ false ]
         include:
-          - coldboxVersion: "^6.0.0"
+          - commandbox_version: "6.1.0-rc"
+            coldboxVersion: "^6.0.0"
             cfengine: "adobe@2018"
             experimental: false
-          - coldboxVersion: "^7.0.0"
+          - commandbox_version: "6.1.0-rc"
+            coldboxVersion: "^7.0.0"
             cfengine: "lucee@6"
             experimental: true
-          - coldboxVersion: "be"
+          - commandbox_version: "6.1.0-rc"
+            coldboxVersion: "be"
             cfengine: "lucee@5"
             experimental: true
-          - coldboxVersion: "be"
+          - commandbox_version: "6.1.0-rc"
+            coldboxVersion: "be"
             cfengine: "adobe@2018"
             experimental: true
-          - coldboxVersion: "be"
+          - commandbox_version: "6.1.0-rc"
+            coldboxVersion: "be"
             cfengine: "adobe@2021"
             experimental: true
     steps:

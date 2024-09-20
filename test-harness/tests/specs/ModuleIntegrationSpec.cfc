@@ -10,6 +10,7 @@
 	 * executes before all suites+specs in the run() method
 	 */
 	function beforeAll(){
+		request.coldBoxVirtualApp.restart();
 		super.beforeAll();
 		setup();
 	}
