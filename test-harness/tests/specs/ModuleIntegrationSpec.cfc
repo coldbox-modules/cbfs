@@ -1,6 +1,5 @@
 ﻿component extends="coldbox.system.testing.BaseTestCase" {
 
-	request.coldBoxVirtualApp.shutdown();
 	structDelete( request, "coldBoxVirtualApp" );
 	structDelete( application, "wirebox" );
 	structDelete( application, "cbcontroller" );
