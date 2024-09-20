@@ -12,6 +12,7 @@ component {
 		variables.cwd          = getCWD().reReplace( "\.$", "" );
 		variables.artifactsDir = cwd & "/.artifacts";
 		variables.buildDir     = cwd & "/.tmp";
+		variables.apidDocsDir = variables.buildDir & "/apidocs";
 		variables.apiDocsURL   = "http://localhost:60299/apidocs/";
 		variables.testRunner   = "http://localhost:60299/tests/runner.cfm";
 
@@ -31,7 +32,8 @@ component {
 		// Cleanup + Init Build Directories
 		[
 			variables.buildDir,
-			variables.artifactsDir
+			variables.artifactsDir,
+			variables.apidDocsDir
 		].each( function( item ){
 			if ( directoryExists( item ) ) {
 				directoryDelete( item, true );
@@ -199,6 +201,7 @@ component {
 
 		// Create project mapping
 		fileSystemUtil.createMapping( arguments.projectName, variables.cwd );
+		fileSystemUtil.createMapping( "coldbox", variables.cwd & "test-harness/coldbox" );
 		// Generate Docs
 		print.greenLine( "Generating API Docs, please wait..." ).toConsole();
 
