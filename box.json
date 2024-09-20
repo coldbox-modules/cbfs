@@ -27,9 +27,7 @@
     },
     "devDependencies":{
         "commandbox-cfformat":"*",
-        "commandbox-docbox":"*",
-        "commandbox-dotenv":"*",
-        "commandbox-cfconfig":"*"
+        "commandbox-docbox":"*"
     },
     "installPaths":{
         "cbstreams":"modules/cbstreams/",
