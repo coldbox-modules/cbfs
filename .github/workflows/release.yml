@@ -4,7 +4,6 @@ on:
   # If you push to master|main this will trigger a stable release
   push:
     branches:
-      - master
       - main
 
   # Reusable workflow : Usually called by a `snapshot` workflow
@@ -136,7 +135,7 @@ jobs:
   ##########################################################################################
   prep_next_release:
     name: Prep Next Release
-    if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-20.04
     needs: [ build ]
     steps:
@@ -173,7 +172,7 @@ jobs:
         with:
           author_name: Github Actions
           author_email: info@ortussolutions.com
-          message: 'Version bump'
+          message: 'Version bump [ci skip]'
           add: |
             box.json
             changelog.md
