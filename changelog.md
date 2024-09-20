@@ -13,6 +13,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 * Issue #49 - Fix windows pathing issues when the disk path is relative or mapped
 
+### Changed
+
+* Issue #40 - `createFromFile` now returns a file object of the created file
+* Issue #41 - `upload` now returns a file object of the uploaded file
+ 
+
 ## [1.1.2] - 2023-05-18
 
 ### Fixed
