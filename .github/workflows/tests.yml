@@ -27,13 +27,13 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        commandbox_version: [ "6.0.1" ]
+        commandbox_version: [ "6.1.0-rc" ]
         cfengine: [ "lucee@5", "adobe@2021", "adobe@2023" ]
         coldboxVersion: [ "^6.0.0", "^7.0.0" ]
         experimental: [ false ]
         include:
-          - cfengine: "adobe@2018"
-            coldboxVersion: "^6.0.0"
+          - coldboxVersion: "^6.0.0"
+            cfengine: "adobe@2018"
             experimental: false
           - coldboxVersion: "^7.0.0"
             cfengine: "lucee@6"
