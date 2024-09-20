@@ -190,7 +190,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 *
 	 * @throws cbfs.FileOverrideException - When a file exists and no override has been provided
 	 */
-	function createFromFile(
+	File function createFromFile(
 		required source,
 		required directory,
 		string name,
@@ -225,7 +225,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 			fileSetAccessMode( diskPath, variables.PERMISSIONS.file[ arguments.visibility ] );
 		}
 
-		return this;
+		return this.file( filePath );
 	}
 
 	/**

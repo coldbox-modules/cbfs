@@ -83,7 +83,7 @@ interface {
 	 *
 	 * @throws cbfs.FileOverrideException - When a file exists and no override has been provided
 	 */
-	function createFromFile(
+	File function createFromFile(
 		required source,
 		required directory,
 		string name,
