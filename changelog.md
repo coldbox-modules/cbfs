@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [1.1.4] - 2024-09-20
 
+## [1.1.4] - 2024-09-20
+
 ### Fixed
 
 - Issue #49 - Fix windows pathing issues when the disk path is relative or mapped
@@ -76,7 +78,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 [Unreleased]: https://github.com/coldbox-modules/cbfs/compare/v1.1.4...HEAD
 
-[1.1.4]: https://github.com/coldbox-modules/cbfs/compare/v1.1.2...v1.1.4
+[1.1.4]: https://github.com/coldbox-modules/cbfs/compare/v1.1.4...v1.1.4
+
 
 [1.1.2]: https://github.com/coldbox-modules/cbfs/compare/v1.1.1...v1.1.2
 
