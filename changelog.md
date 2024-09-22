@@ -9,10 +9,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [1.1.4] - 2024-09-20
-
-## [1.1.4] - 2024-09-20
-
 ### Fixed
 
 - Issue #49 - Fix windows pathing issues when the disk path is relative or mapped
