@@ -202,6 +202,7 @@ component {
 		// Create project mapping
 		fileSystemUtil.createMapping( arguments.projectName, variables.cwd );
 		fileSystemUtil.createMapping( "coldbox", variables.cwd & "test-harness/coldbox" );
+		fileSystemUtil.createMapping( "testbox", variables.cwd & "test-harness/testbox" );
 		// Generate Docs
 		print.greenLine( "Generating API Docs, please wait..." ).toConsole();
 
