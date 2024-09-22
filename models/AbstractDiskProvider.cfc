@@ -171,7 +171,7 @@ component accessors="true" {
 			fileDelete( tmpFile );
 		}
 
-		return this;
+		return file( normalizePath( filePath ) );
 	}
 
 	/**
