@@ -3,7 +3,7 @@
         "cfengine":"boxlang@be",
         "serverHomeDirectory":".engine/boxlang"
     },
-    "name":"cbsecurity-boxlang@1",
+    "name":"cbfs-boxlang@1",
     "force":true,
     "openBrowser":false,
     "web":{
@@ -16,7 +16,7 @@
         },
         "webroot":"test-harness",
         "aliases":{
-            "/moduleroot/cbsecurity":"./"
+            "/moduleroot/cbfs":"./"
         }
     },
     "JVM":{
