@@ -53,7 +53,7 @@ jobs:
             cfengine: "adobe@2021"
             experimental: true
           - commandVersion: "be"
-            cfengine: "boxlag@1"
+            cfengine: "boxlang@1"
             experimental: true
     steps:
       - name: Checkout Repository
@@ -70,6 +70,11 @@ jobs:
         uses: Ortus-Solutions/setup-commandbox@v2.0.1
         with:
           version: ${{ matrix.commandbox_version }}
+
+      - name: Update Commandbox Boxlang Module
+        if: ${{ matrix.cfengine == 'boxlang@1' }}
+        run:
+          box install --force commandbox-boxlang
 
       - name: Install Dependencies
         run: |
