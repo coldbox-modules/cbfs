@@ -52,7 +52,7 @@ jobs:
             coldboxVersion: "be"
             cfengine: "adobe@2021"
             experimental: true
-          - commandVersion: "6.2.0-alpha"
+          - commandbox_version: "6.2.0-alpha"
             cfengine: "boxlang@1"
             coldboxVersion: "be"
             experimental: true
