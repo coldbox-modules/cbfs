@@ -9,6 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- BoxLang certification
+- Github Actions updates
+
 ### Changed
 
 * Issue #40 - `createFromFile` now returns a file object of the created file
@@ -19,7 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Issue #49 - Fix windows pathing issues when the disk path is relative or mapped
- 
+
 
 ## [1.1.2] - 2023-05-18
 
