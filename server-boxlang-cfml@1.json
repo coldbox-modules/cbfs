@@ -16,7 +16,8 @@
         },
         "webroot":"test-harness",
         "aliases":{
-            "/moduleroot/cbfs":"./"
+            "/moduleroot/cbfs":"./",
+			"/root":"./test-harness"
         }
     },
     "JVM":{
