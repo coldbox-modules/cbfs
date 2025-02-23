@@ -17,7 +17,7 @@
         "webroot":"test-harness",
         "aliases":{
             "/moduleroot/cbfs":"./",
-			"/root":"./test-harness"
+            "/root":"./test-harness"
         }
     },
     "JVM":{
@@ -32,6 +32,6 @@
         "BOXLANG_DEBUG":true
     },
     "scripts":{
-        "onServerInitialInstall":"install bx-compat-cfml --noSave"
+        "onServerInitialInstall":"install bx-compat-cfml@be,bx-esapi --noSave"
     }
 }

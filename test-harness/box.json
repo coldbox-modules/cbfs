@@ -5,8 +5,7 @@
     "private":true,
     "description":"",
     "dependencies":{
-        "coldbox":"^7",
-		"s3sdk":"^5.1.2"
+        "coldbox":"^7"
     },
     "devDependencies":{
         "testbox":"*"
