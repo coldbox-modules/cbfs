@@ -1514,7 +1514,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 	 * Boxlang uses java.nio which is non blocking so file operations may take a few ms to complete.
 	 */
 	function sleepIfNIO( duration = 50 ){
-		if( getMetadata( this ).name == "LocalProvider" && server.keyExists( "boxlang" ) ){
+		if ( getMetadata( this ).name == "LocalProvider" && server.keyExists( "boxlang" ) ) {
 			sleep( duration );
 		}
 	}
