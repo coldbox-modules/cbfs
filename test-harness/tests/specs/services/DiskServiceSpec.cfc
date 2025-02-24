@@ -22,7 +22,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 	 */
 	function afterAll(){
 		super.afterAll();
-		if( structKeyExists( request, "coldBoxVirtualApp" ) ){
+		if ( structKeyExists( request, "coldBoxVirtualApp" ) ) {
 			// Shutdown the virtual app
 			request.coldBoxVirtualApp.shutdown();
 		}
