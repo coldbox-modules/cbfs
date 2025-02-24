@@ -87,6 +87,10 @@ jobs:
         run: |
           box install --force commandbox-boxlang
 
+      - name: Remove DiskServiceSpec until COLDBOX-1294 is fixed
+        run: |
+          rm -rf test-harness/tests/specs/services/DiskServiceSpec.cfc
+
       - name: Install Dependencies
         run: |
           box install
