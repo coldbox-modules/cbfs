@@ -22,6 +22,13 @@ component extends="coldbox.system.testing.BaseTestCase" {
 	 */
 	function afterAll(){
 		super.afterAll();
+		if( structKeyExists( request, "coldBoxVirtualApp" ) ){
+			// Shutdown the virtual app
+			request.coldBoxVirtualApp.shutdown();
+		}
+		structDelete( request, "coldboxVirtualApp" );
+		structDelete( application, "cbController" );
+		structDelete( application, "wirebox" );
 	}
 
 	/*********************************** BDD SUITES ***********************************/
