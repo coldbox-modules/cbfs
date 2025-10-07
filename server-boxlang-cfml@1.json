@@ -1,9 +1,9 @@
 {
     "app":{
-        "cfengine":"boxlang@be",
-        "serverHomeDirectory":".engine/boxlang"
+        "cfengine":"boxlang@1",
+        "serverHomeDirectory":".engine/boxlang-cfml"
     },
-    "name":"cbfs-boxlang@1",
+    "name":"cbfs-boxlang-cfml@1",
     "force":true,
     "openBrowser":false,
     "web":{
@@ -32,6 +32,6 @@
         "BOXLANG_DEBUG":true
     },
     "scripts":{
-        "onServerInitialInstall":"install bx-compat-cfml@be,bx-esapi --noSave"
+        "onServerInitialInstall":"install bx-compat-cfml,bx-esapi --noSave"
     }
 }
