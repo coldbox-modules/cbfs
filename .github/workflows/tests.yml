@@ -27,6 +27,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        # Note the boxlang versions are on @be current due to BL-1823 not being available until 1.7 is released
         cfengine: [ "boxlang-cfml@1", "lucee@5", "adobe@2021", "adobe@2023" ]
         coldboxVersion: [ "^7" ]
         experimental: [ false ]

@@ -1,6 +1,6 @@
 {
     "app":{
-        "cfengine":"boxlang@1",
+        "cfengine":"boxlang@be",
         "serverHomeDirectory":".engine/boxlang-cfml"
     },
     "name":"cbfs-boxlang-cfml@1",
