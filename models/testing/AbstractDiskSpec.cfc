@@ -95,6 +95,10 @@ component extends="coldbox.system.testing.BaseTestCase" {
 			} );
 
 			story( "The disk can create files from an existing file", function(){
+				beforeEach( function( currentSpec ){
+					disk.delete( variables.pathPrefix & "space_ninja2.png" );
+					sleepIfNIO();
+				} );
 				given( "given a existing file path", function(){
 					then( "it should create the file", function(){
 						var path   = variables.pathPrefix & "space_ninja2.png";
@@ -121,7 +125,11 @@ component extends="coldbox.system.testing.BaseTestCase" {
 							fileDelete( clone );
 						}
 
+						sleepIfNIO();
+
 						fileCopy( original, clone );
+
+						sleepIfNIO();
 
 						disk.createFromFile(
 							source      : clone,
@@ -330,6 +338,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 					destination = variables.pathPrefix & "test_file_two.txt";
 					disk.delete( sourcePath );
 					disk.delete( destination );
+					sleepIfNIO();
 				} );
 				given( "An existing source and a non-existing destination", function(){
 					then( "it should move the source to the destination", function(){
@@ -467,7 +476,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 							{ "disk" : disk.getName() }
 						);
 						try {
-							if ( server.keyExists( "lucee" ) ) {
+							if ( server.keyExists( "lucee" ) && !server.keyExists( "boxlang" ) ) {
 								var req  = new http( method = "GET", url = downloadTestEndpoint );
 								var resp = req.send().getPrefix();
 							} else {
@@ -1004,6 +1013,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 					destinationPath = variables.pathPrefix & "tddtests";
 					disk.deleteDirectory( sourcePath );
 					disk.deleteDirectory( destinationPath );
+					sleepIfNIO();
 				} );
 
 				given( "a valid source and destination with no recurse and no filter", function(){
@@ -1166,6 +1176,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 			story( "The disk can get the contents of a directory", function(){
 				beforeEach( function( currentSpec ){
 					disk.deleteDirectory( variables.pathPrefix & "bddtests" );
+					sleepIfNIO();
 				} );
 				given( "a valid directory", function(){
 					then( "it will list the directory", function(){
@@ -1292,6 +1303,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 			story( "The disk can get file information maps", function(){
 				beforeEach( function( currentSpec ){
 					disk.deleteDirectory( variables.pathPrefix & "bddtests" );
+					sleepIfNIO();
 				} );
 				given( "a valid directory", function(){
 					then( "it can get a file map structure", function(){
@@ -1324,6 +1336,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 			story( "The disk can get multiple file content maps", function(){
 				beforeEach( function( currentSpec ){
 					disk.deleteDirectory( variables.pathPrefix & "bddtests" );
+					sleepIfNIO();
 				} );
 				given( "a valid directory", function(){
 					then( "it can get a file content map structure", function(){
@@ -1376,6 +1389,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 			story( "The disk can work with binary and non-binary files", function(){
 				beforeEach( function( currentSpec ){
 					disk.deleteDirectory( variables.pathPrefix & "bddtests" );
+					sleepIfNIO();
 				} );
 				given( "we have a json file", function(){
 					then( "it should determine the file is not binary", function(){
@@ -1494,6 +1508,15 @@ component extends="coldbox.system.testing.BaseTestCase" {
 	 */
 	function isMac(){
 		return reFindNoCase( "Mac", createObject( "java", "java.lang.System" ).getProperties()[ "os.name" ] );
+	}
+
+	/**
+	 * Boxlang uses java.nio which is non blocking so file operations may take a few ms to complete.
+	 */
+	function sleepIfNIO( duration = 50 ){
+		if ( getMetadata( this ).name == "LocalProvider" && server.keyExists( "boxlang" ) ) {
+			sleep( duration );
+		}
 	}
 
 }

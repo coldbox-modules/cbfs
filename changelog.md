@@ -9,6 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- BoxLang certification
+- Github Actions updates
+
+### Changed
+
+* Issue #40 - `createFromFile` now returns a file object of the created file
+* Issue #41 - `upload` now returns a file object of the uploaded file
+
 ## [1.1.4] - 2024-09-22
 
 ### Fixed

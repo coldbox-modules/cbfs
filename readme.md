@@ -33,9 +33,9 @@ Apache License, Version 2.0.
 
 ## System Requirements
 
--   Lucee 5+
--   Adobe ColdFusion 2018+
--   Java 11-15
+- [BoxLang 1+](https://www.boxlang.io/)
+- Lucee 5+
+- Adobe ColdFusion 2021+
 
 ## Installation
 
