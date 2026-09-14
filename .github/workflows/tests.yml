@@ -23,6 +23,11 @@ jobs:
     env:
       DB_USER: root
       DB_PASSWORD: root
+      AWS_S3_DOMAIN: 127.0.0.1:9090
+      AWS_S3_SSL: false
+      AWS_S3_REGION: ""
+      AWS_S3_PUBLIC_DOMAIN: 127.0.0.1:9090/cbfs-test
+      AWS_S3_BUCKET_NAME: cbfs-test
     continue-on-error: ${{ matrix.experimental }}
     strategy:
       fail-fast: false
