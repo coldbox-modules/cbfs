@@ -21,7 +21,7 @@ component extends="cbfs.models.testing.AbstractDiskSpec" {
 
 		describe( "#variables.providerName# Provider Extended Specs", function(){
 			beforeEach( function( currentSpec ){
-				variables.disk = getDisk();
+				variables.disk         = getDisk();
 				variables.publicDomain = disk.getProperties()[ "publicDomain" ];
 			} );
 

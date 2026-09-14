@@ -64,7 +64,7 @@ component {
 	}
 
 	public void function onRequestEnd( required targetPage ){
-		if( request.keyExists( "coldBoxVirtualApp" ) ){
+		if ( request.keyExists( "coldBoxVirtualApp" ) ) {
 			request.coldBoxVirtualApp.shutdown()
 		}
 	}
