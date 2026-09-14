@@ -511,7 +511,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 */
 	boolean function exists( required string path, boolean force = false ){
 		arguments.path = buildPath( arguments.path );
-		var fLookup    = () => variables.s3.objectExists( bucketName = variables.properties.bucketName, uri = path );
+		var fLookup    = () => variables.s3.objectExists( bucketName = variables.properties.bucketName, uri = arguments.path );
 
 		return variables.properties.cacheLookups && !arguments.force ? variables.templateCache.getOrSet(
 			"s3fs_path_exists_#hash( arguments.path )#",
@@ -533,7 +533,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		return !!variables.s3
 			.getBucket(
 				bucketName = variables.properties.bucketName,
-				prefix     = path,
+				prefix     = arguments.path,
 				maxKeys    = 1
 			)
 			.len();

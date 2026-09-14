@@ -50,6 +50,20 @@ component extends="cbfs.models.testing.AbstractDiskSpec" {
 					disk.getProperties()[ "visibility" ] = "public";
 					expect( find( disk.getProperties().publicDomain, disk.url( path ) ) ).toBeTrue();
 				} );
+
+				it( "Can resolve nested files and directories for scoped existence checks", function(){
+					var directory = variables.pathPrefix & createUUID() & "/";
+					var path      = directory & createUUID() & ".txt";
+
+					disk.create(
+						path      = path,
+						contents  = "hola amigo!",
+						overwrite = true
+					);
+
+					expect( disk.exists( path ) ).toBeTrue();
+					expect( disk.directoryExists( directory ) ).toBeTrue();
+				} );
 			} )
 		} ); // end suite
 	}
