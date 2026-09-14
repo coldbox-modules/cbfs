@@ -15,11 +15,11 @@ jobs:
     runs-on: ubuntu-24.04
     services:
       s3Mock:
-        image: adobe/s3mock
+        image: adobe/s3mock:4.12.2
         ports:
           - 9090:9090
         env:
-          initialBuckets: cbfs-test
+          COM_ADOBE_TESTING_S3MOCK_STORE_INITIAL_BUCKETS: cbfs-test
     env:
       DB_USER: root
       DB_PASSWORD: root
