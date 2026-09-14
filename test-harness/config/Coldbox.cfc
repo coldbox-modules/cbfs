@@ -44,6 +44,7 @@
 						"properties" : {
 							"visibility"        : "private", // can be 'public' or 'private'
 							"path"              : "",
+							"defaultACL"        : getSystemSetting( "AWS_S3_DEFAULT_ACL", "private" ),
 							"ssl"               : getSystemSetting( "AWS_S3_SSL", true ),
 							"accessKey"         : getSystemSetting( "AWS_S3_ACCESS_KEY", "" ),
 							"secretKey"         : getSystemSetting( "AWS_S3_SECRET_KEY", "" ),
