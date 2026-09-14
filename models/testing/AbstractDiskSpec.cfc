@@ -493,7 +493,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 
 						debug( resp );
 
-						expect( resp.statusCode ).toBe( "200 OK" );
+						expect( val( resp.statusCode ) ).toBe( 200 );
 
 						if ( server.keyExists( "lucee" ) ) {
 							expect( isBinary( resp.fileContent ) ).toBeTrue();
