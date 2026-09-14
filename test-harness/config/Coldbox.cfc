@@ -91,7 +91,7 @@
 	function cbLoadInterceptorHelpers( event, interceptData, rc, prc ){
 		controller
 			.getModuleService()
-			.registerAndActivateModule( moduleName = request.MODULE_NAME, invocationPath = "moduleroot" );
+			.registerAndActivateModule( moduleName = "cbfs", invocationPath = "moduleroot" );
 	}
 
 }
