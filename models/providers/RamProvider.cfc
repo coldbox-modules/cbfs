@@ -889,7 +889,7 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 			return isNull( aDeleted ) ? true : aDeleted.len() > 0 ? true : false;
 		} else {
 			this.files( arguments.directory ).each( ( file ) => {
-				this.delete( arguments.file )
+				this.delete( arguments.file );
 			} );
 			intercept.announce( "cbfsOnDirectoryDelete", { "directory" : arguments.directory, "disk" : this } );
 			return !this.directoryExists( arguments.directory );
