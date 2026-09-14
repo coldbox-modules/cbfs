@@ -10,7 +10,6 @@
 # Dependencies
 test-harness/.cbfs/**
 test-harness/coldbox/**
-test-harness/docbox/**
 test-harness/testbox/**
 test-harness/logs/**
 test-harness/modules/**
@@ -22,5 +21,6 @@ modules/**
 logs/**
 
 # Resource tests
+test-harness/tests/resources/assets/**
 test-harness/tests/resources/storage/**
 test-harness/tests/storage/**

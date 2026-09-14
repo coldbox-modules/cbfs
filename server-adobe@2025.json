@@ -1,8 +1,8 @@
 {
-    "name":"cbfs-adobe@2021",
+    "name":"cbfs-adobe@2025",
     "app":{
-        "serverHomeDirectory":".engine/adobe2021",
-        "cfengine":"adobe@2021"
+        "serverHomeDirectory":".engine/adobe2025",
+        "cfengine":"adobe@2025"
     },
     "web":{
         "http":{
@@ -11,21 +11,21 @@
         "rewrites":{
             "enable":"true"
         },
-        "webroot":"test-harness",
-        "aliases":{
+		"webroot": "test-harness",
+		"aliases":{
             "/moduleroot/cbfs":"../",
-            "/root":"./test-harness"
+			"/root":"./test-harness"
         }
     },
-	"jvm":{
+    "jvm":{
         "heapSize":"1024",
-        "javaVersion":"openjdk11_jre"
+		"args" : "--add-opens java.base/sun.nio.fs=ALL-UNNAMED"
     },
     "openBrowser":"false",
-    "cfconfig":{
-        "file":".cfconfig.json"
-    },
-    "scripts":{
+	"cfconfig": {
+		"file" : ".cfconfig.json"
+	},
+    "scripts" : {
         "onServerInstall":"cfpm install zip,debugger"
     }
 }

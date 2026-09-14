@@ -9,7 +9,7 @@ component {
 	 * Configure this module
 	 */
 	function configure(){
-		settings = {
+		variables.settings = {
 			// CBFS Module
 			cbfs : {
 				// Disks that will be namespaced with the module name @diskModule

@@ -9,13 +9,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
 - BoxLang certification
 - Github Actions updates
+- AI Agent integrations
+- Adobe 2025
 
 ### Changed
 
-* Issue #40 - `createFromFile` now returns a file object of the created file
-* Issue #41 - `upload` now returns a file object of the uploaded file
+- Issue #40 - `createFromFile` now returns a file object of the created file
+- Issue #41 - `upload` now returns a file object of the uploaded file
+- Dropped old cfml engines
+- Visibility of s3 tests to private due to new security updates and requirements in AWS S3
 
 ## [1.1.4] - 2024-09-22
 
