@@ -3,7 +3,7 @@
         "cfengine":"boxlang@1",
         "serverHomeDirectory":".engine/boxlang"
     },
-    "name":"cborm-boxlang@1",
+    "name":"cbfs-boxlang@1",
     "force":true,
     "openBrowser":false,
     "web":{
