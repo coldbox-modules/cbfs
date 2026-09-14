@@ -23,6 +23,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Dropped old cfml engines
 - Visibility of s3 tests to private due to new security updates and requirements in AWS S3
 
+### Fixed
+
+- Fixed S3 directory existence checks for explicit folder marker objects
+- Fixed Adobe ColdFusion S3 binary downloads by removing an unnecessary byte-write operation
+
 ## [1.1.4] - 2024-09-22
 
 ### Fixed
