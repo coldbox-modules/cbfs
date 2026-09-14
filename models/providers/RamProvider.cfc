@@ -888,9 +888,10 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 			intercept.announce( "cbfsOnDirectoryDelete", { "directory" : arguments.directory, "disk" : this } );
 			return isNull( aDeleted ) ? true : aDeleted.len() > 0 ? true : false;
 		} else {
-			this.files( arguments.directory ).each( ( file ) => {
-				this.delete( arguments.file );
-			} );
+			this.files( arguments.directory )
+				.each( ( file ) => {
+					this.delete( arguments.file );
+				} );
 			intercept.announce( "cbfsOnDirectoryDelete", { "directory" : arguments.directory, "disk" : this } );
 			return !this.directoryExists( arguments.directory );
 		}
