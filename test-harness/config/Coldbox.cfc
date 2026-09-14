@@ -94,7 +94,9 @@
 	 * may no longer exist by the time this interceptor fires on a reinit.
 	 */
 	function cbLoadInterceptorHelpers( event, interceptData, rc, prc ){
-		controller.getModuleService().registerAndActivateModule( moduleName = "cbfs", invocationPath = "moduleroot" );
+		controller
+			.getModuleService()
+			.registerAndActivateModule( moduleName = "cbfs", invocationPath = "moduleroot" );
 	}
 
 }
