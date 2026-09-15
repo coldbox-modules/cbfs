@@ -56,7 +56,12 @@ jobs:
       - name: "Setup Environment Variables For Build Process"
         id: current_version
         run: |
-          echo "VERSION=`cat box.json | jq '.version' -r`" >> $GITHUB_ENV
+          VERSION=`cat box.json | jq -e '.version' -r`
+          if [ -z "$VERSION" ]; then
+            echo "::error::Could not read version from box.json (jq failed or returned empty)"
+            exit 1
+          fi
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
           box package set version=@build.version@+@build.number@
           # master or snapshot
           echo "Github Ref is $GITHUB_REF"
