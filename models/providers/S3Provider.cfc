@@ -484,8 +484,6 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 		var response = variables.s3.getObject( bucketName = variables.properties.bucketName, uri = arguments.path ).response;
 
 		if ( getMetadata( response ).name == "java.io.ByteArrayOutputStream" ) {
-			var bytes = [];
-			response.writeBytes( bytes );
 			return response.toByteArray();
 		} else {
 			return response;
@@ -528,6 +526,9 @@ component accessors="true" extends="cbfs.models.AbstractDiskProvider" {
 	 */
 	boolean function directoryExists( required string path ){
 		arguments.path = buildDirectoryPath( arguments.path );
+		if ( variables.s3.objectExists( bucketName = variables.properties.bucketName, uri = arguments.path ) ) {
+			return true;
+		}
 
 		return !!variables.s3
 			.getBucket(

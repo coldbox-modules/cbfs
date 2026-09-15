@@ -1,8 +1,8 @@
 {
-    "name":"cbfs-adobe@2021",
+    "name":"cbfs-adobe@2025",
     "app":{
-        "serverHomeDirectory":".engine/adobe2021",
-        "cfengine":"adobe@2021"
+        "serverHomeDirectory":".engine/adobe2025",
+        "cfengine":"adobe@2025"
     },
     "web":{
         "http":{
@@ -16,6 +16,11 @@
             "/moduleroot/cbfs":"../",
             "/root":"./test-harness"
         }
+    },
+    "jvm":{
+        "heapSize":"1024",
+        "javaVersion":"openjdk21_jre",
+        "args":"--add-opens java.base/sun.nio.fs=ALL-UNNAMED"
     },
     "openBrowser":"false",
     "cfconfig":{

@@ -3,7 +3,7 @@
 	// Configure ColdBox Application
 	function configure(){
 		// coldbox directives
-		coldbox = {
+		variables.coldbox = {
 			// Application Setup
 			appName                 : "Module Tester",
 			// Development Settings
@@ -28,7 +28,7 @@
 			eventCaching            : false
 		};
 
-		moduleSettings = {
+		variables.moduleSettings = {
 			"cbfs" : {
 				"disks" : {
 					"local" : {
@@ -42,8 +42,9 @@
 					"S3"  : {
 						"provider"   : "S3",
 						"properties" : {
-							"visibility"        : "public", // can be 'public' or 'private'
+							"visibility"        : "private", // can be 'public' or 'private'
 							"path"              : "",
+							"defaultACL"        : getSystemSetting( "AWS_S3_DEFAULT_ACL", "private" ),
 							"ssl"               : getSystemSetting( "AWS_S3_SSL", true ),
 							"accessKey"         : getSystemSetting( "AWS_S3_ACCESS_KEY", "" ),
 							"secretKey"         : getSystemSetting( "AWS_S3_SECRET_KEY", "" ),
@@ -64,24 +65,11 @@
 			moduleSettings.cbfs.disks.S3.properties[ "publicDomain" ] = getSystemSetting( "AWS_S3_PUBLIC_DOMAIN" );
 		}
 
-		// environment settings, create a detectEnvironment() method to detect it yourself.
-		// create a function with the name of the environment so it can be executed if that environment is detected
-		// the value of the environment is a list of regex patterns to match the cgi.http_host.
-		environments = { development : "localhost,127\.0\.0\.1" };
-
-		// Module Directives
-		modules = {
-			// An array of modules names to load, empty means all of them
-			include : [],
-			// An array of modules names to NOT load, empty means none
-			exclude : []
-		};
-
 		// Register interceptors as an array, we need order
-		interceptors = [];
+		variables.interceptors = [];
 
 		// LogBox DSL
-		logBox = {
+		variables.logBox = {
 			// Define Appenders
 			appenders : {
 				myConsole : { class : "ConsoleAppender" },
@@ -99,11 +87,16 @@
 
 	/**
 	 * Load the Module you are testing
+	 *
+	 * Note: We can't rely on `request.MODULE_NAME` here because ColdBox's test harness
+	 * clears/bypasses the `request` scope between virtual-app reinits (BaseTestCase's
+	 * reset()/beforeTests()), so that key set in Application.cfc's pseudo-constructor
+	 * may no longer exist by the time this interceptor fires on a reinit.
 	 */
 	function cbLoadInterceptorHelpers( event, interceptData, rc, prc ){
 		controller
 			.getModuleService()
-			.registerAndActivateModule( moduleName = request.MODULE_NAME, invocationPath = "moduleroot" );
+			.registerAndActivateModule( moduleName = "cbfs", invocationPath = "moduleroot" );
 	}
 
 }

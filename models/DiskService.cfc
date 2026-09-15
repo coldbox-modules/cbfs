@@ -32,6 +32,15 @@ component accessors="true" singleton threadsafe {
 	property name="disks" type="struct";
 
 	/**
+	 * Registered Core Providers
+	 */
+	variables.CORE_PROVIDERS = {
+		"Local" : "LocalProvider@cbfs",
+		"RAM"   : "RAMProvider@cbfs",
+		"S3"    : "S3Provider@cbfs"
+	}
+
+	/**
 	 * Constructor
 	 */
 	function init(){
@@ -257,39 +266,12 @@ component accessors="true" singleton threadsafe {
 	 */
 	private function buildDisk( required provider ){
 		// is this core?
-		if ( getRegisteredCoreProviders().keyExists( arguments.provider ) ) {
-			arguments.provider = variables.registeredCoreProviders[ arguments.provider ];
-		}
-		// Build it out
-		return variables.wirebox.getInstance( arguments.provider );
-	}
-
-	/**
-	 * Get's the struct of registered disk providers lazily
-	 */
-	private function getRegisteredCoreProviders(){
-		if ( isNull( variables.registeredCoreProviders ) ) {
-			// Providers Path
-			variables.providersPath           = variables.moduleConfig.modelsPhysicalPath & "/providers";
-			// Register core disk providers
-			variables.registeredCoreProviders = directoryList(
-				variables.providersPath,
-				false,
-				"name",
-				"*.cfc"
-			)
-				// Purge extension
-				.map( function( item ){
-					return listFirst( item, "." );
-				} )
-				// Build out wirebox mapping
-				.reduce( function( result, item ){
-					arguments.result[ arguments.item.replaceNoCase( "Provider", "" ) ] = "#arguments.item#@cbfs";
-					return arguments.result;
-				}, {} );
+		if ( variables.CORE_PROVIDERS.keyExists( arguments.provider ) ) {
+			arguments.provider = variables.CORE_PROVIDERS[ arguments.provider ]
 		}
 
-		return variables.registeredCoreProviders;
+		// Delegate to wirebox to build the instance
+		return variables.wirebox.getInstance( arguments.provider )
 	}
 
 }

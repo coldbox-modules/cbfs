@@ -17,7 +17,6 @@ component {
 	this.sessionTimeout     = createTimespan( 0, 0, 10, 0 );
 	this.applicationTimeout = createTimespan( 0, 0, 10, 0 );
 	this.timezone           = "UTC";
-	this.enableNullSupport  = shouldEnableFullNullSupport();
 
 	// Turn on/off white space management
 	this.whiteSpaceManagement = "smart";
@@ -54,24 +53,20 @@ component {
 
 		// ORM Reload for fresh results
 		if ( structKeyExists( url, "fwreinit" ) ) {
-			if ( structKeyExists( server, "lucee" ) ) {
+			if ( structKeyExists( server, "boxlang" ) ) {
 				pagePoolClear();
 			}
 			ormReload();
-			request.coldBoxVirtualApp.restart();
+			request.coldBoxVirtualApp.restart( true );
 		}
 
 		return true;
 	}
 
 	public void function onRequestEnd( required targetPage ){
-		request.coldBoxVirtualApp.shutdown();
-	}
-
-	private boolean function shouldEnableFullNullSupport(){
-		var system = createObject( "java", "java.lang.System" );
-		var value  = system.getEnv( "FULL_NULL" );
-		return isNull( value ) ? false : !!value;
+		if ( request.keyExists( "coldBoxVirtualApp" ) ) {
+			request.coldBoxVirtualApp.shutdown()
+		}
 	}
 
 }

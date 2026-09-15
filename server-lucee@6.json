@@ -17,6 +17,9 @@
             "/root":"./test-harness"
         }
     },
+	"jvm" : {
+		"args" : "--add-opens java.base/sun.nio.fs=ALL-UNNAMED"
+	},
     "openBrowser":"false",
     "cfconfig":{
         "file":".cfconfig.json"

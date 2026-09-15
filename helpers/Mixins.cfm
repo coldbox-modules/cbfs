@@ -5,13 +5,13 @@
  * @diskName If passed, it will try to get the named disk, else the disk service
  */
 function cbfs( diskName ){
-	var diskService = getInstance( "DiskService@cbfs" );
+	var diskService = getInstance( "DiskService@cbfs" )
 
 	if( isNull( arguments.diskName ) ){
-		return diskService;
+		return diskService
 	}
 
-	return diskService.get( arguments.diskName );
+	return diskService.get( arguments.diskName )
 
 }
 </cfscript>

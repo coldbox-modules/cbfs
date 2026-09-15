@@ -21,7 +21,7 @@ component extends="cbfs.models.testing.AbstractDiskSpec" {
 
 		describe( "#variables.providerName# Provider Extended Specs", function(){
 			beforeEach( function( currentSpec ){
-				disk                   = getDisk();
+				variables.disk         = getDisk();
 				variables.publicDomain = disk.getProperties()[ "publicDomain" ];
 			} );
 
@@ -47,6 +47,7 @@ component extends="cbfs.models.testing.AbstractDiskSpec" {
 						overwrite: true
 					);
 					disk.getProperties()[ "publicDomain" ] = "cdn.cbfs-s3.com";
+					disk.getProperties()[ "visibility" ] = "public";
 					expect( find( disk.getProperties().publicDomain, disk.url( path ) ) ).toBeTrue();
 				} );
 			} )
