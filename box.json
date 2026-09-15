@@ -23,7 +23,7 @@
     "contributors":[],
     "dependencies":{
         "cbstreams":"^2.0",
-        "s3sdk":"^5.7.1"
+        "s3sdk":"^6.0.0"
     },
     "devDependencies":{
 		"commandbox-boxlang":"*",
