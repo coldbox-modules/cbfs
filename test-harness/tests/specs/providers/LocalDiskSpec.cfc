@@ -25,7 +25,7 @@ component extends="cbfs.models.testing.AbstractDiskSpec" {
 
 			story(
 				story: "I want to read the posix attributes of a path",
-				skip : Windows(),
+				skip : isWindows(),
 				body : function(){
 					given( "a valid path", function(){
 						then( "it should read all the posix attributes", function(){
