@@ -87,6 +87,11 @@
 
 	/**
 	 * Load the Module you are testing
+	 *
+	 * Note: We can't rely on `request.MODULE_NAME` here because ColdBox's test harness
+	 * clears/bypasses the `request` scope between virtual-app reinits (BaseTestCase's
+	 * reset()/beforeTests()), so that key set in Application.cfc's pseudo-constructor
+	 * may no longer exist by the time this interceptor fires on a reinit.
 	 */
 	function cbLoadInterceptorHelpers( event, interceptData, rc, prc ){
 		controller
