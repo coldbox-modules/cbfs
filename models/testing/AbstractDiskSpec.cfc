@@ -495,7 +495,7 @@ component extends="coldbox.system.testing.BaseTestCase" {
 
 						expect( val( resp.statusCode ) ).toBe( 200 );
 
-						if ( server.keyExists( "lucee" ) ) {
+						if ( server.keyExists( "lucee" ) || server.keyExists( "boxlang" ) ) {
 							expect( isBinary( resp.fileContent ) ).toBeTrue();
 						} else {
 							expect( resp.fileContent ).toBeInstanceOf( "java.io.ByteArrayOutputStream" );
