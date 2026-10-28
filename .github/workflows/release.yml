@@ -84,23 +84,6 @@ jobs:
           markdownlint changelog.md --fix
           box task run taskfile=build/Build target=run :version=${{ env.VERSION }} :projectName=${{ env.MODULE_ID }} :buildID=${{ env.BUILD_ID }} :branch=${{ env.BRANCH }}
 
-      - name: Commit Changelog [unreleased] with latest version
-        uses: EndBug/add-and-commit@v11.1.1
-        if: env.SNAPSHOT == 'false'
-        with:
-          author_name: Github Actions
-          author_email: info@ortussolutions.com
-          message: 'Finalized changelog for v${{ env.VERSION }}'
-          add: changelog.md
-
-      - name: Tag Version
-        uses: rickstaa/action-create-tag@v1.7.2
-        if: env.SNAPSHOT == 'false'
-        with:
-          tag: "v${{ env.VERSION }}"
-          force_push_tag: true
-          message: "Latest Release v${{ env.VERSION }}"
-
       - name: Upload Build Artifacts
         if: success()
         uses: actions/upload-artifact@v7
@@ -137,6 +120,23 @@ jobs:
           cd .tmp/${{ env.MODULE_ID }}
           cat box.json
           box forgebox publish --force
+
+      - name: Commit Changelog [unreleased] with latest version
+        uses: EndBug/add-and-commit@v11.1.1
+        if: env.SNAPSHOT == 'false'
+        with:
+          author_name: Github Actions
+          author_email: info@ortussolutions.com
+          message: 'Finalized changelog for v${{ env.VERSION }}'
+          add: changelog.md
+
+      - name: Tag Version
+        uses: rickstaa/action-create-tag@v1.7.2
+        if: env.SNAPSHOT == 'false'
+        with:
+          tag: "v${{ env.VERSION }}"
+          force_push_tag: true
+          message: "Latest Release v${{ env.VERSION }}"
 
       - name: Create Github Release
         uses: taiki-e/create-gh-release-action@v1.8.2
