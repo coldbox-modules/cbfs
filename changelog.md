@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.1] - 2026-10-28
+
 ### Fixed
 
 - Fixed Coldbox 7 compatibility issues
@@ -100,7 +102,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - First iteration of this module
 
 [unreleased]: https://github.com/coldbox-modules/cbfs/compare/v1.2.1...HEAD
-[1.2.1]: https://github.com/coldbox-modules/cbfs/compare/v1.2.0...v1.2.1
+[1.2.1]: https://github.com/coldbox-modules/cbfs/compare/v1.2.1...v1.2.1
 [1.2.0]: https://github.com/coldbox-modules/cbfs/compare/v1.1.4...v1.2.0
 
 \[]: <https://github.com/coldbox-modules/cbfs/compare/v1.1.4...v>
