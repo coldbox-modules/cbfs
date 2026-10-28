@@ -1,6 +1,6 @@
 {
     "name":"ColdBox File Storages",
-    "version":"1.2.0",
+    "version":"1.2.1",
     "location":"https://downloads.ortussolutions.com/ortussolutions/coldbox-modules/cbfs/@build.version@/cbfs-@build.version@.zip",
     "author":"Ortus Solutions, Corp",
     "homepage":"https://github.com/coldbox-modules/cbfs",
@@ -26,7 +26,7 @@
         "s3sdk":"^6.0.0"
     },
     "devDependencies":{
-		"commandbox-boxlang":"*",
+        "commandbox-boxlang":"*",
         "commandbox-cfformat":"*",
         "commandbox-docbox":"*"
     },

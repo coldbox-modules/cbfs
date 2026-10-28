@@ -12,6 +12,9 @@ component {
 	this.webURL            = "https://github.com/ortus-solutions/cbfs";
 	this.description       = "A powerful file system abstraction module for ColdBox applications";
 	this.version           = "@build.version@+@build.number@";
+	// Coldbox 7 - keep this in place until the next major release
+	this.cfmapping         = "cbfs";
+	// Coldbox 8
 	this.classMapping      = "cbfs";
 	this.modelNamespace    = "cbfs";
 	// Module Dependencies That Must Be Loaded First, use internal names or aliases
